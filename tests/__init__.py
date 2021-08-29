@@ -14,3 +14,7 @@ if not client_secret:
 client_id = int(client_id)
 api = OssapiV2(client_id, client_secret, strict=True)
 apiv1 = Ossapi(key)
+
+DEV_HOST = "https://dev.ppy.sh"
+dev_client_id = os.environ.get("DEV_OSU_API_CLIENT_ID")
+dev_client_secret = os.environ.get("DEV_OSU_API_CLIENT_SECRET")

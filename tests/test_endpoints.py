@@ -1,8 +1,12 @@
+import unittest
+from datetime import datetime
+from pathlib import Path
 from unittest import TestCase
 
 from ossapi import RankingType, BeatmapsetEventType, OssapiV2
 
-from tests import api, client_id, client_secret
+from tests import api, client_id, client_secret, DEV_HOST, dev_client_secret, dev_client_id
+
 
 class TestBeatmapsetDiscussionPosts(TestCase):
     def test_deserialize(self):
@@ -120,6 +124,71 @@ class TestBeatmapsetDiscussionListing(TestCase):
 class TestCreateNewPM(TestCase):
     def test_deserialize(self):
         # Target ID of 2070907 is Tillerino
-        scoped_api = OssapiV2(client_id, client_secret, redirect_uri="http://localhost:9409/",
-                              scopes=["chat.write"], strict=True)
-        scoped_api.create_pm(user_id=2070907, message="Integration test please ignore")
+        self.api = OssapiV2(
+            client_id, client_secret, redirect_uri="http://localhost:9409/",
+            scopes=["chat.write"], strict=True,
+            token_file_override=(Path(__file__).parent / "authorization_code_TestCreateNewPM.pickle")
+        )
+        self.api.create_pm(user_id=2070907, message="Integration test please ignore")
+
+class TestForumWriteMethods(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.api = OssapiV2(
+            dev_client_id, dev_client_secret, redirect_uri="http://localhost:9409/",
+            scopes=["forum.write"], strict=True, osu_host=DEV_HOST,
+            token_file_override=(Path(__file__).parent / "authorization_code_TestForumWriteMethods.pickle")
+        )
+
+    def test_create_topic(self):
+        try:
+            self.api.create_forum_topic(
+                body="Integration test please ignore",
+                forum_id=74,
+                title="Integration test please ignore",
+            )
+        except ValueError as ex:
+            if "Editing beatmap metadata post is not allowed." in str(ex):
+                self.fail("Encountered unexpected error message")
+
+    # TODO: Figure out why polls aren't working :)
+    @unittest.skip
+    def test_create_with_poll(self):
+        poll = {
+            "options": ["Option 1", "Option 2"],
+            "title": "Test Poll",
+            "length_days": 0,
+            "vote_change": True,
+            "max_options": 1,
+        }
+        self.api.create_forum_topic(
+            **{
+                "body": "Integration test with poll - please ignore" + str(datetime.now()),
+                "forum_id": 78,
+                "title": "Integration test with poll - please ignore" + str(datetime.now()),
+                "with_poll": True,
+                "poll": poll,
+            }
+        )
+
+    def test_reply_topic(self):
+        try:
+            self.api.reply_to_forum_topic(
+                topic_id=156,
+                body="Integration test reply please ignore " + str(datetime.now()),
+            )
+        except ValueError as ex:
+            if "Please edit your last post instead of posting again." not in str(ex):
+                self.fail("Encountered unexpected error message")
+
+    def test_edit_topic(self):
+        self.api.edit_forum_topic(
+            topic_id=156,
+            title="Title last updated: " + str(datetime.now()),
+        )
+
+    def test_edit_post(self):
+        self.api.edit_forum_post(
+            body="This comment was last edited at: " + str(datetime.now()),
+            post_id=306,
+        )

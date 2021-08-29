@@ -2,7 +2,7 @@
 # https://docs.python.org/3.7/whatsnew/3.7.html#pep-563-postponed-evaluation-of-annotations
 from __future__ import annotations
 from dataclasses import dataclass
-from typing import Optional, TypeVar, Generic, Any, List
+from typing import Optional, TypeVar, Generic, Any, List, Union
 from types import SimpleNamespace
 
 from ossapi.mod import Mod
@@ -402,6 +402,25 @@ class ForumTopicAndPosts(Model):
     search: ForumTopicSearch
     posts: List[ForumPost]
     topic: ForumTopic
+
+@dataclass
+class CreateForumTopicResponse(Model):
+    post: ForumPost
+    topic: ForumTopic
+
+@dataclass
+class ForumTopicPoll(Model):
+    options: Union[List[str], str]
+    title: str
+
+    # optional fields
+    # ---------------
+
+    hide_results: Optional[str] = None
+    length_days: Optional[int] = None
+    max_options: Optional[int] = None
+    vote_change: Optional[bool] = None
+
 
 @dataclass
 class ForumTopicSearch(Model):

@@ -1,3 +1,4 @@
+from time import sleep
 from typing import (get_type_hints, get_origin, get_args, Union, TypeVar,
     Optional, List, _GenericAlias)
 import logging
@@ -23,7 +24,7 @@ from ossapi.models import (
     Beatmapset, BeatmapPlaycount, Spotlight, Spotlights, WikiPage, _Event,
     Event, BeatmapsetDiscussionPosts, Build, ChangelogListing,
     MultiplayerScores, MultiplayerScoresCursor, BeatmapsetDiscussionVotes, CreatePMResponse,
-    BeatmapsetDiscussionListing
+    BeatmapsetDiscussionListing, CreateForumTopicResponse, ForumTopicPoll, ForumPost, ForumTopic
 )
 from ossapi.mod import Mod
 from ossapi.enums import (
@@ -57,6 +58,7 @@ UserLookupKeyT = Union[UserLookupKey, str]
 BeatmapsetEventTypeT = Union[BeatmapsetEventType, str]
 CommentableTypeT = Union[CommentableType, str]
 CommentSortT = Union[CommentSort, str]
+ForumTopicPollT = Union[ForumTopicPoll, dict]
 ForumTopicSortT = Union[ForumTopicSort, str]
 SearchModeT = Union[SearchMode, str]
 MultiplayerScoresSortT = Union[MultiplayerScoresSort, str]
@@ -103,20 +105,23 @@ def request(function):
 
 
 class OssapiV2:
-    TOKEN_URL = "https://osu.ppy.sh/oauth/token"
-    AUTH_CODE_URL = "https://osu.ppy.sh/oauth/authorize"
-    BASE_URL = "https://osu.ppy.sh/api/v2"
-
     AUTHORIZATION_TOKEN_FILE = (Path(__file__).parent /
         "authorization_code.pickle")
 
     def __init__(self, client_id, client_secret, redirect_uri=None,
-        scopes=["public"], strict=False):
+            scopes=None, strict=False, osu_host="https://osu.ppy.sh", token_file_override=None):
+        scopes = scopes if scopes is not None else ["public"]
+        self.TOKEN_URL = f"{osu_host}/oauth/token"
+        self.AUTH_CODE_URL = f"{osu_host}/oauth/authorize"
+        self.BASE_URL = f"{osu_host}/api/v2"
+
         self.strict = strict
         self.log = logging.getLogger(__name__)
 
-        self.session = self.authenticate(client_id, client_secret, redirect_uri,
-            scopes)
+        if token_file_override is not None:
+            self.AUTHORIZATION_TOKEN_FILE = token_file_override
+
+        self.session = self.authenticate(client_id, client_secret, redirect_uri, scopes)
 
     def authenticate(self, client_id, client_secret, redirect_uri, scopes):
         # if redirect_uri is not passed, assume the user wanted to use the
@@ -146,8 +151,7 @@ class OssapiV2:
         self.log.info("initializing client credentials grant")
         client = BackendApplicationClient(client_id=client_id, scope=["public"])
         oauth = OAuth2Session(client=client)
-        oauth.fetch_token(token_url=self.TOKEN_URL,
-            client_id=client_id, client_secret=client_secret)
+        oauth.fetch_token(token_url=self.TOKEN_URL, client_id=client_id, client_secret=client_secret)
 
         return oauth
 
@@ -203,23 +207,33 @@ class OssapiV2:
         with open(self.AUTHORIZATION_TOKEN_FILE, "wb+") as f:
             pickle.dump(token, f)
 
-    def _get(self, type_, url, params=None):
-        params = params or {}
-        params = self._format_params(params)
-        r = self.session.get(f"{self.BASE_URL}{url}", params=params)
-        self.log.info(f"made GET request to {r.request.url}")
-        json_ = r.json()
-        self.log.debug(f"received json: \n{json.dumps(json_, indent=4)}")
-        # TODO this should just be ``if "error" in json``, but for some reason
-        # ``self.search_beatmaps`` always returns an error in the response...
-        # open an issue on osu-web?
-        self._check_json(json_, r.request.url)
-        return self._instantiate_type(type_, json_)
+    def _get(self, *args, **kwargs):
+        return self._call(*args, method="GET", **kwargs)
 
-    def _post(self, type_, url, data=None):
-        data = data or {}
-        r = self.session.post(f"{self.BASE_URL}{url}", data=data)
-        self.log.info(f"made POST request to {r.request.url}")
+    def _post(self, *args, **kwargs):
+        return self._call(*args, method="POST", **kwargs)
+
+    def _patch(self, *args, **kwargs):
+        return self._call(*args, method="PATCH", **kwargs)
+
+    def _put(self, *args, **kwargs):
+        return self._call(*args, method="PUT", **kwargs)
+
+    def _call(self, type_, url, data=None, method="GET", **kwargs):
+        data = data or {} or kwargs.pop("params", {})
+        data = self._format_params(data)
+        data_kwarg = "params" if method == "GET" else "data"
+
+        request_kwargs = {
+            "method": method,
+            "url": f"{self.BASE_URL}{url}",
+            data_kwarg: data,
+            **kwargs
+        }
+
+        r = self.session.request(**request_kwargs)
+        self.log.info(f"made {method} request to {r.request.url}")
+
         json_ = r.json()
         self.log.debug(f"received json: \n{json.dumps(json_, indent=4)}")
         self._check_json(json_, r.request.url)
@@ -703,6 +717,79 @@ class OssapiV2:
 
     # /forums
     # -------
+
+    @request
+    def create_forum_topic(self,
+       body: str,
+       forum_id: int,
+       title: str,
+       with_poll: Optional[bool] = None,
+       poll: Optional[ForumTopicPollT] = None,
+   ) -> CreateForumTopicResponse:
+        """
+        https://osu.ppy.sh/docs/index.html?javascript#create-topic
+        """
+        payload = {
+            "body": body,
+            "forum_id": forum_id,
+            "title": title,
+        }
+        if with_poll:
+            if poll is None:
+                raise ValueError("poll data must be provided if with_poll is True")
+
+            payload["with_poll"] = "on"
+            payload.update(self._processs_poll_data(poll))
+
+        headers = {
+            "Content-Type": "application/json"
+        }
+
+        return self._post(CreateForumTopicResponse, "/forums/topics", data=payload, headers=headers)
+
+    @request
+    def reply_to_forum_topic(self, topic_id: int, body: str) -> ForumPost:
+        """
+        https://osu.ppy.sh/docs/index.html?javascript#reply-topic
+        """
+        payload = {"body": body}
+        return self._post(ForumPost, f"/forums/topics/{topic_id}/reply", data=payload)
+
+    @request
+    def edit_forum_topic(self, topic_id: int, title: str) -> ForumTopic:
+        """
+        https://osu.ppy.sh/docs/index.html?javascript#edit-topic
+        """
+        payload = {"forum_topic[topic_title]": title}
+        return self._patch(ForumTopic, f"/forums/topics/{topic_id}", data=payload)
+
+    @request
+    def edit_forum_post(self, post_id: int, body: str) -> ForumPost:
+        """
+        https://osu.ppy.sh/docs/index.html?javascript#edit-post
+        """
+        payload = {"body": body}
+        return self._patch(ForumPost, f"/forums/posts/{post_id}", data=payload)
+
+    @staticmethod
+    def _processs_poll_data(poll):
+        if isinstance(poll, dict):
+            poll = ForumTopicPoll(**poll)
+
+        if poll.options and not isinstance(poll.options, str):
+            poll.options = "\n".join(poll.options)
+
+        processed_poll = {
+            f"forum_topic_poll[{attr}]": getattr(poll, attr)
+            for attr in [
+                "options", "title", "hide_results", "length_days", "max_options"
+            ] if getattr(poll, attr) is not None
+        }
+
+        if poll.vote_change:
+            processed_poll["forum_topic_poll[vote_change]"] = "on"
+
+        return processed_poll
 
     @request
     def forum_topic(self,
