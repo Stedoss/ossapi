@@ -441,11 +441,10 @@ class ForumTopicPoll(Model):
 
     # optional fields
     # ---------------
-
-    hide_results: Optional[str] = None
-    length_days: Optional[int] = None
-    max_options: Optional[int] = None
-    vote_change: Optional[bool] = None
+    hide_results: Optional[str]
+    length_days: Optional[int]
+    max_options: Optional[int]
+    vote_change: Optional[bool]
 
 
 class ForumTopicSearch(Model):

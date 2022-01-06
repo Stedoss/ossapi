@@ -27,8 +27,8 @@ from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore,
     ChangelogListing, MultiplayerScores, MultiplayerScoresCursor,
     BeatmapsetDiscussionVotes, CreatePMResponse, BeatmapsetDiscussions,
     UserCompact, NewsListing, NewsPost, SeasonalBackgrounds, BeatmapsetCompact,
-    CreatePMResponse, BeatmapsetDiscussionListing, CreateForumTopicResponse,
-    ForumTopicPoll, ForumPost, ForumTopic)
+    CreatePMResponse, CreateForumTopicResponse, ForumTopicPoll, ForumPost,
+    ForumTopic)
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
     BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
@@ -827,37 +827,6 @@ class OssapiV2:
             "with_deleted": with_deleted}
         return self._get(BeatmapsetDiscussionVotes,
             "/beatmapsets/discussions/votes", params)
-
-    @request
-    def beatmapset_discussion_listing(self,
-        beatmapset_id: Optional[str] = None,
-        beatmap_id: Optional[str] = None,
-        beatmapset_status: Optional[BeatmapsetStatus] = None,
-        limit: Optional[int] = None,
-        message_types: Optional[List[MessageTypeT]] = None,
-        only_unresolved: Optional[bool] = None,
-        page: Optional[int] = None,
-        sort: Optional[BeatmapDiscussionPostSortT] = None,
-        user: Optional[str] = None,
-        with_deleted: Optional[str] = None,
-    ) -> BeatmapsetDiscussionListing:
-        """
-        https://osu.ppy.sh/docs/index.html#get-beatmapset-discussions
-        """
-        params = {
-            "beatmapset_id": beatmapset_id,
-            "beatmap_id": beatmap_id,
-            "beatmapset_status": beatmapset_status,
-            "limit": limit,
-            "message_types": message_types,
-            "only_unresolved": only_unresolved,
-            "page": page,
-            "sort": sort,
-            "user": user,
-            "with_deleted": with_deleted,
-        }
-        return self._get(BeatmapsetDiscussionListing,
-            "/beatmapsets/discussions", params)
 
     @request(Scope.PUBLIC)
     def beatmapset_discussions(self,
