@@ -70,12 +70,6 @@ class TestComment(TestCase):
     def test_deserialize(self):
         api.comment(comment_id=1)
 
-class TestDownloadScore(TestCase):
-    def test_deserialize(self):
-        # api instance is using client credentials which doesn't have access to
-        # downloading replays
-        self.assertRaises(AccessDeniedError,
-            lambda: api.download_score(mode="osu", score_id=2797309065))
 
 class TestSearchBeatmaps(TestCase):
     def test_deserialize(self):
@@ -91,12 +85,6 @@ class TestUser(TestCase):
         api.user("tybug2", key="username")
 
         self.assertRaises(Exception, lambda: api.user("tybug2", key="id"))
-
-class TestMe(TestCase):
-    def test_deserialize(self):
-        # requires an authorization code api for the identify scope, client
-        # credentials can only request the public scope
-        self.assertRaises(InsufficientScopeError, api.get_me)
 
 class TestWikiPage(TestCase):
     def test_deserialize(self):
@@ -150,6 +138,26 @@ class TestCreateNewPM(TestCase):
         api_full.send_pm(2070907, "Unit test from ossapi "
             "(https://github.com/circleguard/ossapi/), please ignore")
 
+class TestDownloadScore(TestCase):
+    def test_access_denied(self):
+        # make sure client credentials api (`api`) can't access this endpoint
+        self.assertRaises(AccessDeniedError,
+            lambda: api.download_score(mode="osu", score_id=2797309065))
+
+    def test_deserialize(self):
+        # but the authorization code api (`api_full`) can
+        api_full.download_score(mode="osu", score_id=2797309065)
+
+
+class TestMe(TestCase):
+    def test_insufficient_scope(self):
+        # client credentials api can't request `Scope.IDENTIFY` and so can't
+        # access /me
+        self.assertRaises(InsufficientScopeError, api.get_me)
+
+    def test_deserialize(self):
+        # but the authorization code api can
+        api_full.get_me()
 
 
 # ==================
