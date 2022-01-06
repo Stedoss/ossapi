@@ -49,7 +49,7 @@ __all__ = [
     "BeatmapsetEventType", "CommentableType", "CommentSort", "ForumTopicSort",
     "SearchMode", "MultiplayerScoresSort", "BeatmapsetDiscussionVote",
     "BeatmapsetDiscussionVoteSort", "BeatmapsetStatus", "MessageType",
-    "NewsPostKey"
+    "NewsPostKey",
     # OssapiV2 exceptions
     "AccessDeniedError", "TokenExpiredError", "InsufficientScopeError",
     # misc
