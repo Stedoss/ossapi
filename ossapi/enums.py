@@ -289,6 +289,10 @@ class BeatmapsetDiscussionVoteSort(EnumModel):
     NEW = "id_desc"
     OLD = "id_asc"
 
+class NewsPostKey(EnumModel):
+    ID = "id"
+    QUERY = "query"
+
 # =================
 # Documented Models
 # =================

@@ -27,13 +27,12 @@ from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore,
     ChangelogListing, MultiplayerScores, MultiplayerScoresCursor,
     BeatmapsetDiscussionVotes, CreatePMResponse, BeatmapsetDiscussions,
     UserCompact, NewsListing, NewsPost, SeasonalBackgrounds, BeatmapsetCompact,
-    CreatePMResponse, CreateForumTopicResponse, ForumTopicPoll, ForumPost,
-    ForumTopic)
+    CreateForumTopicResponse, ForumTopicPoll, ForumPost, ForumTopic)
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
     BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
     SearchMode, MultiplayerScoresSort, BeatmapsetDiscussionVote,
-    BeatmapsetDiscussionVoteSort, BeatmapsetStatus, MessageType)
+    BeatmapsetDiscussionVoteSort, BeatmapsetStatus, MessageType, NewsPostKey)
 from ossapi.utils import (is_compatible_type, is_primitive_type, is_optional,
     is_base_model_type, is_model_type, is_high_model_type, Field)
 from ossapi.mod import Mod
@@ -66,6 +65,7 @@ BeatmapsetDiscussionVoteT = Union[BeatmapsetDiscussionVote, int]
 BeatmapsetDiscussionVoteSortT = Union[BeatmapsetDiscussionVoteSort, str]
 MessageTypeT = Union[MessageType, str]
 BeatmapsetStatusT = Union[BeatmapsetStatus, str]
+NewsPostKeyT = Union[NewsPostKey, str]
 
 BeatmapIdT = Union[int, BeatmapCompact]
 UserIdT = Union[int, UserCompact]
@@ -894,7 +894,7 @@ class OssapiV2:
     # -----
 
     @request(Scope.CHAT_WRITE)
-    def create_pm(self,
+    def send_pm(self,
         user_id: UserIdT,
         message: str,
         is_action: Optional[bool] = False
@@ -947,7 +947,7 @@ class OssapiV2:
     # -------
 
     @request
-    def create_forum_topic(self,
+    def forum_create_topic(self,
        body: str,
        forum_id: int,
        title: str,
@@ -976,7 +976,7 @@ class OssapiV2:
         return self._post(CreateForumTopicResponse, "/forums/topics", data=payload, headers=headers)
 
     @request
-    def reply_to_forum_topic(self, topic_id: int, body: str) -> ForumPost:
+    def forum_reply(self, topic_id: int, body: str) -> ForumPost:
         """
         https://osu.ppy.sh/docs/index.html?javascript#reply-topic
         """
@@ -984,7 +984,7 @@ class OssapiV2:
         return self._post(ForumPost, f"/forums/topics/{topic_id}/reply", data=payload)
 
     @request
-    def edit_forum_topic(self, topic_id: int, title: str) -> ForumTopic:
+    def forum_edit_topic(self, topic_id: int, title: str) -> ForumTopic:
         """
         https://osu.ppy.sh/docs/index.html?javascript#edit-topic
         """
@@ -992,7 +992,7 @@ class OssapiV2:
         return self._patch(ForumTopic, f"/forums/topics/{topic_id}", data=payload)
 
     @request
-    def edit_forum_post(self, post_id: int, body: str) -> ForumPost:
+    def forum_edit_post(self, post_id: int, body: str) -> ForumPost:
         """
         https://osu.ppy.sh/docs/index.html?javascript#edit-post
         """
@@ -1087,7 +1087,7 @@ class OssapiV2:
     @request(scope=None)
     def news_post(self,
         news: str,
-        key: Optional[str] = None
+        key: Optional[NewsPostKeyT] = None
     ) -> NewsPost:
         """
         https://osu.ppy.sh/docs/index.html#get-news-post

@@ -1,13 +1,11 @@
 import unittest
 from datetime import datetime
-from pathlib import Path
 from unittest import TestCase
 
 from ossapi import (RankingType, BeatmapsetEventType, AccessDeniedError,
-    InsufficientScopeError)
+    InsufficientScopeError, NewsPostKey)
 
-from tests import (api, client_id, client_secret, DEV_HOST, dev_client_secret,
-    dev_client_id)
+from tests import api, api_full, api_dev
 
 class TestBeatmapsetDiscussionPosts(TestCase):
     def test_deserialize(self):
@@ -129,38 +127,45 @@ class TestBeatmapsetDiscussions(TestCase):
     def test_deserialize(self):
         api.beatmapset_discussions()
 
-class TestNewsListing(TestCase):
+class TestNewsPost(TestCase):
     def test_deserialize(self):
-        # Target ID of 2070907 is Tillerino
-        self.api = OssapiV2(
-            client_id, client_secret, redirect_uri="http://localhost:9409/",
-            scopes=["chat.write"], strict=True,
-            token_file_override=(Path(__file__).parent / "authorization_code_TestCreateNewPM.pickle")
-        )
-        self.api.create_pm(user_id=2070907, message="Integration test please ignore")
+        api.news_post(1025, key=NewsPostKey.ID)
 
-class TestForumWriteMethods(TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.api = OssapiV2(
-            dev_client_id, dev_client_secret, redirect_uri="http://localhost:9409/",
-            scopes=["forum.write"], strict=True, osu_host=DEV_HOST,
-            token_file_override=(Path(__file__).parent / "authorization_code_TestForumWriteMethods.pickle")
-        )
+class TestSeasonalBackgrounds(TestCase):
+    def test_deserialize(self):
+        api.seasonal_backgrounds()
 
-    def test_create_topic(self):
+class TestFriends(TestCase):
+    def test_deserialize(self):
+        api.friends()
+
+
+
+# ===================
+# api_full test cases
+# ===================
+
+class TestCreateNewPM(TestCase):
+    def test_deserialize(self):
+        # tillerino
+        api_full.send_pm(2070907, "Unit test from ossapi "
+            "(https://github.com/circleguard/ossapi/), please ignore")
+
+
+
+# ==================
+# api_dev test cases
+# ==================
+
+class TestForumCreateTopic(TestCase):
+    def test_create(self):
         try:
-            self.api.create_forum_topic(
-                body="Integration test please ignore",
-                forum_id=74,
-                title="Integration test please ignore",
-            )
+            api_dev.forum_create_topic("Integration test please ignore",
+                74, "Integration test please ignore")
         except ValueError as ex:
             if "Editing beatmap metadata post is not allowed." in str(ex):
                 self.fail("Encountered unexpected error message")
 
-    # TODO: Figure out why polls aren't working :)
-    @unittest.skip
     def test_create_with_poll(self):
         poll = {
             "options": ["Option 1", "Option 2"],
@@ -169,55 +174,25 @@ class TestForumWriteMethods(TestCase):
             "vote_change": True,
             "max_options": 1,
         }
-        self.api.create_forum_topic(
-            **{
-                "body": "Integration test with poll - please ignore" + str(datetime.now()),
-                "forum_id": 78,
-                "title": "Integration test with poll - please ignore" + str(datetime.now()),
-                "with_poll": True,
-                "poll": poll,
-            }
-        )
+        api_dev.forum_create_topic(body="Integration test with poll - please ignore" + str(datetime.now()),
+            forum_id=78,
+            title="Integration test with poll - please ignore" + str(datetime.now()),
+            with_poll=True, poll=poll)
 
-    def test_reply_topic(self):
+class TestForumReply(TestCase):
+    def test_reply(self):
         try:
-            self.api.reply_to_forum_topic(
-                topic_id=156,
-                body="Integration test reply please ignore " + str(datetime.now()),
-            )
+            api_dev.forum_reply(156, "unit test from ossapi "
+                "(https://github.com/circleguard/ossapi/), please ignore")
         except ValueError as ex:
             if "Please edit your last post instead of posting again." not in str(ex):
                 self.fail("Encountered unexpected error message")
 
-    def test_edit_topic(self):
-        self.api.edit_forum_topic(
-            topic_id=156,
-            title="Title last updated: " + str(datetime.now()),
-        )
+class TestForumEditTopic(TestCase):
+    def test_edit(self):
+        api_dev.forum_edit_topic(156, f"Title last updated at {datetime.now()}")
 
-    def test_edit_post(self):
-        self.api.edit_forum_post(
-            body="This comment was last edited at: " + str(datetime.now()),
-            post_id=306,
-        )
-        api.news_listing(year=2021)
-
-class TestNewsPost(TestCase):
-    def test_deserialize(self):
-        api.news_post(1025, key="id")
-
-class TestSeasonalBackgrounds(TestCase):
-    def test_deserialize(self):
-        api.seasonal_backgrounds()
-
-
-# TODO requires friends.read scope
-# class TestFriends(TestCase):
-#     def test_deserialize(self):
-#         api.friends()
-
-# TODO requires chat.write scope
-# class TestCreateNewPM(TestCase):
-#     def test_deserialize(self):
-#         api.create_pm(2070907, "Unit test from ossapi "
-#             "(https://github.com/circleguard/ossapi/), please ignore")
+class TestForumEditPost(TestCase):
+    def test_edit(self):
+        api_dev.forum_edit_post(306,
+            f"This comment was last edited at {datetime.now()}")
