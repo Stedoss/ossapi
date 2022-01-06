@@ -59,9 +59,12 @@ api_v2_dev = setup_api_v2_dev()
 class TestCaseAuthorizationCode(TestCase):
     def setUp(self):
         if not api_v2_full:
-            self.skipTest("TODO")
+            self.skipTest("Running in headless mode because "
+                "OSSAPI_TEST_HEADLESS was set; skipping authorization code "
+                "test.")
 
 class TestCaseDevServer(TestCase):
     def setUp(self):
         if not api_v2_dev:
-            self.skipTest("TODO")
+            self.skipTest("Dev api not set up; either OSSAPI_TEST_HEADLESS was "
+                "set, or OSSAPI_TEST_RUN_DEV was not set.")
