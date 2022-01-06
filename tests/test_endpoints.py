@@ -4,43 +4,44 @@ from unittest import TestCase
 from ossapi import (RankingType, BeatmapsetEventType, AccessDeniedError,
     InsufficientScopeError, NewsPostKey)
 
-from tests import api, api_full, api_dev
+from tests import (api_v2, api_v2_full, api_v2_dev, TestCaseAuthorizationCode,
+    TestCaseDevServer)
 
 class TestBeatmapsetDiscussionPosts(TestCase):
     def test_deserialize(self):
-        api.beatmapset_discussion_posts()
+        api_v2.beatmapset_discussion_posts()
 
 class TestUserRecentActivity(TestCase):
     def test_deserialize(self):
-        api.user_recent_activity(12092800)
+        api_v2.user_recent_activity(12092800)
 
 class TestSpotlights(TestCase):
     def test_deserialize(self):
-        api.spotlights()
+        api_v2.spotlights()
 
 class TestUserBeatmaps(TestCase):
     def test_deserialize(self):
-        api.user_beatmaps(user_id=12092800, type_="most_played")
+        api_v2.user_beatmaps(user_id=12092800, type_="most_played")
 
 class TestUserKudosu(TestCase):
     def test_deserialize(self):
-        api.user_kudosu(user_id=3178418)
+        api_v2.user_kudosu(user_id=3178418)
 
 class TestBeatmapScores(TestCase):
     def test_deserialize(self):
-        api.beatmap_scores(beatmap_id=1981090)
+        api_v2.beatmap_scores(beatmap_id=1981090)
 
 class TestBeatmap(TestCase):
     def test_deserialize(self):
-        api.beatmap(beatmap_id=221777)
+        api_v2.beatmap(beatmap_id=221777)
 
 class TestBeatmapset(TestCase):
     def test_deserialize(self):
-        api.beatmapset(beatmap_id=3207950)
+        api_v2.beatmapset(beatmap_id=3207950)
 
 class TestBeatmapsetEvents(TestCase):
     def test_deserialize(self):
-        api.beatmapset_events()
+        api_v2.beatmapset_events()
 
     def test_all_types(self):
         # beatmapset_events is a really complicated endpoint in terms of return
@@ -48,126 +49,128 @@ class TestBeatmapsetEvents(TestCase):
         # and the osu! api isn't doing anything wrong by returning something
         # that doesn't match their documentation.
         for event_type in BeatmapsetEventType:
-            api.beatmapset_events(types=[event_type])
+            api_v2.beatmapset_events(types=[event_type])
 
 class TestRanking(TestCase):
     def test_deserialize(self):
-        api.ranking("osu", RankingType.PERFORMANCE, country="US")
+        api_v2.ranking("osu", RankingType.PERFORMANCE, country="US")
 
 class TestUserScores(TestCase):
     def test_deserialize(self):
-        api.user_scores(12092800, "best")
+        api_v2.user_scores(12092800, "best")
 
 class TestBeatmapUserScore(TestCase):
     def test_deserialize(self):
-        api.beatmap_user_score(beatmap_id=221777, user_id=2757689, mode="osu")
+        api_v2.beatmap_user_score(beatmap_id=221777, user_id=2757689, mode="osu")
 
 class TestSearch(TestCase):
     def test_deserialize(self):
-        api.search(query="peppy")
+        api_v2.search(query="peppy")
 
 class TestComment(TestCase):
     def test_deserialize(self):
-        api.comment(comment_id=1)
+        api_v2.comment(comment_id=1)
 
 class TestSearchBeatmaps(TestCase):
     def test_deserialize(self):
-        api.search_beatmapsets(query="the big black")
+        api_v2.search_beatmapsets(query="the big black")
 
 class TestUser(TestCase):
     def test_deserialize(self):
-        api.user(12092800)
+        api_v2.user(12092800)
 
     def test_key(self):
         # make sure it automatically falls back to username if not specified
-        api.user("tybug2")
-        api.user("tybug2", key="username")
+        api_v2.user("tybug2")
+        api_v2.user("tybug2", key="username")
 
-        self.assertRaises(Exception, lambda: api.user("tybug2", key="id"))
+        self.assertRaises(Exception, lambda: api_v2.user("tybug2", key="id"))
 
 class TestWikiPage(TestCase):
     def test_deserialize(self):
-        api.wiki_page("en", "Welcome")
+        api_v2.wiki_page("en", "Welcome")
 
 class TestChangelogBuild(TestCase):
     def test_deserialize(self):
-        api.changelog_build("stable40", "20210520.2")
+        api_v2.changelog_build("stable40", "20210520.2")
 
 class TestChangelogListing(TestCase):
     def test_deserialize(self):
-        api.changelog_listing()
+        api_v2.changelog_listing()
 
 class TestChangelogLookup(TestCase):
     def test_deserialize(self):
-        api.changelog_lookup("lazer")
+        api_v2.changelog_lookup("lazer")
 
 class TestForumTopic(TestCase):
     def test_deserialize(self):
-        api.forum_topic(141240)
+        api_v2.forum_topic(141240)
 
 class TestBeatmapsetDiscussionVotes(TestCase):
     def test_deserialize(self):
-        api.beatmapset_discussion_votes().votes[0].score
+        api_v2.beatmapset_discussion_votes().votes[0].score
 
 class TestBeatmapsetDiscussions(TestCase):
     def test_deserialize(self):
-        api.beatmapset_discussions()
+        api_v2.beatmapset_discussions()
 
 class TestNewsPost(TestCase):
     def test_deserialize(self):
-        api.news_post(1025, key=NewsPostKey.ID)
+        api_v2.news_post(1025, key=NewsPostKey.ID)
 
 class TestSeasonalBackgrounds(TestCase):
     def test_deserialize(self):
-        api.seasonal_backgrounds()
-
-class TestFriends(TestCase):
-    def test_deserialize(self):
-        api.friends()
+        api_v2.seasonal_backgrounds()
 
 
 
-# ===================
-# api_full test cases
-# ===================
+# ======================
+# api_v2_full test cases
+# ======================
 
-class TestCreateNewPM(TestCase):
+class TestCreateNewPM(TestCaseAuthorizationCode):
     def test_deserialize(self):
         # tillerino
-        api_full.send_pm(2070907, "Unit test from ossapi "
+        api_v2_full.send_pm(2070907, "Unit test from ossapi "
             "(https://github.com/circleguard/ossapi/), please ignore")
 
-class TestDownloadScore(TestCase):
+class TestDownloadScore(TestCaseAuthorizationCode):
     def test_access_denied(self):
         # make sure client credentials api (`api`) can't access this endpoint
         self.assertRaises(AccessDeniedError,
-            lambda: api.download_score(mode="osu", score_id=2797309065))
+            lambda: api_v2.download_score(mode="osu", score_id=2797309065))
 
     def test_deserialize(self):
-        # but the authorization code api (`api_full`) can
-        api_full.download_score(mode="osu", score_id=2797309065)
+        # but the authorization code api (`api_v2_full`) can
+        api_v2_full.download_score(mode="osu", score_id=2797309065)
 
 
-class TestMe(TestCase):
+class TestMe(TestCaseAuthorizationCode):
     def test_insufficient_scope(self):
         # client credentials api can't request `Scope.IDENTIFY` and so can't
         # access /me
-        self.assertRaises(InsufficientScopeError, api.get_me)
+        self.assertRaises(InsufficientScopeError, api_v2.get_me)
 
     def test_deserialize(self):
         # but the authorization code api can
-        api_full.get_me()
+        api_v2_full.get_me()
+
+class TestFriends(TestCaseAuthorizationCode):
+    def test_access_denied(self):
+        self.assertRaises(InsufficientScopeError, api_v2.friends)
+
+    def test_deserialize(self):
+        api_v2_full.friends()
 
 
+# =====================
+# api_v2_dev test cases
+# =====================
 
-# ==================
-# api_dev test cases
-# ==================
-
-class TestForumCreateTopic(TestCase):
+class TestForumCreateTopic(TestCaseDevServer):
     def test_create(self):
         try:
-            api_dev.forum_create_topic("Integration test please ignore",
+            api_v2_dev.forum_create_topic("Integration test please ignore",
                 74, "Integration test please ignore")
         except ValueError as ex:
             if "Editing beatmap metadata post is not allowed." in str(ex):
@@ -181,25 +184,25 @@ class TestForumCreateTopic(TestCase):
             "vote_change": True,
             "max_options": 1,
         }
-        api_dev.forum_create_topic(body="Integration test with poll - please ignore" + str(datetime.now()),
+        api_v2_dev.forum_create_topic(body="Integration test with poll - please ignore" + str(datetime.now()),
             forum_id=78,
             title="Integration test with poll - please ignore" + str(datetime.now()),
             with_poll=True, poll=poll)
 
-class TestForumReply(TestCase):
+class TestForumReply(TestCaseDevServer):
     def test_reply(self):
         try:
-            api_dev.forum_reply(156, "unit test from ossapi "
+            api_v2_dev.forum_reply(156, "unit test from ossapi "
                 "(https://github.com/circleguard/ossapi/), please ignore")
         except ValueError as ex:
             if "Please edit your last post instead of posting again." not in str(ex):
                 self.fail("Encountered unexpected error message")
 
-class TestForumEditTopic(TestCase):
+class TestForumEditTopic(TestCaseDevServer):
     def test_edit(self):
-        api_dev.forum_edit_topic(156, f"Title last updated at {datetime.now()}")
+        api_v2_dev.forum_edit_topic(156, f"Title last updated at {datetime.now()}")
 
-class TestForumEditPost(TestCase):
+class TestForumEditPost(TestCaseDevServer):
     def test_edit(self):
-        api_dev.forum_edit_post(306,
+        api_v2_dev.forum_edit_post(306,
             f"This comment was last edited at {datetime.now()}")

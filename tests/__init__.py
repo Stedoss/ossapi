@@ -1,24 +1,8 @@
+import os
+from unittest import TestCase
+
 from ossapi import OssapiV2, Ossapi, Grant, Scope
 
-import os
-
-client_id = os.environ.get("OSU_API_CLIENT_ID")
-client_secret = os.environ.get("OSU_API_CLIENT_SECRET")
-client_id_dev = os.environ.get("OSU_API_CLIENT_ID_DEV")
-client_secret_dev = os.environ.get("OSU_API_CLIENT_SECRET_DEV")
-key = os.environ.get("OSU_API_KEY")
-
-if not client_id:
-    client_id = input("Enter your api v2 client id: ")
-if not client_secret:
-    client_secret = input("Enter your api v2 client secret: ")
-if not client_id_dev:
-    client_id_dev = input("Enter your api v2 client id (dev server): ")
-if not client_secret_dev:
-    client_secret_dev = input("Enter your api v2 client secret (dev server): ")
-
-client_id = int(client_id)
-client_id_dev = int(client_id_dev)
 
 class DevOssapiV2(OssapiV2):
     TOKEN_URL = "https://dev.ppy.sh/oauth/token"
@@ -29,12 +13,55 @@ class DevOssapiV2(OssapiV2):
 all_scopes = [Scope.CHAT_WRITE, Scope.FORUM_WRITE, Scope.FRIENDS_READ,
     Scope.IDENTIFY, Scope.PUBLIC]
 
+headless = os.environ.get("OSSAPI_TEST_HEADLESS", False)
+def get_env(name):
+    val = os.environ.get(name)
+    if not val:
+        val = input(f"Enter a value for {name}: ")
+    return val
+
+def setup_api_v1():
+    key = get_env("OSU_API_KEY")
+    return Ossapi(key)
+
+def setup_api_v2():
+    client_id = int(get_env("OSU_API_CLIENT_ID"))
+    client_secret = get_env("OSU_API_CLIENT_SECRET")
+    api_v2 = OssapiV2(client_id, client_secret, strict=True,
+        grant=Grant.CLIENT_CREDENTIALS)
+
+    if headless:
+        api_v2_full = None
+    else:
+        redirect_uri = get_env("OSU_API_REDIRECT_URI")
+        api_v2_full = OssapiV2(client_id, client_secret, redirect_uri,
+            strict=True, grant=Grant.AUTHORIZATION_CODE, scopes=all_scopes)
+
+    return (api_v2, api_v2_full)
+
+def setup_api_v2_dev():
+
+    if headless or not get_env("OSSAPI_TEST_RUN_DEV"):
+        return None
+
+    client_id = int(get_env("OSU_API_CLIENT_ID_DEV"))
+    client_secret = get_env("OSU_API_CLIENT_SECRET_DEV")
+
+    redirect_uri = get_env("OSU_API_REDIRECT_URI_DEV")
+    return DevOssapiV2(client_id, client_secret, redirect_uri, strict=True,
+        grant=Grant.AUTHORIZATION_CODE, scopes=all_scopes)
+
+api_v1 = setup_api_v1()
+api_v2, api_v2_full = setup_api_v2()
+api_v2_dev = setup_api_v2_dev()
 
 
-api = OssapiV2(client_id, client_secret, strict=True,
-    grant=Grant.CLIENT_CREDENTIALS)
-api_full = OssapiV2(client_id, client_secret, strict=True,
-    grant=Grant.AUTHORIZATION_CODE, scopes=all_scopes)
-api_dev = DevOssapiV2(client_id_dev, client_secret_dev, strict=True,
-    grant=Grant.AUTHORIZATION_CODE, scopes=all_scopes)
-apiv1 = Ossapi(key)
+class TestCaseAuthorizationCode(TestCase):
+    def setUp(self):
+        if not api_v2_full:
+            self.skipTest("TODO")
+
+class TestCaseDevServer(TestCase):
+    def setUp(self):
+        if not api_v2_dev:
+            self.skipTest("TODO")

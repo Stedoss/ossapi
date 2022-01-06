@@ -946,7 +946,7 @@ class OssapiV2:
     # /forums
     # -------
 
-    @request
+    @request(Scope.FORUM_WRITE)
     def forum_create_topic(self,
        body: str,
        forum_id: int,
@@ -955,7 +955,7 @@ class OssapiV2:
        poll: Optional[ForumTopicPollT] = None,
    ) -> CreateForumTopicResponse:
         """
-        https://osu.ppy.sh/docs/index.html?javascript#create-topic
+        https://osu.ppy.sh/docs/index.html#create-topic
         """
         payload = {
             "body": body,
@@ -975,26 +975,26 @@ class OssapiV2:
 
         return self._post(CreateForumTopicResponse, "/forums/topics", data=payload, headers=headers)
 
-    @request
+    @request(Scope.FORUM_WRITE)
     def forum_reply(self, topic_id: int, body: str) -> ForumPost:
         """
-        https://osu.ppy.sh/docs/index.html?javascript#reply-topic
+        https://osu.ppy.sh/docs/index.html#reply-topic
         """
         payload = {"body": body}
         return self._post(ForumPost, f"/forums/topics/{topic_id}/reply", data=payload)
 
-    @request
+    @request(Scope.FORUM_WRITE)
     def forum_edit_topic(self, topic_id: int, title: str) -> ForumTopic:
         """
-        https://osu.ppy.sh/docs/index.html?javascript#edit-topic
+        https://osu.ppy.sh/docs/index.html#edit-topic
         """
         payload = {"forum_topic[topic_title]": title}
         return self._patch(ForumTopic, f"/forums/topics/{topic_id}", data=payload)
 
-    @request
+    @request(Scope.FORUM_WRITE)
     def forum_edit_post(self, post_id: int, body: str) -> ForumPost:
         """
-        https://osu.ppy.sh/docs/index.html?javascript#edit-post
+        https://osu.ppy.sh/docs/index.html#edit-post
         """
         payload = {"body": body}
         return self._patch(ForumPost, f"/forums/posts/{post_id}", data=payload)
@@ -1019,7 +1019,6 @@ class OssapiV2:
 
         return processed_poll
 
-    @request
     @request(Scope.PUBLIC)
     def forum_topic(self,
         topic_id: int,
