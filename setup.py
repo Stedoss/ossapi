@@ -15,7 +15,7 @@ with open("ossapi/version.py") as f:
         VERSION = match.group(1)
     else:
         raise RuntimeError("Unable to find version string in "
-            "circlevis/version.py")
+            "ossapi/version.py")
 
 setup(
     name="ossapi",
@@ -25,7 +25,7 @@ setup(
     long_description_content_type="text/markdown",
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License",
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Operating System :: OS Independent",
     ],
     keywords = ["osu!, wrapper, api, python"],
@@ -37,6 +37,8 @@ setup(
     packages=find_packages(),
     install_requires=[
         "requests",
-        "requests_oauthlib"
+        "requests_oauthlib",
+        "osrparse",
+        "typing_utils"
     ]
 )

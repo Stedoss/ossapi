@@ -1,43 +1,43 @@
-from time import sleep
-from typing import (get_type_hints, get_origin, get_args, Union, TypeVar,
-    Optional, List, _GenericAlias)
+from typing import Union, TypeVar, Optional, List, _GenericAlias
 import logging
 import webbrowser
 import socket
 import pickle
 from pathlib import Path
-from tempfile import NamedTemporaryFile
 from datetime import datetime
 from enum import Enum
 from urllib.parse import unquote
 import inspect
 import json
-from keyword import iskeyword
+import hashlib
+import functools
 
 from requests_oauthlib import OAuth2Session
-from oauthlib.oauth2 import BackendApplicationClient
+from oauthlib.oauth2 import (BackendApplicationClient, TokenExpiredError,
+    AccessDeniedError)
+from oauthlib.oauth2.rfc6749.errors import InsufficientScopeError
+import osrparse
+from typing_utils import issubtype, get_type_hints, get_origin, get_args
 
-from ossapi.models import (
-    Beatmap, BeatmapUserScore, ForumTopicAndPosts,
-    Search, CommentBundle, Cursor, Score, BeatmapSearchResult,
-    ModdingHistoryEventsBundle, User, Rankings, BeatmapScores, KudosuHistory,
-    Beatmapset, BeatmapPlaycount, Spotlight, Spotlights, WikiPage, _Event,
-    Event, BeatmapsetDiscussionPosts, Build, ChangelogListing,
-    MultiplayerScores, MultiplayerScoresCursor, BeatmapsetDiscussionVotes, CreatePMResponse,
-    BeatmapsetDiscussionListing, CreateForumTopicResponse, ForumTopicPoll, ForumPost, ForumTopic
-)
-from ossapi.mod import Mod
-from ossapi.enums import (
-    GameMode, ScoreType, RankingFilter, RankingType,
+from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore,
+    ForumTopicAndPosts, Search, CommentBundle, Cursor, Score,
+    BeatmapsetSearchResult, ModdingHistoryEventsBundle, User, Rankings,
+    BeatmapScores, KudosuHistory, Beatmapset, BeatmapPlaycount, Spotlight,
+    Spotlights, WikiPage, _Event, Event, BeatmapsetDiscussionPosts, Build,
+    ChangelogListing, MultiplayerScores, MultiplayerScoresCursor,
+    BeatmapsetDiscussionVotes, CreatePMResponse, BeatmapsetDiscussions,
+    UserCompact, NewsListing, NewsPost, SeasonalBackgrounds, BeatmapsetCompact,
+    CreatePMResponse, BeatmapsetDiscussionListing, CreateForumTopicResponse,
+    ForumTopicPoll, ForumPost, ForumTopic)
+from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
     BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
     SearchMode, MultiplayerScoresSort, BeatmapsetDiscussionVote,
-    BeatmapsetDiscussionVoteSort, BeatmapsetStatus, MessageType
-)
-from ossapi.utils import (
-    is_compatible_type, is_primitive_type, is_optional,
-    is_base_model_type, is_model_type, is_high_model_type
-)
+    BeatmapsetDiscussionVoteSort, BeatmapsetStatus, MessageType)
+from ossapi.utils import (is_compatible_type, is_primitive_type, is_optional,
+    is_base_model_type, is_model_type, is_high_model_type, Field)
+from ossapi.mod import Mod
+from ossapi.replay import Replay
 
 # our ``request`` function below relies on the ordering of these types. The
 # base type must come first, with any auxiliary types that the base type accepts
@@ -65,102 +65,328 @@ MultiplayerScoresSortT = Union[MultiplayerScoresSort, str]
 BeatmapsetDiscussionVoteT = Union[BeatmapsetDiscussionVote, int]
 BeatmapsetDiscussionVoteSortT = Union[BeatmapsetDiscussionVoteSort, str]
 MessageTypeT = Union[MessageType, str]
+BeatmapsetStatusT = Union[BeatmapsetStatus, str]
 
-def request(function):
+BeatmapIdT = Union[int, BeatmapCompact]
+UserIdT = Union[int, UserCompact]
+BeatmapsetIdT = Union[int, BeatmapCompact, BeatmapsetCompact]
+
+def request(scope, *, requires_login=False):
     """
-    Automatically instantiates parameters with their type hint if the type hint
-    is a union of a base class. This means, for instance, that a function which
-    accepts a ``ModT`` will have the value of that parameter automatically
-    converted to a ``Mod``, even if the user passes a `str`.
+    Handles various validation and preparation tasks for any endpoint request
+    method.
+
+    This method does the following things:
+    * makes sure the client has the requuired scope to access the endpoint in
+      question
+    * makes sure the client has the right grant to access the endpoint in
+      question (the client credentials grant cannot access endpoints which
+      require the user to be "logged in", such as downloading a replay)
+    * converts parameters to an instance of a base model if the parameter is
+      annotated as being a base model. This means, for instance, that a function
+      with an argument annotated as ``ModT`` (``Union[Mod, str, int, list]``)
+      will have the value of that parameter automatically converted to a
+      ``Mod``, even if the user passes a `str`.
+    * converts arguments of type ``BeatmapIdT`` or ``UserIdT`` into a beatmap or
+      user id, if the passed argument was a ``BeatmapCompact`` or
+      ``UserCompact`` respectively.
+
+    Parameters
+    ----------
+    scope: Scope
+        The scope required for this endpoint. If ``None``, no scope is required
+        and any authenticated cliient can access it.
+    requires_login: bool
+        Whether this endpoint requires a "logged-in" client to retrieve it.
+        Currently, only authtorization code grants can access these endpoints.
     """
-    instantiate = {}
-    for name, type_ in function.__annotations__.items():
-        origin = get_origin(type_)
-        args = get_args(type_)
-        if origin is Union and is_base_model_type(args[0]):
-            instantiate[name] = args[0]
+    def decorator(function):
+        instantiate = {}
+        for name, type_ in function.__annotations__.items():
+            origin = get_origin(type_)
+            args = get_args(type_)
+            if origin is Union and is_base_model_type(args[0]):
+                instantiate[name] = args[0]
 
-    arg_names = list(inspect.signature(function).parameters)
+        arg_names = list(inspect.signature(function).parameters)
 
-    def wrapper(*args, **kwargs):
-        # we may need to edit this later so convert from tuple
-        args = list(args)
+        @functools.wraps(function)
+        def wrapper(*args, **kwargs):
+            self = args[0]
+            if scope is not None and scope not in self.scopes:
+                raise InsufficientScopeError(f"A scope of {scope} is required "
+                    "for this endpoint. Your client's current scopes are "
+                    f"{self.scopes}")
 
-        # args and kwargs are handled separately, but in a similar fashion.
-        # The difference is that for ``args`` we need to know the name of the
-        # argument so we can look up its type hint and see if it's a parameter
-        # we need to convert.
-        for i, (arg, arg_name) in enumerate(zip(args, arg_names)):
-            if arg_name in instantiate:
-                type_ = instantiate[arg_name]
-                args[i] = type_(arg)
+            if requires_login and self.grant is Grant.CLIENT_CREDENTIALS:
+                raise AccessDeniedError("To access this endpoint you must be "
+                    "authorized using the authorization code grant. You are "
+                    "currently authorized with the client credentials grant")
 
-        for arg in kwargs:
-            if arg in instantiate:
-                type_ = instantiate[arg]
-                kwargs[arg] = type_(kwargs[arg])
+            # we may need to edit this later so convert from tuple
+            args = list(args)
 
-        return function(*args, **kwargs)
-    return wrapper
+            def id_from_id_type(arg_name, arg):
+                annotations = function.__annotations__
+                if arg_name not in annotations:
+                    return None
+                arg_type = annotations[arg_name]
+
+                if issubtype(BeatmapsetIdT, arg_type):
+                    if isinstance(arg, BeatmapCompact):
+                        return arg.beatmapset_id
+                    if isinstance(arg, BeatmapsetCompact):
+                        return arg.id
+                elif issubtype(BeatmapIdT, arg_type):
+                    if isinstance(arg, BeatmapCompact):
+                        return arg.id
+                elif issubtype(UserIdT, arg_type):
+                    if isinstance(arg, UserCompact):
+                        return arg.id
+
+            # args and kwargs are handled separately, but in a similar fashion.
+            # The difference is that for ``args`` we need to know the name of
+            # the argument so we can look up its type hint and see if it's a
+            # parameter we need to convert.
+
+            for i, (arg_name, arg) in enumerate(zip(arg_names, args)):
+                if arg_name in instantiate:
+                    type_ = instantiate[arg_name]
+                    args[i] = type_(arg)
+                id_ = id_from_id_type(arg_name, arg)
+                if id_:
+                    args[i] = id_
+
+            for arg_name, arg in kwargs.items():
+                if arg_name in instantiate:
+                    type_ = instantiate[arg_name]
+                    kwargs[arg_name] = type_(arg)
+                id_ = id_from_id_type(arg_name, arg)
+                if id_:
+                    kwargs[arg_name] = id_
+
+            return function(*args, **kwargs)
+        return wrapper
+    return decorator
+
+
+class Grant(Enum):
+    CLIENT_CREDENTIALS = "client"
+    AUTHORIZATION_CODE = "authorization"
+
+class Scope(Enum):
+    CHAT_WRITE = "chat.write"
+    DELEGATE = "delegate"
+    FORUM_WRITE = "forum.write"
+    FRIENDS_READ = "friends.read"
+    IDENTIFY = "identify"
+    PUBLIC = "public"
 
 
 class OssapiV2:
-    AUTHORIZATION_TOKEN_FILE = (Path(__file__).parent /
-        "authorization_code.pickle")
+    """
+    A wrapper around osu api v2.
 
-    def __init__(self, client_id, client_secret, redirect_uri=None,
-            scopes=None, strict=False, osu_host="https://osu.ppy.sh", token_file_override=None):
-        scopes = scopes if scopes is not None else ["public"]
-        self.TOKEN_URL = f"{osu_host}/oauth/token"
-        self.AUTH_CODE_URL = f"{osu_host}/oauth/authorize"
-        self.BASE_URL = f"{osu_host}/api/v2"
+    Parameters
+    ----------
+    client_id: int
+        The id of the client to authenticate with.
+    client_secret: str
+        The secret of the client to authenticate with.
+    redirect_uri: str
+        The redirect uri for the client. Must be passed if using the
+        authorization code grant. This must exactly match the redirect uri on
+        the client's settings page. Additionally, in order for ossapi to receive
+        authentication from this redirect uri, it must be a port on localhost.
+        So "http://localhost:3914/", "http://localhost:727/", etc are all valid
+        redirect uris. You can change your client's redirect uri from its
+        settings page.
+    scopes: List[str]
+        What scopes to request when authenticating.
+    grant: Grant or str
+        Which oauth grant (aka flow) to use when authenticating with the api.
+        Currently the api offers the client credentials (pass "client" for this
+        parameter) and authorization code (pass "authorization" for this
+        parameter) grants.
+        |br|
+        The authorization code grant requires user interaction to authenticate
+        the first time, but grants full access to the api. In contrast, the
+        client credentials grant does not require user interaction to
+        authenticate, but only grants guest user access to the api. This means
+        you will not be able to do things like download replays on the client
+        credentials grant.
+        |br|
+        If not passed, the grant will be automatically inferred as follows: if
+        ``redirect_uri`` is passed, use the authorization code grant. If
+        ``redirect_uri`` is not passed, use the client credentials grant.
+    strict: bool
+        Whether to run in "strict" mode. In strict mode, ossapi will raise an
+        exception if the api returns an attribute in a response which we didn't
+        expect to be there. This is useful for developers which want to catch
+        new attributes as they get added. More checks may be added in the future
+        for things which developers may want to be aware of, but normal users do
+        not want to have an exception raised for.
+        |br|
+        If you are not a developer, you are very unlikely to want to use this
+        parameter.
+    token_directory: str
+        If passed, the given directory will be used to store and retrieve token
+        files instead of locally wherever ossapi is installed. Useful if you
+        want more control over token files.
+    token_key: str
+        If passed, the given key will be used to name the token file instead of
+        an automatically generated one. Note that if you pass this, you are
+        taking responsibility for making sure it is unique / unused, and also
+        for remembering the key you passed if you wish to eg remove the token in
+        the future, which requires the key.
+    """
+    TOKEN_URL = "https://osu.ppy.sh/oauth/token"
+    AUTH_CODE_URL = "https://osu.ppy.sh/oauth/authorize"
+    BASE_URL = "https://osu.ppy.sh/api/v2"
 
+    def __init__(self,
+        client_id: int,
+        client_secret: str,
+        redirect_uri: Optional[str] = None,
+        scopes: List[Union[str, Scope]] = [Scope.PUBLIC],
+        *,
+        grant: Optional[Union[Grant, str]] = None,
+        strict: bool = False,
+        token_directory: Optional[str] = None,
+        token_key: Optional[str] = None,
+    ):
+        if not grant:
+            grant = (Grant.AUTHORIZATION_CODE if redirect_uri else
+                Grant.CLIENT_CREDENTIALS)
+        grant = Grant(grant)
+
+        self.grant = grant
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self.redirect_uri = redirect_uri
+        self.scopes = [Scope(scope) for scope in scopes]
         self.strict = strict
+
         self.log = logging.getLogger(__name__)
+        self.token_key = token_key or self.gen_token_key(self.grant,
+            self.client_id, self.client_secret, self.scopes)
+        self.token_directory = (
+            Path(token_directory) if token_directory else Path(__file__).parent
+        )
+        self.token_file = self.token_directory / f"{self.token_key}.pickle"
 
-        if token_file_override is not None:
-            self.AUTHORIZATION_TOKEN_FILE = token_file_override
-
-        self.session = self.authenticate(client_id, client_secret, redirect_uri, scopes)
-
-    def authenticate(self, client_id, client_secret, redirect_uri, scopes):
-        # if redirect_uri is not passed, assume the user wanted to use the
-        # client credentials grant.
-        if not redirect_uri:
-            if scopes != ["public"]:
+        if self.grant is Grant.CLIENT_CREDENTIALS:
+            if self.scopes != [Scope.PUBLIC]:
                 raise ValueError(f"`scopes` must be ['public'] if the "
-                    f"client credentials grant is used. Got {scopes}")
-            return self._client_credentials_grant(client_id, client_secret)
+                    f"client credentials grant is used. Got {self.scopes}")
 
-        # used saved session if it exists
-        if self.AUTHORIZATION_TOKEN_FILE.is_file():
-            with open(self.AUTHORIZATION_TOKEN_FILE, "rb") as f:
-                token = pickle.load(f)
-            return self._auth_oauth_session(client_id, client_secret, scopes,
-                token=token)
+        if self.grant is Grant.AUTHORIZATION_CODE and not self.redirect_uri:
+            raise ValueError("`redirect_uri` must be passed if the "
+                "authorization code grant is used.")
 
-        return self._authorization_code_grant(client_id, client_secret,
-            redirect_uri, scopes)
+        self.session = self.authenticate()
 
     @staticmethod
-    def clear_authentication():
-        if OssapiV2.AUTHORIZATION_TOKEN_FILE.is_file():
-            OssapiV2.AUTHORIZATION_TOKEN_FILE.unlink()
+    def gen_token_key(grant, client_id, client_secret, scopes):
+        """
+        The unique key / hash for the given set of parameters. This is intended
+        to provide a way to allow multiple OssapiV2's to live at the same time,
+        by eg saving their tokens to different files based on their key.
 
-    def _client_credentials_grant(self, client_id, client_secret):
+        This function is also deterministic, to eg allow tokens to be reused if
+        OssapiV2 is instantiated twice with the same parameters. This avoids the
+        need to reauthenticate unless absolutely necessary.
+        """
+        grant = Grant(grant)
+        scopes = [Scope(scope) for scope in scopes]
+        m = hashlib.sha256()
+        m.update(grant.value.encode("utf-8"))
+        m.update(str(client_id).encode("utf-8"))
+        m.update(client_secret.encode("utf-8"))
+        for scope in scopes:
+            m.update(scope.value.encode("utf-8"))
+        return m.hexdigest()
+
+    @staticmethod
+    def remove_token(key, token_directory=None):
+        """
+        Removes the token file associated with the given key. If
+        ``token_directory`` is passed, looks there for the token file instead of
+        locally in ossapi's install site.
+
+        To determine the key associated with a given grant, client_id,
+        client_secret, and set of scopes, use ``gen_token_key``.
+        """
+        token_directory = (
+            Path(token_directory) if token_directory else Path(__file__).parent
+        )
+        token_file = token_directory / f"{key}.pickle"
+        token_file.unlink()
+
+    def authenticate(self):
+        """
+        Returns a valid OAuth2Session, either from a saved token file associated
+        with this OssapiV2's parameters, or from a fresh authentication if no
+        such file exists.
+        """
+        if self.token_file.exists():
+            with open(self.token_file, "rb") as f:
+                token = pickle.load(f)
+
+            if self.grant is Grant.CLIENT_CREDENTIALS:
+                return OAuth2Session(self.client_id, token=token)
+
+            if self.grant is Grant.AUTHORIZATION_CODE:
+                auto_refresh_kwargs = {
+                    "client_id": self.client_id,
+                    "client_secret": self.client_secret
+                }
+                return OAuth2Session(self.client_id, token=token,
+                    redirect_uri=self.redirect_uri,
+                    auto_refresh_url=self.TOKEN_URL,
+                    auto_refresh_kwargs=auto_refresh_kwargs,
+                    token_updater=self._save_token,
+                    scope=[scope.value for scope in self.scopes])
+
+        if self.grant is Grant.CLIENT_CREDENTIALS:
+            return self._new_client_grant(self.client_id, self.client_secret)
+
+        return self._new_authorization_grant(self.client_id, self.client_secret,
+            self.redirect_uri, self.scopes)
+
+    def _new_client_grant(self, client_id, client_secret):
+        """
+        Authenticates with the api from scratch on the client grant.
+        """
         self.log.info("initializing client credentials grant")
         client = BackendApplicationClient(client_id=client_id, scope=["public"])
-        oauth = OAuth2Session(client=client)
-        oauth.fetch_token(token_url=self.TOKEN_URL, client_id=client_id, client_secret=client_secret)
+        session = OAuth2Session(client=client)
+        token = session.fetch_token(token_url=self.TOKEN_URL,
+            client_id=client_id, client_secret=client_secret)
 
-        return oauth
+        self._save_token(token)
+        return session
 
-    def _authorization_code_grant(self, client_id, client_secret, redirect_uri,
+    def _new_authorization_grant(self, client_id, client_secret, redirect_uri,
         scopes):
+        """
+        Authenticates with the api from scratch on the authorization code grant.
+        """
         self.log.info("initializing authorization code")
-        oauth = self._auth_oauth_session(client_id, client_secret, scopes,
-            redirect_uri=redirect_uri)
-        authorization_url, _state = oauth.authorization_url(self.AUTH_CODE_URL)
+
+        auto_refresh_kwargs = {
+            "client_id": client_id,
+            "client_secret": client_secret
+        }
+        session = OAuth2Session(client_id, redirect_uri=redirect_uri,
+            auto_refresh_url=self.TOKEN_URL,
+            auto_refresh_kwargs=auto_refresh_kwargs,
+            token_updater=self._save_token,
+            scope=[scope.value for scope in scopes])
+
+        authorization_url, _state = (
+            session.authorization_url(self.AUTH_CODE_URL)
+        )
         webbrowser.open(authorization_url)
 
         # open up a temporary socket so we can receive the GET request to the
@@ -184,65 +410,56 @@ class OssapiV2:
         serversocket.close()
 
         code = data.split("code=")[1].split("&state=")[0]
-        token = oauth.fetch_token(self.TOKEN_URL, client_id=client_id,
+        token = session.fetch_token(self.TOKEN_URL, client_id=client_id,
             client_secret=client_secret, code=code)
         self._save_token(token)
 
-        return oauth
-
-    def _auth_oauth_session(self, client_id, client_secret, scopes, *,
-        token=None, redirect_uri=None):
-        auto_refresh_kwargs = {
-            "client_id": client_id,
-            "client_secret": client_secret
-        }
-        return OAuth2Session(client_id, token=token, redirect_uri=redirect_uri,
-            auto_refresh_url=self.TOKEN_URL,
-            auto_refresh_kwargs=auto_refresh_kwargs,
-            token_updater=self._save_token,
-            scope=scopes)
+        return session
 
     def _save_token(self, token):
-        self.log.info(f"saving token to {self.AUTHORIZATION_TOKEN_FILE}")
-        with open(self.AUTHORIZATION_TOKEN_FILE, "wb+") as f:
+        """
+        Saves the token to this OssapiV2's associated token file.
+        """
+        self.log.info(f"saving token to {self.token_file}")
+        with open(self.token_file, "wb+") as f:
             pickle.dump(token, f)
 
-    def _get(self, *args, **kwargs):
-        return self._call(*args, method="GET", **kwargs)
+    def _request(self, type_, method, url, params={}, data={}):
+        params = self._format_params(params)
+        try:
+            r = self.session.request(method, f"{self.BASE_URL}{url}",
+                params=params, data=data)
+        except TokenExpiredError:
+            # provide "auto refreshing" for client credentials grant. The client
+            # grant doesn't actually provide a refresh token, so we can't hook
+            # onto OAuth2Session's auto_refresh functionality like we do for the
+            # authorization code grant. But we can do something effectively
+            # equivalent: whenever we make a request with an expired client
+            # grant token, just request a new one.
+            if self.grant is not Grant.CLIENT_CREDENTIALS:
+                raise
+            self.session = self._new_client_grant(self.client_id,
+                self.client_secret)
+            # redo the request now that we have a valid token
+            r = self.session.request(method, f"{self.BASE_URL}{url}",
+                params=params, data=data)
 
-    def _post(self, *args, **kwargs):
-        return self._call(*args, method="POST", **kwargs)
-
-    def _patch(self, *args, **kwargs):
-        return self._call(*args, method="PATCH", **kwargs)
-
-    def _put(self, *args, **kwargs):
-        return self._call(*args, method="PUT", **kwargs)
-
-    def _call(self, type_, url, data=None, method="GET", **kwargs):
-        data = data or {} or kwargs.pop("params", {})
-        data = self._format_params(data)
-        data_kwarg = "params" if method == "GET" else "data"
-
-        request_kwargs = {
-            "method": method,
-            "url": f"{self.BASE_URL}{url}",
-            data_kwarg: data,
-            **kwargs
-        }
-
-        r = self.session.request(**request_kwargs)
         self.log.info(f"made {method} request to {r.request.url}")
-
         json_ = r.json()
         self.log.debug(f"received json: \n{json.dumps(json_, indent=4)}")
-        self._check_json(json_, r.request.url)
+        # TODO this should just be ``if "error" in json``, but for some reason
+        # ``self.search_beatmaps`` always returns an error in the response...
+        # open an issue on osu-web?
+        if len(json_) == 1 and "error" in json_:
+            raise ValueError(f"api returned an error of `{json_['error']}` for "
+                f"a request to {unquote(url)}")
         return self._instantiate_type(type_, json_)
 
-    @staticmethod
-    def _check_json(json_, url):
-        if len(json_) == 1 and "error" in json_:
-            raise ValueError(f"api returned an error of `{json_['error']}` for a request to {unquote(url)}")
+    def _get(self, type_, url, params={}):
+        return self._request(type_, "GET", url, params=params)
+
+    def _post(self, type_, url, data={}):
+        return self._request(type_, "POST", url, data=data)
 
     def _format_params(self, params):
         for key, value in params.copy().items():
@@ -361,11 +578,19 @@ class OssapiV2:
 
         # validate that the values we're receiving are the types we expect them
         # to be
-        if is_primitive_type(type_):
+        def _check_primitive_type():
+            # The osu api occasionally makes attributes optional, so allow null
+            # values even for non-optional fields if we're not in
+            # strict mode.
+            if not self.strict and value is None:
+                return
             if not is_compatible_type(value, type_):
                 raise TypeError(f"expected type {type_} for value {value}, got "
                     f"type {type(value)}"
                     f" (for attribute: {attr_name})" if attr_name else "")
+
+        if is_primitive_type(type_):
+            _check_primitive_type()
 
         if is_base_model_type(type_):
             self.log.debug(f"instantiating base type {type_}")
@@ -435,19 +660,28 @@ class OssapiV2:
             signature_type = get_origin(type_)
             type_hints = get_type_hints(signature_type)
 
+        field_names = {}
+        for name in type_hints:
+            # any inherited attributes will be present in the annotations
+            # (type_hints) but not actually an attribute of the type. Just skip
+            # them for now. TODO I'm pretty sure this is going to cause issues
+            # if we ever have a field on a model and then another model
+            # inheriting from it; the inheriting model won't have the field
+            # picked up here and the override name won't come into play.
+            # probably just traverse the mro?
+            if not hasattr(type_, name):
+                continue
+            value = getattr(type_, name)
+            if not isinstance(value, Field):
+                continue
+            if value.name:
+                field_names[value.name] = name
+
         # make a copy so we can modify while iterating
         for key in list(kwargs):
             value = kwargs.pop(key)
-            # replace any key names that are invalid python syntax with a valid
-            # one. Note: this is relying on our models replacing an at sign with
-            # an underscore when declaring attributes.
-            key = key.replace("@", "_")
-            # python classes can't have keywords as attribute names, so if the
-            # api has given us a keyword attribute, append an underscore. As
-            # above, this is relying on our models to match this by appending
-            # an underscore to keyword attribute names.
-            if iskeyword(key):
-                key += "_"
+            if key in field_names:
+                key = field_names[key]
             kwargs[key] = value
 
         # if we've annotated a class with ``Optional[X]``, and the api response
@@ -476,20 +710,20 @@ class OssapiV2:
         parameters = list(inspect.signature(signature_type.__init__).parameters)
         kwargs_ = {}
 
-        # Some special classes take arbitrary parameters, so we can't evaluate
-        # whether a parameter is unexpected or not until we instantiate it.
-        if isinstance(type_, type) and issubclass(type_, Cursor):
-            kwargs_ = kwargs
-        else:
-            for k, v in kwargs.items():
-                if k in parameters:
-                    kwargs_[k] = v
-                else:
-                    if self.strict:
-                        raise TypeError(f"unexpected parameter `{k}` for type "
-                            f"{type_}")
-                    self.log.info(f"ignoring unexpected parameter `{k}` from "
-                        f"api response for type {type_}")
+        for k, v in kwargs.items():
+            if k in parameters:
+                kwargs_[k] = v
+            else:
+                if self.strict:
+                    raise TypeError(f"unexpected parameter `{k}` for type "
+                        f"{type_}")
+                self.log.info(f"ignoring unexpected parameter `{k}` from "
+                    f"api response for type {type_}")
+
+        # every model gets a special ``_api`` parameter, which is the
+        # ``OssapiV2`` instance which loaded it (aka us).
+        kwargs_["_api"] = self
+
         try:
             val = type_(**kwargs_)
         except TypeError as e:
@@ -507,22 +741,10 @@ class OssapiV2:
     # /beatmaps
     # ---------
 
-    @request
-    def beatmap_lookup(self,
-        checksum: Optional[str] = None,
-        filename: Optional[str] = None,
-        beatmap_id: Optional[int] = None
-    ) -> Beatmap:
-        """
-        https://osu.ppy.sh/docs/index.html#lookup-beatmap
-        """
-        params = {"checksum": checksum, "filename": filename, "id": beatmap_id}
-        return self._get(Beatmap, "/beatmaps/lookup", params)
-
-    @request
+    @request(Scope.PUBLIC)
     def beatmap_user_score(self,
-        beatmap_id: int,
-        user_id: int,
+        beatmap_id: BeatmapIdT,
+        user_id: UserIdT,
         mode: Optional[GameModeT] = None,
         mods: Optional[ModT] = None
     ) -> BeatmapUserScore:
@@ -533,9 +755,9 @@ class OssapiV2:
         return self._get(BeatmapUserScore,
             f"/beatmaps/{beatmap_id}/scores/users/{user_id}", params)
 
-    @request
+    @request(Scope.PUBLIC)
     def beatmap_scores(self,
-        beatmap_id: int,
+        beatmap_id: BeatmapIdT,
         mode: Optional[GameModeT] = None,
         mods: Optional[ModT] = None,
         type_: Optional[RankingTypeT] = None
@@ -547,38 +769,45 @@ class OssapiV2:
         return self._get(BeatmapScores, f"/beatmaps/{beatmap_id}/scores",
             params)
 
-    @request
+    @request(Scope.PUBLIC)
     def beatmap(self,
-        beatmap_id: int
+        beatmap_id: Optional[BeatmapIdT] = None,
+        checksum: Optional[str] = None,
+        filename: Optional[str] = None,
     ) -> Beatmap:
         """
-        https://osu.ppy.sh/docs/index.html#get-beatmap
+        combines https://osu.ppy.sh/docs/index.html#get-beatmap and
+        https://osu.ppy.sh/docs/index.html#lookup-beatmap
         """
-        return self._get(Beatmap, f"/beatmaps/{beatmap_id}")
+        if not (beatmap_id or checksum or filename):
+            raise ValueError("at least one of beatmap_id, checksum, or "
+                "filename must be passed")
+        params = {"checksum": checksum, "filename": filename, "id": beatmap_id}
+        return self._get(Beatmap, "/beatmaps/lookup", params)
 
 
     # /beatmapsets
     # ------------
 
-    @request
+    @request(Scope.PUBLIC)
     def beatmapset_discussion_posts(self,
-        beatmapset_session_id: Optional[int] = None,
+        beatmapset_discussion_id: Optional[int] = None,
         limit: Optional[int] = None,
         page: Optional[int] = None,
         sort: Optional[BeatmapDiscussionPostSortT] = None,
-        user_id: Optional[int] = None,
+        user_id: Optional[UserIdT] = None,
         with_deleted: Optional[bool] = None
     ) -> BeatmapsetDiscussionPosts:
         """
         https://osu.ppy.sh/docs/index.html#get-beatmapset-discussion-posts
         """
-        params = {"beatmapset_session_id": beatmapset_session_id,
+        params = {"beatmapset_discussion_id": beatmapset_discussion_id,
             "limit": limit, "page": page, "sort": sort, "user": user_id,
             "with_deleted": with_deleted}
         return self._get(BeatmapsetDiscussionPosts,
             "/beatmapsets/discussions/posts", params)
 
-    @request
+    @request(Scope.PUBLIC)
     def beatmapset_discussion_votes(self,
         beatmapset_discussion_id: Optional[int] = None,
         limit: Optional[int] = None,
@@ -586,7 +815,7 @@ class OssapiV2:
         receiver_id: Optional[int] = None,
         vote: Optional[BeatmapsetDiscussionVoteT] = None,
         sort: Optional[BeatmapsetDiscussionVoteSortT] = None,
-        user_id: Optional[int] = None,
+        user_id: Optional[UserIdT] = None,
         with_deleted: Optional[bool] = None
     ) -> BeatmapsetDiscussionVotes:
         """
@@ -627,12 +856,37 @@ class OssapiV2:
             "user": user,
             "with_deleted": with_deleted,
         }
-        return self._get(BeatmapsetDiscussionListing, "/beatmapsets/discussions", params)
+        return self._get(BeatmapsetDiscussionListing,
+            "/beatmapsets/discussions", params)
+
+    @request(Scope.PUBLIC)
+    def beatmapset_discussions(self,
+        beatmapset_id: Optional[int] = None,
+        beatmap_id: Optional[BeatmapIdT] = None,
+        beatmapset_status: Optional[BeatmapsetStatusT] = None,
+        limit: Optional[int] = None,
+        message_types: Optional[List[MessageTypeT]] = None,
+        only_unresolved: Optional[bool] = None,
+        page: Optional[int] = None,
+        sort: Optional[BeatmapDiscussionPostSortT] = None,
+        user_id: Optional[UserIdT] = None,
+        with_deleted: Optional[bool] = None,
+    ) -> BeatmapsetDiscussions:
+        """
+        https://osu.ppy.sh/docs/index.html#get-beatmapset-discussions
+        """
+        params = {"beatmapset_id": beatmapset_id, "beatmap_id": beatmap_id,
+            "beatmapset_status": beatmapset_status, "limit": limit,
+            "message_types": message_types, "only_unresolved": only_unresolved,
+            "page": page, "sort": sort, "user": user_id,
+            "with_deleted": with_deleted}
+        return self._get(BeatmapsetDiscussions,
+            "/beatmapsets/discussions", params)
 
     # /changelog
     # ----------
 
-    @request
+    @request(scope=None)
     def changelog_build(self,
         stream: str,
         build: str
@@ -642,7 +896,7 @@ class OssapiV2:
         """
         return self._get(Build, f"/changelog/{stream}/{build}")
 
-    @request
+    @request(scope=None)
     def changelog_listing(self,
         from_: Optional[str] = None,
         to: Optional[str] = None,
@@ -655,7 +909,7 @@ class OssapiV2:
         params = {"from": from_, "to": to, "max_id": max_id, "stream": stream}
         return self._get(ChangelogListing, "/changelog", params)
 
-    @request
+    @request(scope=None)
     def changelog_lookup(self,
         changelog: str,
         key: Optional[str] = None
@@ -668,21 +922,26 @@ class OssapiV2:
 
 
     # /chat
-    # ---------
+    # -----
 
-    @request
-    def create_pm(self, user_id: int, message: str, is_action: bool = False) -> CreatePMResponse:
+    @request(Scope.CHAT_WRITE)
+    def create_pm(self,
+        user_id: UserIdT,
+        message: str,
+        is_action: Optional[bool] = False
+    ) -> CreatePMResponse:
         """
         https://osu.ppy.sh/docs/index.html#create-new-pm
         """
-        payload = {"target_id": user_id, "message": message, "is_action": is_action}
-        return self._post(CreatePMResponse, "/chat/new", data=payload)
+        data = {"target_id": user_id, "message": message,
+            "is_action": is_action}
+        return self._post(CreatePMResponse, "/chat/new", data=data)
 
 
     # /comments
     # ---------
 
-    @request
+    @request(Scope.PUBLIC)
     def comments(self,
         commentable_type: Optional[CommentableTypeT] = None,
         commentable_id: Optional[int] = None,
@@ -705,7 +964,7 @@ class OssapiV2:
             "parent_id": parent_id, "sort": sort}
         return self._get(CommentBundle, "/comments", params)
 
-    @request
+    @request(scope=None)
     def comment(self,
         comment_id: int
     ) -> CommentBundle:
@@ -792,6 +1051,7 @@ class OssapiV2:
         return processed_poll
 
     @request
+    @request(Scope.PUBLIC)
     def forum_topic(self,
         topic_id: int,
         cursor: Optional[Cursor] = None,
@@ -814,7 +1074,7 @@ class OssapiV2:
     # / ("home")
     # ----------
 
-    @request
+    @request(Scope.PUBLIC)
     def search(self,
         mode: Optional[SearchModeT] = None,
         query: Optional[str] = None,
@@ -830,7 +1090,7 @@ class OssapiV2:
     # /me
     # ---
 
-    @request
+    @request(Scope.IDENTIFY)
     def get_me(self,
         mode: Optional[GameModeT] = None
     ):
@@ -840,10 +1100,37 @@ class OssapiV2:
         return self._get(User, f"/me/{mode.value if mode else ''}")
 
 
+    # /news
+    # -----
+
+    @request(scope=None)
+    def news_listing(self,
+        limit: Optional[int] = None,
+        year: Optional[int] = None,
+        cursor: Optional[Cursor] = None
+    ) -> NewsListing:
+        """
+        https://osu.ppy.sh/docs/index.html#get-news-listing
+        """
+        params = {"limit": limit, "year": year, "cursor": cursor}
+        return self._get(NewsListing, "/news", params=params)
+
+    @request(scope=None)
+    def news_post(self,
+        news: str,
+        key: Optional[str] = None
+    ) -> NewsPost:
+        """
+        https://osu.ppy.sh/docs/index.html#get-news-post
+        """
+        params = {"key": key}
+        return self._get(NewsPost, f"/news/{news}", params=params)
+
+
     # /rankings
     # ---------
 
-    @request
+    @request(Scope.PUBLIC)
     def ranking(self,
         mode: GameModeT,
         type_: RankingTypeT,
@@ -861,7 +1148,7 @@ class OssapiV2:
         return self._get(Rankings, f"/rankings/{mode.value}/{type_.value}",
             params=params)
 
-    @request
+    @request(Scope.PUBLIC)
     def spotlights(self) -> List[Spotlight]:
         """
         https://osu.ppy.sh/docs/index.html#get-spotlights
@@ -875,7 +1162,7 @@ class OssapiV2:
 
     # TODO add test for this once I figure out values for room_id and
     # playlist_id that actually produce a response lol
-    @request
+    @request(Scope.PUBLIC)
     def multiplayer_scores(self,
         room_id: int,
         playlist_id: int,
@@ -894,9 +1181,9 @@ class OssapiV2:
     # /users
     # ------
 
-    @request
+    @request(Scope.PUBLIC)
     def user_kudosu(self,
-        user_id: int,
+        user_id: UserIdT,
         limit: Optional[int] = None,
         offset: Optional[int] = None
     ) -> List[KudosuHistory]:
@@ -907,9 +1194,9 @@ class OssapiV2:
         return self._get(List[KudosuHistory], f"/users/{user_id}/kudosu",
             params)
 
-    @request
+    @request(Scope.PUBLIC)
     def user_scores(self,
-        user_id: int,
+        user_id: UserIdT,
         type_: ScoreTypeT,
         include_fails: Optional[bool] = None,
         mode: Optional[GameModeT] = None,
@@ -924,9 +1211,9 @@ class OssapiV2:
         return self._get(List[Score], f"/users/{user_id}/scores/{type_.value}",
             params)
 
-    @request
+    @request(Scope.PUBLIC)
     def user_beatmaps(self,
-        user_id: int,
+        user_id: UserIdT,
         type_: UserBeatmapTypeT,
         limit: Optional[int] = None,
         offset: Optional[int] = None
@@ -940,11 +1227,12 @@ class OssapiV2:
         if type_ is UserBeatmapType.MOST_PLAYED:
             return_type = List[BeatmapPlaycount]
 
-        return self._get(return_type, f"/users/{user_id}/beatmapsets/{type_.value}", params)
+        return self._get(return_type,
+            f"/users/{user_id}/beatmapsets/{type_.value}", params)
 
-    @request
+    @request(Scope.PUBLIC)
     def user_recent_activity(self,
-        user_id: int,
+        user_id: UserIdT,
         limit: Optional[int] = None,
         offset: Optional[int] = None
     ) -> List[Event]:
@@ -955,9 +1243,9 @@ class OssapiV2:
         return self._get(List[_Event], f"/users/{user_id}/recent_activity/",
             params)
 
-    @request
+    @request(Scope.PUBLIC)
     def user(self,
-        user: Union[int, str],
+        user: Union[UserIdT, str],
         mode: Optional[GameModeT] = None,
         key: Optional[UserLookupKeyT] = None
     ) -> User:
@@ -965,13 +1253,14 @@ class OssapiV2:
         https://osu.ppy.sh/docs/index.html#get-user
         """
         params = {"key": key}
-        return self._get(User, f"/users/{user}/{mode.value if mode else ''}", params)
+        return self._get(User, f"/users/{user}/{mode.value if mode else ''}",
+            params)
 
 
     # /wiki
     # -----
 
-    @request
+    @request(scope=None)
     def wiki_page(self,
         locale: str,
         path: str
@@ -985,52 +1274,63 @@ class OssapiV2:
     # undocumented
     # ------------
 
-    @request
+    @request(Scope.PUBLIC)
     def score(self,
         mode: GameModeT,
         score_id: int
     ) -> Score:
         return self._get(Score, f"/scores/{mode.value}/{score_id}")
 
-    @request
+    @request(Scope.PUBLIC, requires_login=True)
     def download_score(self,
         mode: GameModeT,
         score_id: int
-    ) -> str:
+    ) -> Replay:
         r = self.session.get(f"{self.BASE_URL}/scores/{mode.value}/"
             f"{score_id}/download")
+        replay = osrparse.parse_replay(r.content)
+        return Replay(replay, self)
 
-        tempfile = NamedTemporaryFile(mode="wb", delete=False)
-        with tempfile as f:
-            f.write(r.content)
-
-        return tempfile.name
-
-    @request
-    def search_beatmaps(self,
+    @request(Scope.PUBLIC)
+    def search_beatmapsets(self,
         query: Optional[str] = None,
         cursor: Optional[Cursor] = None
-    ) -> BeatmapSearchResult:
+    ) -> BeatmapsetSearchResult:
         # Param key names are the same as https://osu.ppy.sh/beatmapsets,
         # so from eg https://osu.ppy.sh/beatmapsets?q=black&s=any we get that
         # the query uses ``q`` and the category uses ``s``.
         # TODO implement all possible queries, or wait for them to be
         # documented. Currently we only implement the most basic "query" option.
         params = {"cursor": cursor, "q": query}
-        return self._get(BeatmapSearchResult, "/beatmapsets/search/", params)
+        return self._get(BeatmapsetSearchResult, "/beatmapsets/search/", params)
 
-    @request
-    def beatmapsets_events(self,
+    @request(Scope.PUBLIC)
+    def beatmapset(self,
+        beatmapset_id: Optional[BeatmapsetIdT] = None,
+        beatmap_id: Optional[BeatmapIdT] = None
+    ) -> Beatmapset:
+        """
+        Combines https://osu.ppy.sh/docs/index.html#beatmapsetslookup and
+        https://osu.ppy.sh/docs/index.html#beatmapsetsbeatmapset.
+        """
+        if not bool(beatmap_id) ^ bool(beatmapset_id):
+            raise ValueError("exactly one of beatmap_id and beatmapset_id must "
+                "be passed.")
+        if beatmap_id:
+            params = {"beatmap_id": beatmap_id}
+            return self._get(Beatmapset, "/beatmapsets/lookup", params)
+        return self._get(Beatmapset, f"/beatmapsets/{beatmapset_id}")
+
+    @request(Scope.PUBLIC)
+    def beatmapset_events(self,
         limit: Optional[int] = None,
         page: Optional[int] = None,
-        user_id: Optional[int] = None,
+        user_id: Optional[UserIdT] = None,
         types: Optional[List[BeatmapsetEventTypeT]] = None,
         min_date: Optional[datetime] = None,
         max_date: Optional[datetime] = None
     ) -> ModdingHistoryEventsBundle:
         """
-        Beatmap history
-
         https://osu.ppy.sh/beatmapsets/events
         """
         # limit is 5-50
@@ -1039,10 +1339,17 @@ class OssapiV2:
         return self._get(ModdingHistoryEventsBundle, "/beatmapsets/events",
             params)
 
+    @request(Scope.FRIENDS_READ)
+    def friends(self) -> List[UserCompact]:
+        return self._get(List[UserCompact], "/friends")
+
+    @request(scope=None)
+    def seasonal_backgrounds(self) -> SeasonalBackgrounds:
+        return self._get(SeasonalBackgrounds, "/seasonal-backgrounds")
 
     # /oauth
     # ------
 
     def revoke_token(self):
         self.session.delete(f"{self.BASE_URL}/oauth/tokens/current")
-        self.clear_authentication()
+        self.remove_token(self.token_key, self.token_directory)

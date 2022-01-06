@@ -3,10 +3,11 @@ from datetime import datetime
 from pathlib import Path
 from unittest import TestCase
 
-from ossapi import RankingType, BeatmapsetEventType, OssapiV2
+from ossapi import (RankingType, BeatmapsetEventType, AccessDeniedError,
+    InsufficientScopeError)
 
-from tests import api, client_id, client_secret, DEV_HOST, dev_client_secret, dev_client_id
-
+from tests import (api, client_id, client_secret, DEV_HOST, dev_client_secret,
+    dev_client_id)
 
 class TestBeatmapsetDiscussionPosts(TestCase):
     def test_deserialize(self):
@@ -14,7 +15,7 @@ class TestBeatmapsetDiscussionPosts(TestCase):
 
 class TestUserRecentActivity(TestCase):
     def test_deserialize(self):
-        api.user_recent_activity(10690090)
+        api.user_recent_activity(12092800)
 
 class TestSpotlights(TestCase):
     def test_deserialize(self):
@@ -36,17 +37,21 @@ class TestBeatmap(TestCase):
     def test_deserialize(self):
         api.beatmap(beatmap_id=221777)
 
+class TestBeatmapset(TestCase):
+    def test_deserialize(self):
+        api.beatmapset(beatmap_id=3207950)
+
 class TestBeatmapsetEvents(TestCase):
     def test_deserialize(self):
-        api.beatmapsets_events()
+        api.beatmapset_events()
 
     def test_all_types(self):
-        # beatmapsets_events is a really complicated endpoint in terms of return
+        # beatmapset_events is a really complicated endpoint in terms of return
         # types. We want to make sure both that we're not doing anything wrong,
         # and the osu! api isn't doing anything wrong by returning something
         # that doesn't match their documentation.
         for event_type in BeatmapsetEventType:
-            api.beatmapsets_events(types=[event_type])
+            api.beatmapset_events(types=[event_type])
 
 class TestRanking(TestCase):
     def test_deserialize(self):
@@ -70,15 +75,18 @@ class TestComment(TestCase):
 
 class TestDownloadScore(TestCase):
     def test_deserialize(self):
-        api.download_score(mode="osu", score_id=2797309065)
+        # api instance is using client credentials which doesn't have access to
+        # downloading replays
+        self.assertRaises(AccessDeniedError,
+            lambda: api.download_score(mode="osu", score_id=2797309065))
 
 class TestSearchBeatmaps(TestCase):
     def test_deserialize(self):
-        api.search_beatmaps(query="the big black")
+        api.search_beatmapsets(query="the big black")
 
 class TestUser(TestCase):
     def test_deserialize(self):
-        api.user(10690090)
+        api.user(12092800)
 
     def test_key(self):
         # make sure it automatically falls back to username if not specified
@@ -89,9 +97,9 @@ class TestUser(TestCase):
 
 class TestMe(TestCase):
     def test_deserialize(self):
-        # TODO: requires another scope to be passed to OssapiV2
-        # api.get_me()
-        pass
+        # requires an authorization code api for the identify scope, client
+        # credentials can only request the public scope
+        self.assertRaises(InsufficientScopeError, api.get_me)
 
 class TestWikiPage(TestCase):
     def test_deserialize(self):
@@ -117,11 +125,11 @@ class TestBeatmapsetDiscussionVotes(TestCase):
     def test_deserialize(self):
         api.beatmapset_discussion_votes().votes[0].score
 
-class TestBeatmapsetDiscussionListing(TestCase):
+class TestBeatmapsetDiscussions(TestCase):
     def test_deserialize(self):
-        api.beatmapset_discussion_listing()
+        api.beatmapset_discussions()
 
-class TestCreateNewPM(TestCase):
+class TestNewsListing(TestCase):
     def test_deserialize(self):
         # Target ID of 2070907 is Tillerino
         self.api = OssapiV2(
@@ -192,3 +200,24 @@ class TestForumWriteMethods(TestCase):
             body="This comment was last edited at: " + str(datetime.now()),
             post_id=306,
         )
+        api.news_listing(year=2021)
+
+class TestNewsPost(TestCase):
+    def test_deserialize(self):
+        api.news_post(1025, key="id")
+
+class TestSeasonalBackgrounds(TestCase):
+    def test_deserialize(self):
+        api.seasonal_backgrounds()
+
+
+# TODO requires friends.read scope
+# class TestFriends(TestCase):
+#     def test_deserialize(self):
+#         api.friends()
+
+# TODO requires chat.write scope
+# class TestCreateNewPM(TestCase):
+#     def test_deserialize(self):
+#         api.create_pm(2070907, "Unit test from ossapi "
+#             "(https://github.com/circleguard/ossapi/), please ignore")

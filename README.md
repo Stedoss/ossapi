@@ -16,9 +16,9 @@ To upgrade:
 pip install -U ossapi
 ```
 
-## API v2 Usage
+If you need support or would like to contribute, feel free to join the circleguard discord: <https://discord.gg/e84qxkQ>.
 
-Please note that api v2 requires python 3.8+ (api v1 only requires python 3.6+).
+## API v2 Usage
 
 ### Authenticating
 
@@ -56,7 +56,7 @@ Here is a complete list of endpoints we currently have implemented. You can trac
 
 ```python
 print(api.beatmapset_discussion_posts().discussions[0].message_type)
-print(api.user_recent_activity(10690090)[0].created_at)
+print(api.user_recent_activity(12092800)[0].created_at)
 print(api.spotlights()[0].name)
 print(api.user_beatmaps(user_id=12092800, type_="most_played")[0].count)
 print(api.user_kudosu(user_id=3178418)[0].action)
@@ -66,11 +66,11 @@ print(api.ranking("osu", RankingType.PERFORMANCE, country="US").ranking[0].user.
 print(api.user_scores(12092800, "best")[0].accuracy)
 print(api.beatmap(beatmap_id=221777).last_updated)
 print(api.beatmap_user_score(beatmap_id=221777, user_id=2757689).score.mods)
-print(api.search(query="peppy").user.data[0].profile_colour)
+print(api.search(query="peppy").users.data[0].profile_colour)
 print(api.comment(comment_id=1).comments[0].message)
 print(api.download_score(mode="osu", score_id=2797309065))
-print(api.search_beatmaps(query="the big black").beatmapsets[0].title)
-print(api.beatmapsets_events(types=[BeatmapsetEventType.ISSUE_REOPEN]).events[0].type)
+print(api.search_beatmapsets(query="the big black").beatmapsets[0].title)
+print(api.beatmapset_events(types=[BeatmapsetEventType.ISSUE_REOPEN]).events[0].type)
 print(api.user(12092800).playstyle)
 print(api.wiki_page("en", "Welcome").available_locales)
 print(api.changelog_build("stable40", "20210520.2").users)
@@ -78,6 +78,11 @@ print(api.changelog_listing().builds[0].display_version)
 print(api.changelog_lookup("lazer").changelog_entries[0].github_pull_request_id)
 print(api.forum_topic(141240).posts[0].forum_id)
 print(api.beatmapset_discussion_votes().votes[0].score)
+print(api.score(mode="osu", score_id=2797309065).accuracy)
+print(api.news_listing(year=2021).news_posts[0].author)
+print(api.news_post(1025, key="id"))
+print(api.friends()[0].username)
+print(api.seasonal_backgrounds().backgrounds[0].url)
 ```
 
 Note that although this code just prints a single attribute for each endpoint, you can obviously do more complicated things like iterate over arrays:
@@ -130,6 +135,95 @@ r = api.ranking("osu", RankingType.PERFORMANCE, cursor=cursor)
 print(r.cursor) # None
 ```
 
+### Advanced Usage
+
+#### User and Beatmap as parameters
+
+Some functions, like `api.beatmap_scores`, take a beatmap_id (or user_id). We also allow passing a `Beatmap` / `BeatmapCompact` (or `User` / `UserCompact`) in place of the id as a convenience:
+
+```python
+beatmap = api.beatmap(221777)
+assert api.beatmap_scores(beatmap) == api.beatmap_scores(beatmap.id)
+```
+
+Internally, we simply take `beatmap.id` (or `user.id`) and supply that to the function.
+
+#### Expandable Models
+
+`UserCompact` and `BeatmapCompact` classes are "expandable" into `User` and `Beatmap` respectively. Some endpoints only return eg a `UserCompact`, but you may want attributes that are present on `User`. To expand such a class, call `#expand`:
+
+```python
+compact_user = api.search(query="tybug").users.data[0]
+# `statistics` is only available on `User` not `UserCompact`,
+# so expansion is necessary
+print(compact_user.expand().statistics.ranked_score)
+# this is equivalent to
+print(api.user(compact_user).statistics.ranked_score)
+```
+
+Similarly, `beatmap = compact_beatmap.expand()` is equivalent to `beatmap = api.beatmap(compact_beatmap)`.
+
+(Note that beatmapsets will also be expandable in the future; I am waiting for the beatmapset lookup endpoint to become documented before implementing this.)
+
+#### Following Foreign Keys
+
+Many models contain an id which references another model - for instance, `Beatmap.beatmapset_id`. These are called "foreign keys" in the database world. Just the id isn't very useful to us, though. We would like to be able to ask what the title, author, genre, nominations etc of the beatmapset is. What we need is the ability to "follow" this foreign key to retrieve a full `Beatmapset` instance. Ossapi provides a convenience method to do just that:
+
+```python
+beatmap = api.beatmap(221777)
+bmset = beatmap.beatmapset()
+```
+
+You can do the same for `user()` and `beatmap()`, in applicable models:
+
+```python
+disc = api.beatmapset_discussion_posts(2641058).posts[0]
+user = disc.user()
+
+bm_playcount = api.user_beatmaps(user_id=12092800, type_="most_played")[0]
+beatmap = bm_playcount.beatmap()
+```
+
+Note that the id field and corresponding method isn't always called `beatmap`, `beatmapset`, or `user`. For instance, a beatmapset discussion post has two foreign key fields `last_editor_id` and `deleted_by_id`. So we expose two methods `last_editor` and `deleted_by` to follow these foreign keys:
+
+```python
+disc = api.beatmapset_discussion_posts(2641058).posts[0]
+last_editor = disc.last_editor()
+deleted_by = disc.deleted_by()
+print(last_editor.username, deleted_by)
+```
+
+The attentive reader may notice that the api docs say that a `Beatmapset` attribute is optionally returned inside a `Beatmap` object. Why do we need a method to access this then, instead of accessing directly? Well, the key factor here is that this beatmapset could be null (`None`). If it's not, and you call `beatmapset()`, we actually just return the beatmapset given by the api. However, if it is null, we make a single api request to `api.beatmapset` to retrieve the beatmapset from the beatmapset id, and return that.
+
+In short, calling such a foreign key method will cost an api call if the backing model attribute is not present, and is free otherwise. You can check for the presence of the backing model by accessing the attribute with the same name as the method, but prefixed with a underscore:
+
+```python
+beatmap = api.beatmap(2217777)
+print(beatmap._beatmapset)
+# not None, so beatmap.beatmapset() would just return this attribute
+```
+
+Note that in some cases, the backing model is a `*Compact` version instead of the full version of the model. In this case, if you require the full version, I recommend calling `.expand()` after the foreign key method:
+
+```python
+beatmap = api.beatmap(2217777)
+# guaranteed to be a Beatmapset, not a BeatmapsetCompact
+bmset = beatmap.beatmapset().expand()
+```
+
+#### Serializing Models
+
+If you need to access the original json returned by the api, you can serialize the models back into a json string with `serialize_model`:
+
+```python
+from ossapi import serialize_model
+print(serialize_model(api.user("tybug2")))
+```
+
+Note that this is not guaranteed to be identical to the json returned by the api. For instance, there may be additional attributes in the serialized json which are optional in the api spec, not returned by the api, and set to null. But it should be essentially the same.
+
+There are various reasons why this approach was chosen over storing the raw json returned by the api, or some other solution. Please open an issue if this approach is not sufficient for your use case.
+
 ## API v1 Usage
 
 You can get your api v1 key at <https://osu.ppy.sh/p/api/>. Note that due to a [redirection bug](https://github.com/ppy/osu-web/issues/2867), you may need to log in and wait 30 seconds before being able to access the api page through the above link.
@@ -140,7 +234,7 @@ Basic usage:
 from ossapi import Ossapi
 
 api = Ossapi("key")
-print(api.get_beatmaps(user=10690090)[0].submit_date)
+print(api.get_beatmaps(user=53378)[0].submit_date)
 print(api.get_match(69063884).games[0].game_id)
 print(api.get_scores(221777)[0].username)
 print(len(api.get_replay(beatmap_id=221777, user=6974470)))
