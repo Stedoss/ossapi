@@ -70,7 +70,6 @@ class TestComment(TestCase):
     def test_deserialize(self):
         api.comment(comment_id=1)
 
-
 class TestSearchBeatmaps(TestCase):
     def test_deserialize(self):
         api.search_beatmapsets(query="the big black")
@@ -158,6 +157,7 @@ class TestMe(TestCase):
     def test_deserialize(self):
         # but the authorization code api can
         api_full.get_me()
+
 
 
 # ==================
