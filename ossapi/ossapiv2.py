@@ -960,23 +960,20 @@ class OssapiV2:
         """
         https://osu.ppy.sh/docs/index.html#create-topic
         """
-        payload = {
+        data = {
             "body": body,
             "forum_id": forum_id,
             "title": title,
         }
         if with_poll:
             if poll is None:
-                raise ValueError("poll data must be provided if with_poll is True")
+                raise ValueError("poll data must be provided if with_poll is "
+                    "True")
 
-            payload["with_poll"] = "on"
-            payload.update(self._processs_poll_data(poll))
+            data["with_poll"] = True
+            data.update(self._processs_poll_data(poll))
 
-        headers = {
-            "Content-Type": "application/json"
-        }
-
-        return self._post(CreateForumTopicResponse, "/forums/topics", data=payload, headers=headers)
+        return self._post(CreateForumTopicResponse, "/forums/topics", data=data)
 
     @request(Scope.FORUM_WRITE)
     def forum_reply(self, topic_id: int, body: str) -> ForumPost:
@@ -1018,7 +1015,7 @@ class OssapiV2:
         }
 
         if poll.vote_change:
-            processed_poll["forum_topic_poll[vote_change]"] = "on"
+            processed_poll["forum_topic_poll[vote_change]"] = True
 
         return processed_poll
 
