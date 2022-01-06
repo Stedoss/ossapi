@@ -461,6 +461,9 @@ class OssapiV2:
     def _post(self, type_, url, data={}):
         return self._request(type_, "POST", url, data=data)
 
+    def _put(self, type_, url, data={}):
+        return self._request(type_, "PUT", url, data=data)
+
     def _format_params(self, params):
         for key, value in params.copy().items():
             if isinstance(value, list):
@@ -980,24 +983,24 @@ class OssapiV2:
         """
         https://osu.ppy.sh/docs/index.html#reply-topic
         """
-        payload = {"body": body}
-        return self._post(ForumPost, f"/forums/topics/{topic_id}/reply", data=payload)
+        data = {"body": body}
+        return self._post(ForumPost, f"/forums/topics/{topic_id}/reply", data)
 
     @request(Scope.FORUM_WRITE)
     def forum_edit_topic(self, topic_id: int, title: str) -> ForumTopic:
         """
         https://osu.ppy.sh/docs/index.html#edit-topic
         """
-        payload = {"forum_topic[topic_title]": title}
-        return self._patch(ForumTopic, f"/forums/topics/{topic_id}", data=payload)
+        data = {"forum_topic[topic_title]": title}
+        return self._put(ForumTopic, f"/forums/topics/{topic_id}", data)
 
     @request(Scope.FORUM_WRITE)
     def forum_edit_post(self, post_id: int, body: str) -> ForumPost:
         """
         https://osu.ppy.sh/docs/index.html#edit-post
         """
-        payload = {"body": body}
-        return self._patch(ForumPost, f"/forums/posts/{post_id}", data=payload)
+        data = {"body": body}
+        return self._put(ForumPost, f"/forums/posts/{post_id}", data)
 
     @staticmethod
     def _processs_poll_data(poll):
