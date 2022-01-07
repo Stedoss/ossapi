@@ -169,12 +169,8 @@ class TestFriends(TestCaseAuthorizationCode):
 
 class TestForumCreateTopic(TestCaseDevServer):
     def test_create(self):
-        try:
-            api_v2_dev.forum_create_topic("Integration test please ignore",
-                74, "Integration test please ignore")
-        except ValueError as ex:
-            if "Editing beatmap metadata post is not allowed." in str(ex):
-                self.fail("Encountered unexpected error message")
+        api_v2_dev.forum_create_topic("Integration test please ignore",
+            74, "Integration test please ignore")
 
     def test_create_with_poll(self):
         poll = {
@@ -191,12 +187,11 @@ class TestForumCreateTopic(TestCaseDevServer):
 
 class TestForumReply(TestCaseDevServer):
     def test_reply(self):
-        try:
-            api_v2_dev.forum_reply(156, "unit test from ossapi "
-                "(https://github.com/circleguard/ossapi/), please ignore")
-        except ValueError as ex:
-            if "Please edit your last post instead of posting again." not in str(ex):
-                self.fail("Encountered unexpected error message")
+        api_v2_dev.forum_reply(156, "unit test from ossapi "
+            "(https://github.com/circleguard/ossapi/), please ignore")
+
+# TODO first create a topic, then try and edit that one (this will fail if it's
+# not our topic id)
 
 class TestForumEditTopic(TestCaseDevServer):
     def test_edit(self):
