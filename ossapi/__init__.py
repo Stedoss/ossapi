@@ -5,7 +5,7 @@ logging.getLogger("ossapi").addHandler(handler)
 
 from ossapi.ossapi import (Ossapi, ReplayUnavailableException,
     InvalidKeyException, APIException)
-from ossapi.ossapiv2 import OssapiV2, Grant, Scope
+from ossapi.ossapiv2 import OssapiV2, Grant, Scope, AsyncOssapiV2
 from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore,
     ForumTopicAndPosts, Search, CommentBundle, Cursor, Score,
     BeatmapsetSearchResult, ModdingHistoryEventsBundle, User, Rankings,
@@ -33,7 +33,7 @@ __all__ = [
     "Ossapi", "ReplayUnavailableException", "InvalidKeyException",
     "APIException",
     # OssapiV2 core
-    "OssapiV2", "Grant", "Scope",
+    "OssapiV2", "Grant", "Scope", "AsyncOssapiV2",
     # OssapiV2 models
     "Beatmap", "BeatmapCompact", "BeatmapUserScore", "ForumTopicAndPosts",
     "Search", "CommentBundle", "Cursor", "Score", "BeatmapsetSearchResult",

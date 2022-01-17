@@ -12,6 +12,7 @@ import json
 import hashlib
 import functools
 
+import requests
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import (BackendApplicationClient, TokenExpiredError,
     AccessDeniedError)
@@ -180,7 +181,7 @@ class Scope(Enum):
     PUBLIC = "public"
 
 
-class OssapiV2:
+class _OssapiV2:
     """
     A wrapper around osu api v2.
 
@@ -251,6 +252,7 @@ class OssapiV2:
         strict: bool = False,
         token_directory: Optional[str] = None,
         token_key: Optional[str] = None,
+        SessionClass: requests.Session
     ):
         if not grant:
             grant = (Grant.AUTHORIZATION_CODE if redirect_uri else
@@ -263,6 +265,10 @@ class OssapiV2:
         self.redirect_uri = redirect_uri
         self.scopes = [Scope(scope) for scope in scopes]
         self.strict = strict
+        # set by subclasses
+        self.session = None
+
+        self.SessionClass = SessionClass
 
         self.log = logging.getLogger(__name__)
         self.token_key = token_key or self.gen_token_key(self.grant,
@@ -280,8 +286,6 @@ class OssapiV2:
         if self.grant is Grant.AUTHORIZATION_CODE and not self.redirect_uri:
             raise ValueError("`redirect_uri` must be passed if the "
                 "authorization code grant is used.")
-
-        self.session = self.authenticate()
 
     @staticmethod
     def gen_token_key(grant, client_id, client_secret, scopes):
@@ -320,7 +324,7 @@ class OssapiV2:
         token_file = token_directory / f"{key}.pickle"
         token_file.unlink()
 
-    def authenticate(self):
+    async def authenticate(self):
         """
         Returns a valid OAuth2Session, either from a saved token file associated
         with this OssapiV2's parameters, or from a fresh authentication if no
@@ -331,14 +335,14 @@ class OssapiV2:
                 token = pickle.load(f)
 
             if self.grant is Grant.CLIENT_CREDENTIALS:
-                return OAuth2Session(self.client_id, token=token)
+                return self.SessionClass(self.client_id, token=token)
 
             if self.grant is Grant.AUTHORIZATION_CODE:
                 auto_refresh_kwargs = {
                     "client_id": self.client_id,
                     "client_secret": self.client_secret
                 }
-                return OAuth2Session(self.client_id, token=token,
+                return self.SessionClass(self.client_id, token=token,
                     redirect_uri=self.redirect_uri,
                     auto_refresh_url=self.TOKEN_URL,
                     auto_refresh_kwargs=auto_refresh_kwargs,
@@ -346,26 +350,27 @@ class OssapiV2:
                     scope=[scope.value for scope in self.scopes])
 
         if self.grant is Grant.CLIENT_CREDENTIALS:
-            return self._new_client_grant(self.client_id, self.client_secret)
+            return await self._new_client_grant(self.client_id,
+                self.client_secret)
 
-        return self._new_authorization_grant(self.client_id, self.client_secret,
-            self.redirect_uri, self.scopes)
+        return await self._new_authorization_grant(self.client_id,
+            self.client_secret, self.redirect_uri, self.scopes)
 
-    def _new_client_grant(self, client_id, client_secret):
+    async def _new_client_grant(self, client_id, client_secret):
         """
         Authenticates with the api from scratch on the client grant.
         """
         self.log.info("initializing client credentials grant")
         client = BackendApplicationClient(client_id=client_id, scope=["public"])
-        session = OAuth2Session(client=client)
-        token = session.fetch_token(token_url=self.TOKEN_URL,
+        session = self.SessionClass(client=client)
+        token = await session.fetch_token(token_url=self.TOKEN_URL,
             client_id=client_id, client_secret=client_secret)
 
         self._save_token(token)
         return session
 
-    def _new_authorization_grant(self, client_id, client_secret, redirect_uri,
-        scopes):
+    async def _new_authorization_grant(self, client_id, client_secret,
+        redirect_uri, scopes):
         """
         Authenticates with the api from scratch on the authorization code grant.
         """
@@ -375,7 +380,7 @@ class OssapiV2:
             "client_id": client_id,
             "client_secret": client_secret
         }
-        session = OAuth2Session(client_id, redirect_uri=redirect_uri,
+        session = self.SessionClass(client_id, redirect_uri=redirect_uri,
             auto_refresh_url=self.TOKEN_URL,
             auto_refresh_kwargs=auto_refresh_kwargs,
             token_updater=self._save_token,
@@ -407,7 +412,7 @@ class OssapiV2:
         serversocket.close()
 
         code = data.split("code=")[1].split("&state=")[0]
-        token = session.fetch_token(self.TOKEN_URL, client_id=client_id,
+        token = await session.fetch_token(self.TOKEN_URL, client_id=client_id,
             client_secret=client_secret, code=code)
         self._save_token(token)
 
@@ -421,10 +426,10 @@ class OssapiV2:
         with open(self.token_file, "wb+") as f:
             pickle.dump(token, f)
 
-    def _request(self, type_, method, url, params={}, data={}):
+    async def _request(self, type_, method, url, params={}, data={}):
         params = self._format_params(params)
         try:
-            r = self.session.request(method, f"{self.BASE_URL}{url}",
+            r = await self.session.request(method, f"{self.BASE_URL}{url}",
                 params=params, data=data)
         except TokenExpiredError:
             # provide "auto refreshing" for client credentials grant. The client
@@ -435,12 +440,13 @@ class OssapiV2:
             # grant token, just request a new one.
             if self.grant is not Grant.CLIENT_CREDENTIALS:
                 raise
-            self.session = self._new_client_grant(self.client_id,
+            self.session = await self._new_client_grant(self.client_id,
                 self.client_secret)
             # redo the request now that we have a valid token
-            r = self.session.request(method, f"{self.BASE_URL}{url}",
+            r = await self.session.request(method, f"{self.BASE_URL}{url}",
                 params=params, data=data)
-
+        print(r.status)
+        print(r, type(r), dir(r))
         self.log.info(f"made {method} request to {r.request.url}")
         json_ = r.json()
         self.log.debug(f"received json: \n{json.dumps(json_, indent=4)}")
@@ -1178,6 +1184,8 @@ class OssapiV2:
         mode: GameModeT,
         score_id: int
     ) -> Replay:
+        # TODO this is going to cause issues when called asyncly; toss a
+        # run_until_complete on it?
         r = self.session.get(f"{self.BASE_URL}/scores/{mode.value}/"
             f"{score_id}/download")
         replay = osrparse.Replay.from_string(r.content)
@@ -1243,5 +1251,76 @@ class OssapiV2:
     # ------
 
     def revoke_token(self):
+        # TODO this is going to cause issues when called asyncly
         self.session.delete(f"{self.BASE_URL}/oauth/tokens/current")
         self.remove_token(self.token_key, self.token_directory)
+
+import asyncio
+
+class SyncOAuth2SessionWrapper(OAuth2Session):
+    # convert all requests to coroutines
+    async def request(self, *args, **kwargs):
+        return super().request(*args, **kwargs)
+
+# high level overview:
+# `_OssapiV2` lives in async land. Everything it interacts with is async and
+# it's perfectly happy. `OssapiV2` handles the conversion between sync and async
+# so that `_OssapiV2` is none the wiser, and neither is the consumer.
+# For instance, for `OssapiV2` (sync):
+# * consumer calls `api.spotlights()[0].name`. (sync)
+# * `_OssapiV2._request` gets called. (sync)
+# * `_OssapiV2._request` calls `OssapiV2._request` (async, inside an event loop)
+# * `OssapiV2._request` makes various async calls and returns (async)
+# * `_OssapiV2._request` returns the result (sync, thanks to the event loop)
+#
+# For `AsyncOssapiV2` (async):
+# * consumer calls `await api.spotlights()[0].name` (async)
+# * `OssapiV2._request` makes various async calls and returns (async)
+#
+# So the async version is simple; it's the conversion from a sync to async to
+# sync context in `OssapiV2` which is the complicated bit.
+
+class OssapiV2(_OssapiV2):
+    def __init__(self,
+        client_id: int,
+        client_secret: str,
+        redirect_uri: Optional[str] = None,
+        scopes: List[Union[str, Scope]] = [Scope.PUBLIC],
+        *,
+        grant: Optional[Union[Grant, str]] = None,
+        strict: bool = False,
+        token_directory: Optional[str] = None,
+        token_key: Optional[str] = None
+    ):
+        super().__init__(client_id, client_secret, redirect_uri, scopes,
+            grant=grant, strict=strict, token_directory=token_directory,
+            token_key=token_key, SessionClass=SyncOAuth2SessionWrapper)
+
+        self._loop = asyncio.get_event_loop()
+
+        coroutine = self.authenticate()
+        self.session = self._loop.run_until_complete(coroutine)
+
+    # convert all requests from our parent class back to sync functions with
+    # `run_until_complete`.
+    def _request(self, type_, method, url, params={}, data={}):
+        coroutine = super()._request(type_, method, url, params, data)
+        return self._loop.run_until_complete(coroutine)
+
+
+class AsyncOssapiV2(_OssapiV2):
+    def __init__(self,
+        client_id: int,
+        client_secret: str,
+        redirect_uri: Optional[str] = None,
+        scopes: List[Union[str, Scope]] = [Scope.PUBLIC],
+        *,
+        grant: Optional[Union[Grant, str]] = None,
+        strict: bool = False,
+        token_directory: Optional[str] = None,
+        token_key: Optional[str] = None
+    ):
+        from async_oauthlib import OAuth2Session as AsyncOAuth2Session
+        super().__init__(client_id, client_secret, redirect_uri, scopes,
+            grant=grant, strict=strict, token_directory=token_directory,
+            token_key=token_key, SessionClass=AsyncOAuth2Session)
