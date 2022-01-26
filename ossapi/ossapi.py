@@ -1,6 +1,6 @@
 from json.decoder import JSONDecodeError
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List
 import time
 
@@ -189,7 +189,9 @@ class Model:
         if attr is None:
             return None
 
-        return datetime.strptime(attr, "%Y-%m-%d %H:%M:%S")
+        date = datetime.strptime(attr, "%Y-%m-%d %H:%M:%S")
+        # all api provided datetimes are in utc
+        return date.replace(tzinfo=timezone.utc)
 
     def _int(self, attr):
         attr = self._data[attr]
