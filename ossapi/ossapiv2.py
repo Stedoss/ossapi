@@ -1176,10 +1176,14 @@ class OssapiV2:
     @request(Scope.PUBLIC, requires_login=True)
     def download_score(self,
         mode: GameModeT,
-        score_id: int
+        score_id: int,
+        *,
+        raw: bool = False
     ) -> Replay:
         r = self.session.get(f"{self.BASE_URL}/scores/{mode.value}/"
             f"{score_id}/download")
+        if raw:
+            return r.content
         replay = osrparse.Replay.from_string(r.content)
         return Replay(replay, self)
 
