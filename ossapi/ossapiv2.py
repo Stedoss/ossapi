@@ -444,13 +444,17 @@ class OssapiV2:
         self.log.info(f"made {method} request to {r.request.url}")
         json_ = r.json()
         self.log.debug(f"received json: \n{json.dumps(json_, indent=4)}")
+        self._check_response(json_, url)
+
+        return self._instantiate_type(type_, json_)
+
+    def _check_response(self, json_, url):
         # TODO this should just be ``if "error" in json``, but for some reason
         # ``self.search_beatmaps`` always returns an error in the response...
         # open an issue on osu-web?
         if len(json_) == 1 and "error" in json_:
             raise ValueError(f"api returned an error of `{json_['error']}` for "
                 f"a request to {unquote(url)}")
-        return self._instantiate_type(type_, json_)
 
     def _get(self, type_, url, params={}):
         return self._request(type_, "GET", url, params=params)
@@ -1180,10 +1184,23 @@ class OssapiV2:
         *,
         raw: bool = False
     ) -> Replay:
-        r = self.session.get(f"{self.BASE_URL}/scores/{mode.value}/"
-            f"{score_id}/download")
+        url = f"{self.BASE_URL}/scores/{mode.value}/{score_id}/download"
+        r = self.session.get(url)
+
+        # if the response above succeeded, it will return a raw string
+        # instead of json. If it didn't succeed, it will return json with an
+        # error.
+        # So always try parsing as json to check if there's an error. If parsin
+        # fails, just assume the request succeeded and move on.
+        try:
+            json_ = r.json()
+            self._check_response(json_, url)
+        except json.JSONDecodeError:
+            pass
+
         if raw:
             return r.content
+
         replay = osrparse.Replay.from_string(r.content)
         return Replay(replay, self)
 
