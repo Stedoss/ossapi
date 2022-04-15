@@ -127,6 +127,7 @@ class User(UserCompact):
     title_url: Optional[str]
     twitter: Optional[str]
     website: Optional[str]
+    scores_pinned_count: int
 
     def expand(self) -> User:
         # we're already expanded, no need to waste an api call
