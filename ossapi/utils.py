@@ -1,9 +1,9 @@
 from enum import EnumMeta, Enum, IntFlag
 from datetime import datetime, timezone
-from typing import Union, Any
+from typing import Any
 from dataclasses import dataclass
 
-from typing_utils import get_args, get_origin
+from typing_utils import issubtype
 
 def is_high_model_type(type_):
     """
@@ -215,9 +215,15 @@ class Datetime(datetime, BaseModel):
 
 def is_optional(type_):
     """
-    ``Optional[X]`` is equivalent to ``Union[X, None]``.
+    Whether ``type(None)`` is a valid instance of ``type_``. eg,
+    ``is_optional(Union[str, int, NoneType]) == True``.
+
+    Exception: when ``type_`` is any, we return false. Strictly speaking, if
+    ``Any`` is a subtype of ``type_`` then we return false, since
+    ``Union[Any, str]`` is a valid type not equal to ``Any`` (in python), but
+    representing the same set of types.
     """
-    return get_origin(type_) is Union and get_args(type_)[1] is type(None)
+    return issubtype(type(None), type_) and not issubtype(Any, type_)
 
 def is_primitive_type(type_):
     if not isinstance(type_, type):
