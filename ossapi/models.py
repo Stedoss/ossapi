@@ -291,6 +291,7 @@ class Score(Model):
     mode_int: int
     replay: bool
     passed: bool
+    current_user_attributes: Any
 
     beatmap: Optional[Beatmap]
     beatmapset: Optional[BeatmapsetCompact]
