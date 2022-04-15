@@ -424,6 +424,7 @@ class ForumTopic(Model):
     type: ForumTopicType
     updated_at: Datetime
     user_id: int
+    poll: Any
 
     def user(self) -> User:
         return self._fk_user(self.user_id)
