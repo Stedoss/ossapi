@@ -434,6 +434,7 @@ class ForumTopicAndPosts(Model):
     search: ForumTopicSearch
     posts: List[ForumPost]
     topic: ForumTopic
+    cursor_string: Optional[str]
 
 class ForumTopicSearch(Model):
     sort: Optional[ForumTopicSort]
@@ -547,6 +548,7 @@ class BeatmapsetDiscussionVote(Model):
     beatmapset_discussion_id: int
     created_at: Datetime
     updated_at: Datetime
+    cursor_string: Optional[str]
 
     def user(self):
         return self._fk_user(self.user_id)
@@ -779,6 +781,7 @@ class BeatmapsetSearchResult(Model):
     error: Optional[str]
     total: int
     search: Any
+    cursor_string: Optional[str]
 
 class BeatmapsetDiscussions(Model):
     beatmaps: List[Beatmap]
@@ -787,6 +790,7 @@ class BeatmapsetDiscussions(Model):
     included_discussions: List[BeatmapsetDiscussion]
     reviews_config: ReviewsConfig
     users: List[UserCompact]
+    cursor_string: Optional[str]
 
 class BeatmapsetDiscussionReview(Model):
     # https://github.com/ppy/osu-web/blob/master/app/Libraries/BeatmapsetDiscussionReview.php
@@ -798,12 +802,14 @@ class BeatmapsetDiscussionPosts(Model):
     cursor: CursorT
     posts: List[BeatmapsetDiscussionPost]
     users: List[UserCompact]
+    cursor_string: Optional[str]
 
 class BeatmapsetDiscussionVotes(Model):
     cursor: CursorT
     discussions: List[BeatmapsetDiscussion]
     votes: List[BeatmapsetDiscussionVote]
     users: List[UserCompact]
+    cursor_string: Optional[str]
 
 class BeatmapsetEventComment(Model):
     beatmap_discussion_id: int
