@@ -103,7 +103,7 @@ def request(scope, *, requires_login=False):
             origin = get_origin(type_)
             args = get_args(type_)
             if origin is Union and is_base_model_type(args[0]):
-                instantiate[name] = args[0]
+                instantiate[name] = type_
 
         arg_names = list(inspect.signature(function).parameters)
 
@@ -149,6 +149,12 @@ def request(scope, *, requires_login=False):
             for i, (arg_name, arg) in enumerate(zip(arg_names, args)):
                 if arg_name in instantiate:
                     type_ = instantiate[arg_name]
+                    # allow users to pass None for optional args. Without this
+                    # we would try to instantiate types like `GameMode(None)`
+                    # which would error.
+                    if is_optional(type_) and arg is None:
+                        continue
+                    type_ = get_args(type_)[0]
                     args[i] = type_(arg)
                 id_ = id_from_id_type(arg_name, arg)
                 if id_:
@@ -157,6 +163,9 @@ def request(scope, *, requires_login=False):
             for arg_name, arg in kwargs.items():
                 if arg_name in instantiate:
                     type_ = instantiate[arg_name]
+                    if is_optional(type_) and arg is None:
+                        continue
+                    type_ = get_args(type_)[0]
                     kwargs[arg_name] = type_(arg)
                 id_ = id_from_id_type(arg_name, arg)
                 if id_:
