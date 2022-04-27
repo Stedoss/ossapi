@@ -18,11 +18,6 @@ from ossapi.utils import Datetime, Model, BaseModel, Field
 
 T = TypeVar("T")
 S = TypeVar("S")
-# if there are no more results, a null cursor is returned instead.
-# So always let the cursor be nullable to catch this. It's the user's
-# responsibility to check for a null cursor to see if there are any more
-# results.
-CursorT = Optional["Cursor"]
 
 """
 a type hint of ``Optional[Any]`` or ``Any`` means that I don't know what type it
@@ -32,6 +27,53 @@ is, not that the api actually lets any type be returned there.
 # =================
 # Documented Models
 # =================
+
+# the weird location of the cursor class and `CursorT` definition is to remove
+# the need for forward type annotations, which breaks typing_utils when they
+# try to evaluate the forwardref (as the `Cursor` class is not in scope at that
+# moment). We would be able to fix this by manually passing forward refs to the
+# lib instead, but I don't want to have to keep track of which forward refs need
+# passing and which don't, or which classes I need to import in various files
+# (it's not as simple as just sticking a `global()` call in and calling it a
+# day). So I'm just going to ban forward refs in the codebase for now, until we
+# want to drop typing_utils (and thus support for python 3.8 and lower).
+# It's also possible I'm missing an obvious fix for this, but I suspect this is
+# a limitation of older python versions.
+
+# Cursors are an interesting case. As I understand it, they don't have a
+# predefined set of attributes across all endpoints, but instead differ per
+# endpoint. I don't want to have dozens of different cursor classes (although
+# that would perhaps be the proper way to go about this), so just allow
+# any attribute.
+# This is essentially a reimplementation of SimpleNamespace to deal with
+# BaseModels being passed the data as a single dict (`_data`) instead of as
+# **kwargs, plus some other weird stuff we're doing like handling cursor
+# objects being passed as data
+# We want cursors to also be instantiatable manually (eg `Cursor(page=199)`),
+# so make `_data` optional and also allow arbitrary `kwargs`.
+
+class Cursor(BaseModel):
+    def __init__(self, _data=None, **kwargs):
+        super().__init__()
+        # allow Cursor to be instantiated with another cursor as a no-op
+        if isinstance(_data, Cursor):
+            _data = _data.__dict__
+        _data = _data or kwargs
+        self.__dict__.update(_data)
+
+    def __repr__(self):
+        keys = sorted(self.__dict__)
+        items = (f"{k}={self.__dict__[k]!r}" for k in keys)
+        return f"{type(self).__name__}({', '.join(items)})"
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
+# if there are no more results, a null cursor is returned instead.
+# So always let the cursor be nullable to catch this. It's the user's
+# responsibility to check for a null cursor to see if there are any more
+# results.
+CursorT = Optional[Cursor]
 
 class UserCompact(Model):
     """
@@ -348,35 +390,6 @@ class Comment(Model):
 
     def edited_by(self) -> Optional[User]:
         return self._fk_user(self.edited_by_id)
-
-# Cursors are an interesting case. As I understand it, they don't have a
-# predefined set of attributes across all endpoints, but instead differ per
-# endpoint. I don't want to have dozens of different cursor classes (although
-# that would perhaps be the proper way to go about this), so just allow
-# any attribute.
-# This is essentially a reimplementation of SimpleNamespace to deal with
-# BaseModels being passed the data as a single dict (`_data`) instead of as
-# **kwargs, plus some other weird stuff we're doing like handling cursor
-# objects being passed as data
-# We want cursors to also be instantiatable manually (eg `Cursor(page=199)`),
-# so make `_data` optional and also allow arbitrary `kwargs`.
-
-class Cursor(BaseModel):
-    def __init__(self, _data=None, **kwargs):
-        super().__init__()
-        # allow Cursor to be instantiated with another cursor as a no-op
-        if isinstance(_data, Cursor):
-            _data = _data.__dict__
-        _data = _data or kwargs
-        self.__dict__.update(_data)
-
-    def __repr__(self):
-        keys = sorted(self.__dict__)
-        items = (f"{k}={self.__dict__[k]!r}" for k in keys)
-        return f"{type(self).__name__}({', '.join(items)})"
-
-    def __eq__(self, other):
-        return self.__dict__ == other.__dict__
 
 class CommentBundle(Model):
     commentable_meta: List[CommentableMeta]
