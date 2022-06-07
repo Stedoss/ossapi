@@ -111,6 +111,8 @@ class UserCompact(Model):
     friends: Optional[List[UserRelation]]
     graveyard_beatmapset_count: Optional[int]
     groups: Optional[List[UserGroup]]
+    # undocumented
+    guest_beatmapset_count: Optional[int]
     is_admin: Optional[bool]
     is_bng: Optional[bool]
     is_full_bn: Optional[bool]
