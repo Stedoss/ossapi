@@ -26,7 +26,8 @@ from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore,
     Spotlights, WikiPage, _Event, Event, BeatmapsetDiscussionPosts, Build,
     ChangelogListing, MultiplayerScores, MultiplayerScoresCursor,
     BeatmapsetDiscussionVotes, CreatePMResponse, BeatmapsetDiscussions,
-    UserCompact, NewsListing, NewsPost, SeasonalBackgrounds, BeatmapsetCompact)
+    UserCompact, NewsListing, NewsPost, SeasonalBackgrounds, BeatmapsetCompact,
+    BeatmapUserScores)
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
     BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
@@ -764,6 +765,20 @@ class OssapiV2:
         params = {"mode": mode, "mods": mods}
         return self._get(BeatmapUserScore,
             f"/beatmaps/{beatmap_id}/scores/users/{user_id}", params)
+
+    @request(Scope.PUBLIC)
+    def beatmap_user_scores(self,
+        beatmap_id: BeatmapIdT,
+        user_id: UserIdT,
+        mode: Optional[GameModeT] = None
+    ) -> List[BeatmapUserScore]:
+        """
+        https://osu.ppy.sh/docs/index.html#get-a-user-beatmap-scores
+        """
+        params = {"mode": mode}
+        scores = self._get(BeatmapUserScores,
+            f"/beatmaps/{beatmap_id}/scores/users/{user_id}/all", params)
+        return scores.scores
 
     @request(Scope.PUBLIC)
     def beatmap_scores(self,

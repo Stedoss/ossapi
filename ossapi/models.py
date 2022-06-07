@@ -350,6 +350,9 @@ class BeatmapUserScore(Model):
     position: int
     score: Score
 
+class BeatmapUserScores(Model):
+    scores: List[Score]
+
 class BeatmapScores(Model):
     scores: List[Score]
     userScore: Optional[BeatmapUserScore]

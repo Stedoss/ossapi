@@ -66,6 +66,7 @@ print(api.ranking("osu", RankingType.PERFORMANCE, country="US").ranking[0].user.
 print(api.user_scores(12092800, "best")[0].accuracy)
 print(api.beatmap(beatmap_id=221777).last_updated)
 print(api.beatmap_user_score(beatmap_id=221777, user_id=2757689).score.mods)
+print(api.beatmap_user_scores(beatmap_id=221777, user_id=2757689)[0].mods)
 print(api.search(query="peppy").users.data[0].profile_colour)
 print(api.comment(comment_id=1).comments[0].message)
 print(api.download_score(mode="osu", score_id=2797309065))

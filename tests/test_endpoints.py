@@ -61,6 +61,10 @@ class TestBeatmapUserScore(TestCase):
     def test_deserialize(self):
         api.beatmap_user_score(beatmap_id=221777, user_id=2757689, mode="osu")
 
+class TestBeatmapUserScores(TestCase):
+    def test_deserialize(self):
+        api.beatmap_user_scores(beatmap_id=221777, user_id=2757689, mode="osu")
+
 class TestSearch(TestCase):
     def test_deserialize(self):
         api.search(query="peppy")
