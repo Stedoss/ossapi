@@ -1126,6 +1126,14 @@ class OssapiV2:
         """
         https://osu.ppy.sh/docs/index.html#get-user-scores
         """
+        # `include_fails` is actually a string in the api spec. We'll still
+        # require a bool to be passed, and just do the conversion behind the
+        # scenes.
+        if include_fails is False:
+            include_fails = 0
+        if include_fails is True:
+            include_fails = 1
+
         params = {"include_fails": include_fails, "mode": mode, "limit": limit,
             "offset": offset}
         return self._get(List[Score], f"/users/{user_id}/scores/{type_.value}",
