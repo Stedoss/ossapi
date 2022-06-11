@@ -1,8 +1,6 @@
 from typing import Optional, List, Any
-from enum import IntFlag
 
-from ossapi.utils import (EnumModel, ListEnumMeta, Datetime, Model, BaseModel,
-    Field)
+from ossapi.utils import (EnumModel, Datetime, Model, Field, IntFlagModel)
 
 # ================
 # Documented Enums
@@ -23,14 +21,7 @@ class GameMode(EnumModel):
     CTB    = "fruits"
     MANIA  = "mania"
 
-# for reasons I don't fully understand, we can't do
-# ``PlayStyles(IntFlagModel, metaclass=ListEnumMeta)`` and must instead do this,
-# with two separate classes. Possibly because when using an enum metaclass, its
-# superclass must be a direct enum class like ``IntFlag``, and not a subclass
-# like ``IntFlagModel``? Weird territory here.
-# The error thrown when using ``IntFlagModel`` is:
-# ``TypeError: object.__new__(PlayStyles) is not safe, use int.__new__()``
-class PlayStyles(BaseModel, IntFlag, metaclass=ListEnumMeta):
+class PlayStyles(IntFlagModel):
     MOUSE = 1
     KEYBOARD = 2
     TABLET = 4
@@ -43,6 +34,13 @@ class PlayStyles(BaseModel, IntFlag, metaclass=ListEnumMeta):
         but we also want to be able to instantiate with the strings the api
         returns.
         """
+        if isinstance(value, list):
+            value = iter(value)
+            new_val = cls(next(value))
+            for val in value:
+                new_val |= cls(val)
+            return new_val
+
         if value == "mouse":
             return PlayStyles.MOUSE
         if value == "keyboard":

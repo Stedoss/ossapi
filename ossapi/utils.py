@@ -142,32 +142,6 @@ class IntFlagModel(BaseModel, IntFlag):
     pass
 
 
-class ListEnumMeta(EnumMeta):
-    """
-    Allows an enum to be instantiated with a list of members of the enum. So
-    ``MyEnum([1, 8])`` is equivalent to ``MyEnum(1) | MyEnum(8)``.
-    """
-    def __call__(cls, value, names=None, *, module=None, qualname=None,
-        type_=None, start=1):
-
-        def _instantiate(value):
-            # interestingly, the full form of super is required here (instead of
-            # just ``super().__call__``). I guess it's binding to this inner
-            # method instead of the class?
-            return super(ListEnumMeta, cls).__call__(value, names,
-                module=module, qualname=qualname, type=type_, start=start)
-
-        if not isinstance(value, list):
-            return _instantiate(value)
-        value = iter(value)
-        val = next(value)
-        new_val = _instantiate(val)
-        for val in value:
-            val = _instantiate(val)
-            new_val |= val
-        return new_val
-
-
 class Datetime(datetime, BaseModel):
     """
     Our replacement for the ``datetime`` object that deals with the various
