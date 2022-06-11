@@ -30,9 +30,8 @@ class PlayStyles(IntFlagModel):
     @classmethod
     def _missing_(cls, value):
         """
-        Our backing values are ints (which is necessary for us to use a flag)
-        but we also want to be able to instantiate with the strings the api
-        returns.
+        Allow instantiation via either strings or lists of ints / strings. The
+        api returns a list of strings for User.playstyle.
         """
         if isinstance(value, list):
             value = iter(value)
