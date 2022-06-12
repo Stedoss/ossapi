@@ -372,6 +372,7 @@ class CommentableMeta(Model):
     # both undocumented
     owner_id: Optional[int]
     owner_title: Optional[str]
+    current_user_attributes: Any
 
 class Comment(Model):
     commentable_id: int
