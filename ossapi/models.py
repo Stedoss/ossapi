@@ -263,6 +263,7 @@ class BeatmapsetCompact(Model):
     video: bool
     nsfw: bool
     offset: int
+    spotlight: bool
     # documented as being in ``Beatmapset`` only, but returned by
     # ``api.beatmapset_events`` which uses a ``BeatmapsetCompact``.
     hype: Optional[Hype]
