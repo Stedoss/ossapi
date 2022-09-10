@@ -789,6 +789,35 @@ class SeasonalBackground(Model):
     url: str
     user: UserCompact
 
+class DifficultyAttributes(Model):
+    attributes: BeatmapDifficultyAttributes
+
+class BeatmapDifficultyAttributes(Model):
+    max_combo: int
+    star_rating: float
+
+    # osu attributes
+    aim_difficulty: Optional[float]
+    approach_rate: Optional[float]
+    flashlight_difficulty: Optional[float]
+    overall_difficulty: Optional[float]
+    slider_factor: Optional[float]
+    speed_difficulty: Optional[float]
+
+    # taiko attributes
+    stamina_difficulty: Optional[float]
+    rhythm_difficulty: Optional[float]
+    colour_difficulty: Optional[float]
+    approach_raty: Optional[float]
+    great_hit_windoy: Optional[float]
+
+    # ctb attributes
+    approach_rate: Optional[float]
+
+    # mania attributes
+    great_hit_window: Optional[float]
+    score_multiplier: Optional[float]
+
 
 # ===================
 # Undocumented Models

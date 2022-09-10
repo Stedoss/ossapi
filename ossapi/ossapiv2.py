@@ -27,7 +27,7 @@ from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore,
     ChangelogListing, MultiplayerScores, MultiplayerScoresCursor,
     BeatmapsetDiscussionVotes, CreatePMResponse, BeatmapsetDiscussions,
     UserCompact, NewsListing, NewsPost, SeasonalBackgrounds, BeatmapsetCompact,
-    BeatmapUserScores)
+    BeatmapUserScores, DifficultyAttributes)
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
     BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
@@ -878,6 +878,21 @@ class OssapiV2:
             "with_deleted": with_deleted}
         return self._get(BeatmapsetDiscussions,
             "/beatmapsets/discussions", params)
+
+    @request(Scope.PUBLIC)
+    def beatmap_attributes(self,
+        beatmap_id: int,
+        mods: Optional[ModT] = None,
+        ruleset: Optional[GameModeT] = None,
+        ruleset_id: Optional[int] = None
+    ) -> DifficultyAttributes:
+        """
+        https://osu.ppy.sh/docs/index.html#get-beatmap-attributes
+        """
+        data = {"mods": mods, "ruleset": ruleset, "ruleset_id": ruleset_id}
+        return self._post(DifficultyAttributes,
+            f"/beatmaps/{beatmap_id}/attributes", data=data)
+
 
     # /changelog
     # ----------

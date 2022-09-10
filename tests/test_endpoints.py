@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from ossapi import (RankingType, BeatmapsetEventType, AccessDeniedError,
-    InsufficientScopeError)
+    InsufficientScopeError, Mod)
 
 from tests import api
 
@@ -141,6 +141,12 @@ class TestSeasonalBackgrounds(TestCase):
     def test_deserialize(self):
         api.seasonal_backgrounds()
 
+class TestBeatmapAttributes(TestCase):
+    def test_deserialize(self):
+        api.beatmap_attributes(221777, ruleset="osu")
+        api.beatmap_attributes(221777, mods=Mod.HDDT)
+        api.beatmap_attributes(221777, mods="HR")
+        api.beatmap_attributes(221777, ruleset_id=0)
 
 # TODO requires friends.read scope
 # class TestFriends(TestCase):
