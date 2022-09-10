@@ -433,6 +433,8 @@ class OssapiV2:
 
     def _request(self, type_, method, url, params={}, data={}):
         params = self._format_params(params)
+        # also format data for post requests
+        data = self._format_params(data)
         try:
             r = self.session.request(method, f"{self.BASE_URL}{url}",
                 params=params, data=data)
