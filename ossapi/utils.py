@@ -160,8 +160,6 @@ class Datetime(datetime, BaseModel):
         # stopgap seems to work for now, but may break in the future if
         # the api changes the timestamps they return.
         # see https://stackoverflow.com/q/969285.
-        if value.endswith("Z"):
-            return datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f%z")
         if value.isdigit():
             # see if it's an int first, if so it's a unix timestamp. The
             # api returns the timestamp in milliseconds but
@@ -169,10 +167,13 @@ class Datetime(datetime, BaseModel):
             # divide by 1000 to convert.
             value = int(value) / 1000
             return datetime.fromtimestamp(value, tz=timezone.utc)
+        if cls._matches_datetime(value, "%Y-%m-%dT%H:%M:%S.%f%z"):
+            return value
         if cls._matches_datetime(value, "%Y-%m-%dT%H:%M:%S%z"):
             return datetime.strptime(value, "%Y-%m-%dT%H:%M:%S%z")
         if cls._matches_datetime(value, "%Y-%m-%d"):
             return datetime.strptime(value, "%Y-%m-%d")
+        raise ValueError(f"invalid datetime string {value}")
 
     @staticmethod
     def _matches_datetime(value, format_):
