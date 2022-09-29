@@ -1,4 +1,4 @@
-from enum import EnumMeta, Enum, IntFlag
+from enum import Enum, IntFlag
 from datetime import datetime, timezone
 from typing import Any
 from dataclasses import dataclass
