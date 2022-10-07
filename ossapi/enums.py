@@ -16,10 +16,14 @@ class ProfilePage(EnumModel):
     MEDALS = "medals"
 
 class GameMode(EnumModel):
-    STD    = "osu"
-    TAIKO  = "taiko"
-    CTB    = "fruits"
-    MANIA  = "mania"
+    OSU   = "osu"
+    TAIKO = "taiko"
+    CATCH = "fruits"
+    MANIA = "mania"
+    # deprecated, remove in 3.x.x
+    CTB   = "fruits"
+    # deprecated, remove in 3.x.x
+    STD   = "osu"
 
 class PlayStyles(IntFlagModel):
     MOUSE = 1
