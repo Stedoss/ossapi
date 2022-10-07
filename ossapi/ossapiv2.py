@@ -32,7 +32,8 @@ from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
     BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
     SearchMode, MultiplayerScoresSort, BeatmapsetDiscussionVote,
-    BeatmapsetDiscussionVoteSort, BeatmapsetStatus, MessageType)
+    BeatmapsetDiscussionVoteSort, BeatmapsetStatus, MessageType,
+    BeatmapsetSearchCategory, BeatmapsetSearchMode)
 from ossapi.utils import (is_compatible_type, is_primitive_type, is_optional,
     is_base_model_type, is_model_type, is_high_model_type, Field)
 from ossapi.mod import Mod
@@ -64,6 +65,8 @@ BeatmapsetDiscussionVoteT = Union[BeatmapsetDiscussionVote, int]
 BeatmapsetDiscussionVoteSortT = Union[BeatmapsetDiscussionVoteSort, str]
 MessageTypeT = Union[MessageType, str]
 BeatmapsetStatusT = Union[BeatmapsetStatus, str]
+BeatmapsetSearchCategoryT = Union[BeatmapsetSearchCategory, str]
+BeatmapsetSearchModeT = Union[BeatmapsetSearchMode, int]
 
 BeatmapIdT = Union[int, BeatmapCompact]
 UserIdT = Union[int, UserCompact]
@@ -1256,6 +1259,9 @@ class OssapiV2:
     @request(Scope.PUBLIC)
     def search_beatmapsets(self,
         query: Optional[str] = None,
+        category: Optional[BeatmapsetSearchCategoryT] =
+            BeatmapsetSearchCategory.HAS_LEADERBOARD,
+        mode: Optional[BeatmapsetSearchModeT] = BeatmapsetSearchMode.ANY,
         cursor: Optional[Cursor] = None
     ) -> BeatmapsetSearchResult:
         # Param key names are the same as https://osu.ppy.sh/beatmapsets,
@@ -1263,7 +1269,18 @@ class OssapiV2:
         # the query uses ``q`` and the category uses ``s``.
         # TODO implement all possible queries, or wait for them to be
         # documented. Currently we only implement the most basic "query" option.
+
         params = {"cursor": cursor, "q": query}
+
+        # default options (eg category "has leaderboard", mode "any") don't get
+        # sent in the web-side query string, so presumably we also shouldn't
+        # specify them here, though I haven't tested whether it makes a
+        # difference.
+        if category is not BeatmapsetSearchCategory.HAS_LEADERBOARD:
+            params["s"] = category
+        if mode is not BeatmapsetSearchMode.ANY:
+            params["m"] = mode
+
         return self._get(BeatmapsetSearchResult, "/beatmapsets/search/", params)
 
     @request(Scope.PUBLIC)

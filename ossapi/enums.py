@@ -290,6 +290,29 @@ class BeatmapsetDiscussionVoteSort(EnumModel):
     NEW = "id_desc"
     OLD = "id_asc"
 
+class BeatmapsetSearchCategory(EnumModel):
+    ANY = "any"
+    # made up value. this is the default option and doesn't cause a value to
+    # appear in the query string.
+    HAS_LEADERBOARD = "leaderboard"
+    RANKED = "ranked"
+    QUALIFIED = "qualified"
+    LOVED = "loved"
+    FAVOURITES = "favourites"
+    PENDING = "pending"
+    WIP = "wip"
+    GRAVEYARD = "graveyard"
+    MY_MAPS = "mine"
+
+class BeatmapsetSearchMode(EnumModel):
+    # made up value. this is the default option and doesn't cause a value to
+    # appear in the query string.
+    ANY = -1
+    OSU = 0
+    TAIKO = 1
+    CATCH = 2
+    MANIA = 3
+
 # =================
 # Documented Models
 # =================
