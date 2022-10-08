@@ -1259,9 +1259,9 @@ class OssapiV2:
     @request(Scope.PUBLIC)
     def search_beatmapsets(self,
         query: Optional[str] = None,
-        category: Optional[BeatmapsetSearchCategoryT] =
+        category: BeatmapsetSearchCategoryT =
             BeatmapsetSearchCategory.HAS_LEADERBOARD,
-        mode: Optional[BeatmapsetSearchModeT] = BeatmapsetSearchMode.ANY,
+        mode: BeatmapsetSearchModeT = BeatmapsetSearchMode.ANY,
         cursor: Optional[Cursor] = None
     ) -> BeatmapsetSearchResult:
         # Param key names are the same as https://osu.ppy.sh/beatmapsets,
