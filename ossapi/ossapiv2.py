@@ -1204,6 +1204,7 @@ class OssapiV2:
         return self._get(User, f"/users/{user}/{mode.value if mode else ''}",
             params)
 
+    @request(Scope.PUBLIC)
     def users(self,
         user_ids: List[UserIdT]
     ) -> List[UserCompact]:
