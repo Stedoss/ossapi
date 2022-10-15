@@ -33,7 +33,9 @@ from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
     SearchMode, MultiplayerScoresSort, BeatmapsetDiscussionVote,
     BeatmapsetDiscussionVoteSort, BeatmapsetStatus, MessageType,
-    BeatmapsetSearchCategory, BeatmapsetSearchMode)
+    BeatmapsetSearchCategory, BeatmapsetSearchMode,
+    BeatmapsetSearchExplicitContent, BeatmapsetSearchGenre,
+    BeatmapsetSearchLanguage)
 from ossapi.utils import (is_compatible_type, is_primitive_type, is_optional,
     is_base_model_type, is_model_type, is_high_model_type, Field)
 from ossapi.mod import Mod
@@ -67,6 +69,9 @@ MessageTypeT = Union[MessageType, str]
 BeatmapsetStatusT = Union[BeatmapsetStatus, str]
 BeatmapsetSearchCategoryT = Union[BeatmapsetSearchCategory, str]
 BeatmapsetSearchModeT = Union[BeatmapsetSearchMode, int]
+BeatmapsetSearchExplicitContentT = Union[BeatmapsetSearchExplicitContent, str]
+BeatmapsetSearchGenreT = Union[BeatmapsetSearchGenre, int]
+BeatmapsetSearchLanguageT = Union[BeatmapsetSearchLanguage, str]
 
 BeatmapIdT = Union[int, BeatmapCompact]
 UserIdT = Union[int, UserCompact]
@@ -1275,27 +1280,65 @@ class OssapiV2:
     @request(Scope.PUBLIC)
     def search_beatmapsets(self,
         query: Optional[str] = None,
+        mode: BeatmapsetSearchModeT = BeatmapsetSearchMode.ANY,
         category: BeatmapsetSearchCategoryT =
             BeatmapsetSearchCategory.HAS_LEADERBOARD,
-        mode: BeatmapsetSearchModeT = BeatmapsetSearchMode.ANY,
+        explicit_content: BeatmapsetSearchExplicitContentT =
+            BeatmapsetSearchExplicitContent.HIDE,
+        genre: BeatmapsetSearchGenreT = BeatmapsetSearchGenre.ANY,
+        language: BeatmapsetSearchLanguageT = BeatmapsetSearchLanguage.ANY,
+        # "Extra"
+        force_video: bool = False,
+        force_storyboard: bool = False,
+        # "General"
+        force_recommended_difficulty: bool = False,
+        include_converts: bool = False,
+        force_followed_mappers: bool = False,
+        force_spotlights: bool = False,
+        force_featured_artists: bool = False,
         cursor: Optional[Cursor] = None
     ) -> BeatmapsetSearchResult:
         # Param key names are the same as https://osu.ppy.sh/beatmapsets,
         # so from eg https://osu.ppy.sh/beatmapsets?q=black&s=any we get that
         # the query uses ``q`` and the category uses ``s``.
-        # TODO implement all possible queries, or wait for them to be
-        # documented. Currently we only implement the most basic "query" option.
 
-        params = {"cursor": cursor, "q": query}
+        explicit_content = {
+            BeatmapsetSearchExplicitContent.SHOW: "true",
+            BeatmapsetSearchExplicitContent.HIDE: "false",
+        }[explicit_content]
 
-        # default options (eg category "has leaderboard", mode "any") don't get
-        # sent in the web-side query string, so presumably we also shouldn't
-        # specify them here, though I haven't tested whether it makes a
-        # difference.
-        if category is not BeatmapsetSearchCategory.HAS_LEADERBOARD:
-            params["s"] = category
-        if mode is not BeatmapsetSearchMode.ANY:
-            params["m"] = mode
+        extras = []
+        if force_video:
+            extras.append("video")
+        if force_storyboard:
+            extras.append("storyboard")
+        extra = ".".join(extras)
+
+        generals = []
+        if force_recommended_difficulty:
+            generals.append("recommended")
+        if include_converts:
+            generals.append("converts")
+        if force_followed_mappers:
+            generals.append("follows")
+        if force_spotlights:
+            generals.append("spotlights")
+        if force_featured_artists:
+            generals.append("featured_artists")
+        general = ".".join(generals)
+
+        params = {"cursor": cursor, "q": query, "s": category, "m": mode,
+            "g": genre, "l": language, "nsfw": explicit_content, "e": extra,
+            "c": general}
+
+        # BeatmapsetSearchGenre.ANY is the default and doesn't have a correct
+        # corresponding value
+        if genre is BeatmapsetSearchGenre.ANY:
+            del params["g"]
+
+        # same for BeatmapsetSearchLanguage.ANY
+        if language is BeatmapsetSearchLanguage.ANY:
+            del params["l"]
 
         return self._get(BeatmapsetSearchResult, "/beatmapsets/search/", params)
 

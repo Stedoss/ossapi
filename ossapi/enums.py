@@ -292,8 +292,6 @@ class BeatmapsetDiscussionVoteSort(EnumModel):
 
 class BeatmapsetSearchCategory(EnumModel):
     ANY = "any"
-    # made up value. this is the default option and doesn't cause a value to
-    # appear in the query string.
     HAS_LEADERBOARD = "leaderboard"
     RANKED = "ranked"
     QUALIFIED = "qualified"
@@ -312,6 +310,45 @@ class BeatmapsetSearchMode(EnumModel):
     TAIKO = 1
     CATCH = 2
     MANIA = 3
+
+class BeatmapsetSearchExplicitContent(EnumModel):
+    HIDE = "hide"
+    SHOW = "show"
+
+class BeatmapsetSearchGenre(EnumModel):
+    # default option, made up value
+    ANY = 0
+    UNSPECIFIED = 1
+    VIDEO_GAME = 2
+    ANIME = 3
+    ROCK = 4
+    POP = 5
+    OTHER = 6
+    NOVELTY = 7
+    HIP_HOP = 9
+    ELECTRONIC = 10
+    METAL = 11
+    CLASSICAL = 12
+    FOLK = 13
+    JAZZ = 14
+
+class BeatmapsetSearchLanguage(EnumModel):
+    # default option, made up value
+    ANY = 0
+    UNSPECIFIED = 1
+    ENGLISH = 2
+    JAPANESE = 3
+    CHINESE = 4
+    KOREAN = 6
+    INSTRUMENTAL = 5
+    FRENCH = 7
+    GERMAN = 8
+    SWEDISH = 9
+    SPANISH = 10
+    ITALIAN = 11
+    RUSSIAN = 12
+    POLISH = 13
+    OTHER = 14
 
 # =================
 # Documented Models
