@@ -41,13 +41,13 @@ from ossapi.utils import (is_compatible_type, is_primitive_type, is_optional,
 from ossapi.mod import Mod
 from ossapi.replay import Replay
 
-# our ``request`` function below relies on the ordering of these types. The
+# our `request` function below relies on the ordering of these types. The
 # base type must come first, with any auxiliary types that the base type accepts
 # coming after.
 # These types are intended to provide better type hinting for consumers. We
-# want to support the ability to pass ``"osu"`` instead of ``GameMode.STD``,
+# want to support the ability to pass `"osu"` instead of `GameMode.STD`,
 # for instance. We automatically convert any value to its base class if the
-# relevant parameter has a type hint of the form below (see ``request`` for
+# relevant parameter has a type hint of the form below (see `request` for
 # details).
 GameModeT = Union[GameMode, str]
 ScoreTypeT = Union[ScoreType, str]
@@ -151,7 +151,7 @@ def request(scope, *, requires_login=False):
                         return arg.id
 
             # args and kwargs are handled separately, but in a similar fashion.
-            # The difference is that for ``args`` we need to know the name of
+            # The difference is that for `args` we need to know the name of
             # the argument so we can look up its type hint and see if it's a
             # parameter we need to convert.
 
@@ -469,8 +469,8 @@ class OssapiV2:
         return self._instantiate_type(type_, json_)
 
     def _check_response(self, json_, url):
-        # TODO this should just be ``if "error" in json``, but for some reason
-        # ``self.search_beatmaps`` always returns an error in the response...
+        # TODO this should just be `if "error" in json`, but for some reason
+        # `self.search_beatmaps` always returns an error in the response...
         # open an issue on osu-web?
         if len(json_) == 1 and "error" in json_:
             raise ValueError(f"api returned an error of `{json_['error']}` for "
@@ -549,8 +549,8 @@ class OssapiV2:
         python's typing system.
         """
         # we want to get the annotations of inherited members as well, which is
-        # why we pass ``type(obj)`` instead of just ``obj``, which would only
-        # return annotations for attributes defined in ``obj`` and not its
+        # why we pass `type(obj)` instead of just `obj`, which would only
+        # return annotations for attributes defined in `obj` and not its
         # inherited attributes.
         annotations = get_type_hints(type(obj))
         override_annotations = obj.override_types()
@@ -564,7 +564,7 @@ class OssapiV2:
                 continue
             type_ = annotations[attr]
             # when we instantiate types, we explicitly fill in optional
-            # attributes with ``None``. We want to skip these, but only if the
+            # attributes with `None`. We want to skip these, but only if the
             # attribute is actually annotated as optional, otherwise we would be
             # skipping fields that are null which aren't supposed to be, and
             # prevent that error from being caught.
@@ -580,7 +580,7 @@ class OssapiV2:
         return obj
 
     def _instantiate_type(self, type_, value, obj=None, attr_name=None):
-        # ``attr_name`` is purely for debugging, it's the name of the attribute
+        # `attr_name` is purely for debugging, it's the name of the attribute
         # being instantiated
         origin = get_origin(type_)
         args = get_args(type_)
@@ -623,7 +623,7 @@ class OssapiV2:
             # check if the list has been instantiated generically; if so,
             # use the concrete type backing the generic type.
             if isinstance(args[0], TypeVar):
-                # ``__orig_class__`` is how we can get the concrete type of
+                # `__orig_class__` is how we can get the concrete type of
                 # a generic. See https://stackoverflow.com/a/60984681 and
                 # https://www.python.org/dev/peps/pep-0560/#mro-entries.
                 type_ = get_args(obj.__orig_class__)[0]
@@ -648,27 +648,27 @@ class OssapiV2:
                 new_value.append(entry)
             return new_value
 
-        # either we ourself are a model type (eg ``Search``), or we are
-        # a special indexed type (eg ``type_ == SearchResult[UserCompact]``,
-        # ``origin == UserCompact``). In either case we want to instantiate
-        # ``type_``.
+        # either we ourself are a model type (eg `Search`), or we are
+        # a special indexed type (eg `type_ == SearchResult[UserCompact]`,
+        # `origin == UserCompact`). In either case we want to instantiate
+        # `type_`.
         if not is_model_type(type_) and not is_model_type(origin):
             return None
         value = self._instantiate(type_, value)
         # we need to resolve the annotations of any nested model types before we
         # set the attribute. This recursion is well-defined because the base
-        # case is when ``value`` has no model types, which will always happen
+        # case is when `value` has no model types, which will always happen
         # eventually.
         return self._resolve_annotations(value)
 
     def _instantiate(self, type_, kwargs):
         self.log.debug(f"instantiating type {type_}")
-        # we need a special case to handle when ``type_`` is a
-        # ``_GenericAlias``. I don't fully understand why this exception is
+        # we need a special case to handle when `type_` is a
+        # `_GenericAlias`. I don't fully understand why this exception is
         # necessary, and it's likely the result of some error on my part in our
         # type handling code. Nevertheless, until I dig more deeply into it,
         # we need to extract the type to use for the init signature and the type
-        # hints from a ``_GenericAlias`` if we see one, as standard methods
+        # hints from a `_GenericAlias` if we see one, as standard methods
         # won't work.
         override_type = type_.override_class(kwargs)
         type_ = override_type or type_
@@ -705,12 +705,12 @@ class OssapiV2:
                 key = field_names[key]
             kwargs[key] = value
 
-        # if we've annotated a class with ``Optional[X]``, and the api response
-        # didn't return a value for that attribute, pass ``None`` for that
+        # if we've annotated a class with `Optional[X]`, and the api response
+        # didn't return a value for that attribute, pass `None` for that
         # attribute.
-        # This is so that we don't have to define a default value of ``None``
+        # This is so that we don't have to define a default value of `None`
         # for each optional attribute of our models, since the default will
-        # always be ``None``.
+        # always be `None`.
         for attribute, annotation in type_hints.items():
             if is_optional(annotation):
                 if attribute not in kwargs:
@@ -719,7 +719,7 @@ class OssapiV2:
         # The osu api often adds new fields to various models, and these are not
         # considered breaking changes. To make this a non-breaking change on our
         # end as well, we ignore any unexpected parameters, unless
-        # ``self.strict`` is ``True``. This means that consumers using old
+        # `self.strict` is `True`. This means that consumers using old
         # ossapi versions (which aren't up to date with the latest parameters
         # list) will have new fields silently ignored instead of erroring.
         # This also means that consumers won't be able to benefit from new
@@ -741,8 +741,8 @@ class OssapiV2:
                 self.log.info(f"ignoring unexpected parameter `{k}` from "
                     f"api response for type {type_}")
 
-        # every model gets a special ``_api`` parameter, which is the
-        # ``OssapiV2`` instance which loaded it (aka us).
+        # every model gets a special `_api` parameter, which is the
+        # `OssapiV2` instance which loaded it (aka us).
         kwargs_["_api"] = self
 
         try:
@@ -1300,7 +1300,7 @@ class OssapiV2:
     ) -> BeatmapsetSearchResult:
         # Param key names are the same as https://osu.ppy.sh/beatmapsets,
         # so from eg https://osu.ppy.sh/beatmapsets?q=black&s=any we get that
-        # the query uses ``q`` and the category uses ``s``.
+        # the query uses `q` and the category uses `s`.
 
         explicit_content = {
             BeatmapsetSearchExplicitContent.SHOW: "true",

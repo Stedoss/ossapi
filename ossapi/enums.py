@@ -171,9 +171,9 @@ class EventType(EnumModel):
     USER_SUPPORT_GIFT = "userSupportGift"
     USERNAME_CHANGE = "usernameChange"
 
-# TODO this is just a subset of ``RankStatus``, and is only (currently) used for
-# ``EventType.BEATMAPSET_APPROVE``. Find some way to de-duplicate? Could move to
-# ``RankStatus``, but then how to enforce taking on only a subset of values?
+# TODO this is just a subset of `RankStatus`, and is only (currently) used for
+# `EventType.BEATMAPSET_APPROVE`. Find some way to de-duplicate? Could move to
+# `RankStatus`, but then how to enforce taking on only a subset of values?
 class BeatmapsetApproval(EnumModel):
     RANKED = "ranked"
     APPROVED = "approved"
@@ -490,7 +490,7 @@ class EventAchivement(Model):
     icon_url: str
     id: int
     name: str
-    # TODO ``grouping`` can probably be enumified (example value: "Dedication"),
+    # TODO `grouping` can probably be enumified (example value: "Dedication"),
     # need to find full list first though
     grouping: str
     ordering: int

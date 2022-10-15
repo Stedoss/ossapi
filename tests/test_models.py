@@ -16,7 +16,7 @@ class TestMethodTypeConversion(TestCase):
 class TestExpandableModels(TestCase):
     def test_expand_user(self):
         user = api.search(query="tybug").users.data[0]
-        # ``statistics`` is only available on User models, so make sure it's not
+        # `statistics` is only available on User models, so make sure it's not
         # present before expanding and is present afterwards
         self.assertIsNone(user.statistics)
 

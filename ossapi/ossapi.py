@@ -32,7 +32,7 @@ class Ossapi:
     """
 
     # how long in seconds to wait for a request to finish before raising a
-    # ``requests.Timeout`` exception
+    # requests.Timeout` exception
     TIMEOUT = 15
     BASE_URL = "https://osu.ppy.sh/api/"
     # how long in seconds it takes the api to refresh our ratelimits after our

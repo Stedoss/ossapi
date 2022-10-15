@@ -264,8 +264,8 @@ class BeatmapsetCompact(Model):
     nsfw: bool
     offset: int
     spotlight: bool
-    # documented as being in ``Beatmapset`` only, but returned by
-    # ``api.beatmapset_events`` which uses a ``BeatmapsetCompact``.
+    # documented as being in `Beatmapset` only, but returned by
+    # `api.beatmapset_events` which uses a `BeatmapsetCompact`.
     hype: Optional[Hype]
 
     # optional fields
@@ -930,7 +930,7 @@ class BeatmapsetEvent(Model):
         mapping = {
             BeatmapsetEventType.BEATMAP_OWNER_CHANGE: BeatmapsetEventCommentOwnerChange,
             BeatmapsetEventType.DISCUSSION_DELETE: BeatmapsetEventCommentNoPost,
-            # ``api.beatmapset_events(types=[BeatmapsetEventType.DISCUSSION_LOCK])``
+            # `api.beatmapset_events(types=[BeatmapsetEventType.DISCUSSION_LOCK])`
             # doesn't seem to be recognized, just returns all events. Was this
             # type discontinued?
             # BeatmapsetEventType.DISCUSSION_LOCK: BeatmapsetEventComment,
