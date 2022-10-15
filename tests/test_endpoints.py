@@ -148,6 +148,10 @@ class TestBeatmapAttributes(TestCase):
         api.beatmap_attributes(221777, mods="HR")
         api.beatmap_attributes(221777, ruleset_id=0)
 
+class TestUsers(TestCase):
+    def test_deserialize(self):
+        api.users([12092800])
+
 # TODO requires friends.read scope
 # class TestFriends(TestCase):
 #     def test_deserialize(self):

@@ -27,7 +27,7 @@ from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore,
     ChangelogListing, MultiplayerScores, MultiplayerScoresCursor,
     BeatmapsetDiscussionVotes, CreatePMResponse, BeatmapsetDiscussions,
     UserCompact, NewsListing, NewsPost, SeasonalBackgrounds, BeatmapsetCompact,
-    BeatmapUserScores, DifficultyAttributes)
+    BeatmapUserScores, DifficultyAttributes, Users)
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
     BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
@@ -1204,6 +1204,14 @@ class OssapiV2:
         return self._get(User, f"/users/{user}/{mode.value if mode else ''}",
             params)
 
+    def users(self,
+        user_ids: List[UserIdT]
+    ) -> List[UserCompact]:
+        """
+        https://osu.ppy.sh/docs/index.html#get-users
+        """
+        params = {"ids": user_ids}
+        return self._get(Users, "/users", params).users
 
     # /wiki
     # -----
