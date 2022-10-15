@@ -496,6 +496,10 @@ class Spotlights(Model):
 class Users(Model):
     users: List[UserCompact]
 
+# return-value wrapper for https://osu.ppy.sh/docs/index.html#get-beatmaps.
+class Beatmaps(Model):
+    beatmaps: List[Beatmap]
+
 class Rankings(Model):
     beatmapsets: Optional[List[Beatmapset]]
     cursor: CursorT

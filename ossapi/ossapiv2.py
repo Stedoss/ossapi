@@ -27,7 +27,7 @@ from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore,
     ChangelogListing, MultiplayerScores, MultiplayerScoresCursor,
     BeatmapsetDiscussionVotes, CreatePMResponse, BeatmapsetDiscussions,
     UserCompact, NewsListing, NewsPost, SeasonalBackgrounds, BeatmapsetCompact,
-    BeatmapUserScores, DifficultyAttributes, Users)
+    BeatmapUserScores, DifficultyAttributes, Users, Beatmaps)
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
     BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
@@ -814,6 +814,13 @@ class OssapiV2:
                 "filename must be passed")
         params = {"checksum": checksum, "filename": filename, "id": beatmap_id}
         return self._get(Beatmap, "/beatmaps/lookup", params)
+
+    @request(Scope.PUBLIC)
+    def beatmaps(self,
+        beatmap_ids: List[BeatmapIdT]
+    ) -> List[Beatmap]:
+        params = {"ids": beatmap_ids}
+        return self._get(Beatmaps, "/beatmaps", params).beatmaps
 
 
     # /beatmapsets

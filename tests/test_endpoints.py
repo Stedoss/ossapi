@@ -152,6 +152,10 @@ class TestUsers(TestCase):
     def test_deserialize(self):
         api.users([12092800])
 
+class TestBeatmaps(TestCase):
+    def test_deserialize(self):
+        api.beatmaps([221777])
+
 # TODO requires friends.read scope
 # class TestFriends(TestCase):
 #     def test_deserialize(self):
