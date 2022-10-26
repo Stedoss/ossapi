@@ -11,6 +11,7 @@ import inspect
 import json
 import hashlib
 import functools
+import sys
 
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import (BackendApplicationClient, TokenExpiredError,
@@ -285,6 +286,11 @@ class OssapiV2:
         self.log = logging.getLogger(__name__)
         self.token_key = token_key or self.gen_token_key(self.grant,
             self.client_id, self.client_secret, self.scopes)
+
+        # support saving tokens when being run from pyinstaller
+        if hasattr(sys, '_MEIPASS') and not token_directory:
+            token_directory = sys._MEIPASS # pylint: disable=no-member
+
         self.token_directory = (
             Path(token_directory) if token_directory else Path(__file__).parent
         )
