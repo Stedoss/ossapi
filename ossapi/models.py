@@ -349,6 +349,9 @@ class Score(Model):
     def user(self) -> Union[UserCompact, User]:
         return self._fk_user(self.user_id, existing=self._user)
 
+    def download(self):
+        return self._api.download_score(self.mode, self.id)
+
 class BeatmapUserScore(Model):
     position: int
     score: Score
