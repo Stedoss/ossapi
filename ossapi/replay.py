@@ -42,6 +42,7 @@ class Replay:
         self.timestamp = replay.timestamp
         self.replay_data = replay.replay_data
         self.replay_id = replay.replay_id
+        self.rng_seed = replay.rng_seed
         self._beatmap = None
         self._user = None
 
