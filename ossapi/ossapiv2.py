@@ -470,7 +470,7 @@ class OssapiV2:
         self.log.info(f"made {method} request to {r.request.url}")
         json_ = r.json()
         self.log.debug(f"received json: \n{json.dumps(json_, indent=4)}")
-        self._check_response(json_, url)
+        self._check_response(json_, r.url)
 
         return self._instantiate_type(type_, json_)
 
