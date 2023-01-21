@@ -348,6 +348,7 @@ class Score(Model):
     weight: Optional[Weight]
     _user: Optional[UserCompact] = Field(name="user")
     match: Optional[Match]
+    type: str
 
     def user(self) -> Union[UserCompact, User]:
         return self._fk_user(self.user_id, existing=self._user)
