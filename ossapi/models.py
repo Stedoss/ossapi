@@ -770,6 +770,7 @@ class MultiplayerScoresCursor(Model):
 
 class NewsListing(Model):
     cursor: CursorT
+    cursor_string: str
     news_posts: List[NewsPost]
     news_sidebar: NewsSidebar
     search: NewsSearch
