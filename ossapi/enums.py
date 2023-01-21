@@ -453,7 +453,7 @@ class Nominations(Model):
 
 class Nomination(Model):
     beatmapset_id: int
-    rulesets: list[GameMode]
+    rulesets: List[GameMode]
     reset: bool
     user_id: int
 

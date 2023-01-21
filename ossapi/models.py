@@ -310,7 +310,7 @@ class Beatmapset(BeatmapsetCompact):
     storyboard: bool
     submitted_date: Optional[Datetime]
     tags: str
-    current_nominations: list[Nomination]
+    current_nominations: List[Nomination]
 
     def expand(self) -> Beatmapset:
         return self
@@ -795,7 +795,7 @@ class NewsNavigation(Model):
 class NewsSidebar(Model):
     current_year: int
     news_posts: List[NewsPost]
-    years: list[int]
+    years: List[int]
 
 class SeasonalBackgrounds(Model):
     ends_at: Datetime
