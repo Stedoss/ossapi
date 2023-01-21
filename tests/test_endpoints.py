@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from ossapi import (RankingType, BeatmapsetEventType, AccessDeniedError,
-    InsufficientScopeError, Mod)
+    InsufficientScopeError, Mod, GameMode)
 
 from tests import api
 
@@ -155,6 +155,20 @@ class TestUsers(TestCase):
 class TestBeatmaps(TestCase):
     def test_deserialize(self):
         api.beatmaps([221777])
+
+class TestScore(TestCase):
+    def test_deserialize(self):
+        # downloadable
+        api.score(GameMode.OSU, 2243145877)
+        # downloadable, my score
+        api.score(GameMode.OSU, 3685255338)
+        # not downloadable, my score
+        api.score(GameMode.OSU, 3772000814)
+
+        # other gamemodes
+        api.score(GameMode.TAIKO, 176904666)
+        api.score(GameMode.MANIA, 524674141)
+        api.score(GameMode.CATCH, 211167989)
 
 # TODO requires friends.read scope
 # class TestFriends(TestCase):
