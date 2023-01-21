@@ -172,6 +172,7 @@ class User(UserCompact):
     twitter: Optional[str]
     website: Optional[str]
     scores_pinned_count: int
+    nominated_beatmapset_count: int
     rank_highest: RankHighest
 
     def expand(self) -> User:
