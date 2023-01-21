@@ -536,6 +536,10 @@ class ForumPostBody(Model):
 class ReviewsConfig(Model):
     max_blocks: int
 
+class RankHighest(Model):
+    rank: int
+    updated_at: Datetime
+
 
 # ===================
 # Undocumented Models

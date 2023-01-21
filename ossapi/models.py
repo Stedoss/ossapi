@@ -13,7 +13,7 @@ from ossapi.enums import (UserAccountHistory, ProfileBanner, UserBadge, Country,
     EventBeatmap, BeatmapsetApproval, EventBeatmapset, KudosuVote,
     BeatmapsetEventType, UserRelationType, UserLevel, UserGradeCounts,
     GithubUser, ChangelogSearch, ForumTopicType, ForumPostBody, ForumTopicSort,
-    ChannelType, ReviewsConfig, NewsSearch, Nomination)
+    ChannelType, ReviewsConfig, NewsSearch, Nomination, RankHighest)
 from ossapi.utils import Datetime, Model, BaseModel, Field
 
 T = TypeVar("T")
@@ -172,6 +172,7 @@ class User(UserCompact):
     twitter: Optional[str]
     website: Optional[str]
     scores_pinned_count: int
+    rank_highest: RankHighest
 
     def expand(self) -> User:
         # we're already expanded, no need to waste an api call
