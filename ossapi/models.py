@@ -1046,14 +1046,13 @@ class UserStatistics(Model):
     replays_watched_by_others: int
     is_ranked: bool
     grade_counts: UserGradeCounts
-
-    # optional fields
-    # ---------------
     country_rank: Optional[int]
     global_rank: Optional[int]
     rank: Optional[Any]
     user: Optional[UserCompact]
     variants: Optional[Any]
+    global_rank_exp: Optional[float]
+    pp_exp: float
 
 class UserStatisticsRulesets(Model):
     # undocumented
