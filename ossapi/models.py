@@ -310,7 +310,7 @@ class Beatmapset(BeatmapsetCompact):
     storyboard: bool
     submitted_date: Optional[Datetime]
     tags: str
-    current_nominations: List[Nomination]
+    current_nominations: Optional[List[Nomination]]
 
     def expand(self) -> Beatmapset:
         return self
