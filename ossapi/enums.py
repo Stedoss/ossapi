@@ -451,6 +451,12 @@ class Nominations(Model):
     current: int
     required: int
 
+class Nomination(Model):
+    beatmapset_id: int
+    rulesets: list[GameMode]
+    reset: bool
+    user_id: int
+
 class Kudosu(Model):
     total: int
     available: int
