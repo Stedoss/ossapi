@@ -151,20 +151,19 @@ Internally, we simply take `beatmap.id` (or `user.id`) and supply that to the fu
 
 #### Expandable Models
 
-`UserCompact` and `BeatmapCompact` classes are "expandable" into `User` and `Beatmap` respectively. Some endpoints only return eg a `UserCompact`, but you may want attributes that are present on `User`. To expand such a class, call `#expand`:
+`UserCompact`, `BeatmapCompact`, and `BeatmapsetCompact` classes are "expandable" into `User`, `Beatmap`, and `Beatmapset` respectively. Some endpoints only return eg a `UserCompact`, but you may want attributes that are present on `User`. To expand such a class, call `#expand`:
 
 ```python
 compact_user = api.search(query="tybug").users.data[0]
 # `statistics` is only available on `User` not `UserCompact`,
 # so expansion is necessary
 print(compact_user.expand().statistics.ranked_score)
+
 # this is equivalent to
 print(api.user(compact_user).statistics.ranked_score)
 ```
 
-Similarly, `beatmap = compact_beatmap.expand()` is equivalent to `beatmap = api.beatmap(compact_beatmap)`.
-
-(Note that beatmapsets will also be expandable in the future; I am waiting for the beatmapset lookup endpoint to become documented before implementing this.)
+Similarly, `beatmap = compact_beatmap.expand()` is equivalent to `beatmap = api.beatmap(compact_beatmap)`, and `bmset = compact_beatmapset.expand()` is equivalent to `bmset = api.beatmapset(compact_beatmapset)`.
 
 #### Following Foreign Keys
 
