@@ -1152,6 +1152,10 @@ class OssapiV2:
         return self._get(List[KudosuHistory], f"/users/{user_id}/kudosu",
             params)
 
+    # TODO make most arguments keyword only for most endpoints in v3.x.x,
+    # will be a breaking change but avoids confusion like
+    # https://github.com/circleguard/ossapi/issues/56.
+    # eg for user_scores there should be a `*` after `type_`.
     @request(Scope.PUBLIC)
     def user_scores(self,
         user_id: UserIdT,
