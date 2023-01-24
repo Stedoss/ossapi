@@ -958,7 +958,7 @@ class OssapiV2:
     # -----
 
     @request(Scope.CHAT_WRITE)
-    def create_pm(self,
+    def send_pm(self,
         user_id: UserIdT,
         message: str,
         is_action: Optional[bool] = False
@@ -970,6 +970,8 @@ class OssapiV2:
             "is_action": is_action}
         return self._post(CreatePMResponse, "/chat/new", data=data)
 
+    # TODO deprecated, remove in v3.x.x
+    create_pm = send_pm
 
     # /comments
     # ---------
