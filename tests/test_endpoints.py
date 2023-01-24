@@ -93,7 +93,6 @@ class TestDownloadScore(TestCase):
         self.assertRaises(AccessDeniedError,
             lambda: api.download_score(mode="osu", score_id=2797309065))
 
-
 class TestSearchBeatmaps(TestCase):
     def test_deserialize(self):
         api.search_beatmapsets(query="the big black")
