@@ -21,7 +21,7 @@ from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     BeatmapsetDiscussionVoteSort, BeatmapsetStatus, MessageType, NewsPostKey,
     BeatmapsetSearchCategory, BeatmapsetSearchMode,
     BeatmapsetSearchExplicitContent, BeatmapsetSearchLanguage,
-    BeatmapsetSearchGenre)
+    BeatmapsetSearchGenre, NewsPostKey)
 from ossapi.mod import Mod
 from ossapi.replay import Replay
 from ossapi.version import __version__
