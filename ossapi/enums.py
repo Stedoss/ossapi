@@ -1,8 +1,6 @@
 from typing import Optional, List, Any
-from enum import IntFlag
 
-from ossapi.utils import (EnumModel, ListEnumMeta, Datetime, Model, BaseModel,
-    Field)
+from ossapi.utils import (EnumModel, Datetime, Model, Field, IntFlagModel)
 
 # ================
 # Documented Enums
@@ -18,19 +16,16 @@ class ProfilePage(EnumModel):
     MEDALS = "medals"
 
 class GameMode(EnumModel):
-    STD    = "osu"
-    TAIKO  = "taiko"
-    CTB    = "fruits"
-    MANIA  = "mania"
+    OSU   = "osu"
+    TAIKO = "taiko"
+    CATCH = "fruits"
+    MANIA = "mania"
+    # deprecated, remove in 3.x.x
+    CTB   = "fruits"
+    # deprecated, remove in 3.x.x
+    STD   = "osu"
 
-# for reasons I don't fully understand, we can't do
-# ``PlayStyles(IntFlagModel, metaclass=ListEnumMeta)`` and must instead do this,
-# with two separate classes. Possibly because when using an enum metaclass, its
-# superclass must be a direct enum class like ``IntFlag``, and not a subclass
-# like ``IntFlagModel``? Weird territory here.
-# The error thrown when using ``IntFlagModel`` is:
-# ``TypeError: object.__new__(PlayStyles) is not safe, use int.__new__()``
-class PlayStyles(BaseModel, IntFlag, metaclass=ListEnumMeta):
+class PlayStyles(IntFlagModel):
     MOUSE = 1
     KEYBOARD = 2
     TABLET = 4
@@ -39,10 +34,16 @@ class PlayStyles(BaseModel, IntFlag, metaclass=ListEnumMeta):
     @classmethod
     def _missing_(cls, value):
         """
-        Our backing values are ints (which is necessary for us to use a flag)
-        but we also want to be able to instantiate with the strings the api
-        returns.
+        Allow instantiation via either strings or lists of ints / strings. The
+        api returns a list of strings for User.playstyle.
         """
+        if isinstance(value, list):
+            value = iter(value)
+            new_val = cls(next(value))
+            for val in value:
+                new_val |= cls(val)
+            return new_val
+
         if value == "mouse":
             return PlayStyles.MOUSE
         if value == "keyboard":
@@ -170,9 +171,9 @@ class EventType(EnumModel):
     USER_SUPPORT_GIFT = "userSupportGift"
     USERNAME_CHANGE = "usernameChange"
 
-# TODO this is just a subset of ``RankStatus``, and is only (currently) used for
-# ``EventType.BEATMAPSET_APPROVE``. Find some way to de-duplicate? Could move to
-# ``RankStatus``, but then how to enforce taking on only a subset of values?
+# TODO this is just a subset of `RankStatus`, and is only (currently) used for
+# `EventType.BEATMAPSET_APPROVE`. Find some way to de-duplicate? Could move to
+# `RankStatus`, but then how to enforce taking on only a subset of values?
 class BeatmapsetApproval(EnumModel):
     RANKED = "ranked"
     APPROVED = "approved"
@@ -213,7 +214,7 @@ class Grade(EnumModel):
 
 class ScoreType(EnumModel):
     BEST = "best"
-    FIRST = "first"
+    FIRSTS = "firsts"
     RECENT = "recent"
 
 class RankingFilter(EnumModel):
@@ -288,6 +289,66 @@ class BeatmapsetDiscussionVote(EnumModel):
 class BeatmapsetDiscussionVoteSort(EnumModel):
     NEW = "id_desc"
     OLD = "id_asc"
+
+class BeatmapsetSearchCategory(EnumModel):
+    ANY = "any"
+    HAS_LEADERBOARD = "leaderboard"
+    RANKED = "ranked"
+    QUALIFIED = "qualified"
+    LOVED = "loved"
+    FAVOURITES = "favourites"
+    PENDING = "pending"
+    WIP = "wip"
+    GRAVEYARD = "graveyard"
+    MY_MAPS = "mine"
+
+class BeatmapsetSearchMode(EnumModel):
+    # made up value. this is the default option and doesn't cause a value to
+    # appear in the query string.
+    ANY = -1
+    OSU = 0
+    TAIKO = 1
+    CATCH = 2
+    MANIA = 3
+
+class BeatmapsetSearchExplicitContent(EnumModel):
+    HIDE = "hide"
+    SHOW = "show"
+
+class BeatmapsetSearchGenre(EnumModel):
+    # default option, made up value
+    ANY = 0
+    UNSPECIFIED = 1
+    VIDEO_GAME = 2
+    ANIME = 3
+    ROCK = 4
+    POP = 5
+    OTHER = 6
+    NOVELTY = 7
+    HIP_HOP = 9
+    ELECTRONIC = 10
+    METAL = 11
+    CLASSICAL = 12
+    FOLK = 13
+    JAZZ = 14
+
+class BeatmapsetSearchLanguage(EnumModel):
+    # default option, made up value
+    ANY = 0
+    UNSPECIFIED = 1
+    ENGLISH = 2
+    JAPANESE = 3
+    CHINESE = 4
+    KOREAN = 6
+    INSTRUMENTAL = 5
+    FRENCH = 7
+    GERMAN = 8
+    SWEDISH = 9
+    SPANISH = 10
+    ITALIAN = 11
+    RUSSIAN = 12
+    POLISH = 13
+    OTHER = 14
 
 class NewsPostKey(EnumModel):
     ID = "id"
@@ -394,6 +455,12 @@ class Nominations(Model):
     current: int
     required: int
 
+class Nomination(Model):
+    beatmapset_id: int
+    rulesets: List[GameMode]
+    reset: bool
+    user_id: int
+
 class Kudosu(Model):
     total: int
     available: int
@@ -433,7 +500,7 @@ class EventAchivement(Model):
     icon_url: str
     id: int
     name: str
-    # TODO ``grouping`` can probably be enumified (example value: "Dedication"),
+    # TODO `grouping` can probably be enumified (example value: "Dedication"),
     # need to find full list first though
     grouping: str
     ordering: int
@@ -472,6 +539,10 @@ class ForumPostBody(Model):
 
 class ReviewsConfig(Model):
     max_blocks: int
+
+class RankHighest(Model):
+    rank: int
+    updated_at: Datetime
 
 
 # ===================

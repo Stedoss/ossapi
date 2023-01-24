@@ -1,9 +1,9 @@
-from enum import EnumMeta, Enum, IntFlag
+from enum import Enum, IntFlag
 from datetime import datetime, timezone
-from typing import Union, Any
+from typing import Any
 from dataclasses import dataclass
 
-from typing_utils import get_args, get_origin
+from typing_utils import issubtype
 
 def is_high_model_type(type_):
     """
@@ -142,32 +142,6 @@ class IntFlagModel(BaseModel, IntFlag):
     pass
 
 
-class ListEnumMeta(EnumMeta):
-    """
-    Allows an enum to be instantiated with a list of members of the enum. So
-    ``MyEnum([1, 8])`` is equivalent to ``MyEnum(1) | MyEnum(8)``.
-    """
-    def __call__(cls, value, names=None, *, module=None, qualname=None,
-        type_=None, start=1):
-
-        def _instantiate(value):
-            # interestingly, the full form of super is required here (instead of
-            # just ``super().__call__``). I guess it's binding to this inner
-            # method instead of the class?
-            return super(ListEnumMeta, cls).__call__(value, names,
-                module=module, qualname=qualname, type=type_, start=start)
-
-        if not isinstance(value, list):
-            return _instantiate(value)
-        value = iter(value)
-        val = next(value)
-        new_val = _instantiate(val)
-        for val in value:
-            val = _instantiate(val)
-            new_val |= val
-        return new_val
-
-
 class Datetime(datetime, BaseModel):
     """
     Our replacement for the ``datetime`` object that deals with the various
@@ -186,19 +160,20 @@ class Datetime(datetime, BaseModel):
         # stopgap seems to work for now, but may break in the future if
         # the api changes the timestamps they return.
         # see https://stackoverflow.com/q/969285.
-        if value.endswith("Z"):
-            return datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f%z")
         if value.isdigit():
             # see if it's an int first, if so it's a unix timestamp. The
             # api returns the timestamp in milliseconds but
-            # ``datetime.fromtimestamp`` expects it in seconds, so
+            # `datetime.fromtimestamp` expects it in seconds, so
             # divide by 1000 to convert.
             value = int(value) / 1000
             return datetime.fromtimestamp(value, tz=timezone.utc)
+        if cls._matches_datetime(value, "%Y-%m-%dT%H:%M:%S.%f%z"):
+            return value
         if cls._matches_datetime(value, "%Y-%m-%dT%H:%M:%S%z"):
             return datetime.strptime(value, "%Y-%m-%dT%H:%M:%S%z")
         if cls._matches_datetime(value, "%Y-%m-%d"):
             return datetime.strptime(value, "%Y-%m-%d")
+        raise ValueError(f"invalid datetime string {value}")
 
     @staticmethod
     def _matches_datetime(value, format_):
@@ -215,9 +190,15 @@ class Datetime(datetime, BaseModel):
 
 def is_optional(type_):
     """
-    ``Optional[X]`` is equivalent to ``Union[X, None]``.
+    Whether ``type(None)`` is a valid instance of ``type_``. eg,
+    ``is_optional(Union[str, int, NoneType]) == True``.
+
+    Exception: when ``type_`` is any, we return false. Strictly speaking, if
+    ``Any`` is a subtype of ``type_`` then we return false, since
+    ``Union[Any, str]`` is a valid type not equal to ``Any`` (in python), but
+    representing the same set of types.
     """
-    return get_origin(type_) is Union and get_args(type_)[1] is type(None)
+    return issubtype(type(None), type_) and not issubtype(Any, type_)
 
 def is_primitive_type(type_):
     if not isinstance(type_, type):

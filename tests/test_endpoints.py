@@ -2,7 +2,7 @@ from datetime import datetime
 from unittest import TestCase
 
 from ossapi import (RankingType, BeatmapsetEventType, AccessDeniedError,
-    InsufficientScopeError, NewsPostKey)
+    InsufficientScopeError, Mod, GameMode, NewsPostKey)
 
 from tests import (api_v2, api_v2_full, api_v2_dev, TestCaseAuthorizationCode,
     TestCaseDevServer)
@@ -35,6 +35,18 @@ class TestBeatmap(TestCase):
     def test_deserialize(self):
         api_v2.beatmap(beatmap_id=221777)
 
+        # beatmap with a diff owner
+        bm = api_v2.beatmap(beatmap_id=1604098)
+        # might need to be updated when
+        # https://github.com/ppy/osu-web/issues/9784 is addressed.
+        self.assertIsNone(bm.owner)
+
+        # beatmap with a diff owner
+        bm = api_v2.beatmap(beatmap_id=1604098)
+        # might need to be updated when
+        # https://github.com/ppy/osu-web/issues/9784 is addressed.
+        self.assertIsNone(bm.owner)
+
 class TestBeatmapset(TestCase):
     def test_deserialize(self):
         api_v2.beatmapset(beatmap_id=3207950)
@@ -62,6 +74,10 @@ class TestUserScores(TestCase):
 class TestBeatmapUserScore(TestCase):
     def test_deserialize(self):
         api_v2.beatmap_user_score(beatmap_id=221777, user_id=2757689, mode="osu")
+
+class TestBeatmapUserScores(TestCase):
+    def test_deserialize(self):
+        api_v2.beatmap_user_scores(beatmap_id=221777, user_id=2757689, mode="osu")
 
 class TestSearch(TestCase):
     def test_deserialize(self):
@@ -144,6 +160,34 @@ class TestDownloadScore(TestCaseAuthorizationCode):
         # but the authorization code api (`api_v2_full`) can
         api_v2_full.download_score(mode="osu", score_id=2797309065)
 
+class TestBeatmapAttributes(TestCase):
+    def test_deserialize(self):
+        api_v2.beatmap_attributes(221777, ruleset="osu")
+        api_v2.beatmap_attributes(221777, mods=Mod.HDDT)
+        api_v2.beatmap_attributes(221777, mods="HR")
+        api_v2.beatmap_attributes(221777, ruleset_id=0)
+
+class TestUsers(TestCase):
+    def test_deserialize(self):
+        api_v2.users([12092800])
+
+class TestBeatmaps(TestCase):
+    def test_deserialize(self):
+        api_v2.beatmaps([221777])
+
+class TestScore(TestCase):
+    def test_deserialize(self):
+        # downloadable
+        api_v2.score(GameMode.OSU, 2243145877)
+        # downloadable, my score
+        api_v2.score(GameMode.OSU, 3685255338)
+        # not downloadable, my score
+        api_v2.score(GameMode.OSU, 3772000814)
+
+        # other gamemodes
+        api_v2.score(GameMode.TAIKO, 176904666)
+        api_v2.score(GameMode.MANIA, 524674141)
+        api_v2.score(GameMode.CATCH, 211167989)
 
 class TestMe(TestCaseAuthorizationCode):
     def test_insufficient_scope(self):
@@ -161,7 +205,6 @@ class TestFriends(TestCaseAuthorizationCode):
 
     def test_deserialize(self):
         api_v2_full.friends()
-
 
 # =====================
 # api_v2_dev test cases

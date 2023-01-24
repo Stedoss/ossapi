@@ -84,7 +84,7 @@ class ModCombination(BaseModel):
             # but a comp + 0 index works too
             matching_mods = [mod for mod in Mod.ORDER if \
                 mod.short_name() == single_mod]
-            # ``mod.ORDER`` uses ``_NC`` and ``_PF``, and we want to parse
+            # `mod.ORDER` uses `_NC` and `_PF`, and we want to parse
             # eg "NC" as "DTNC"
             if Mod._NC in matching_mods:
                 matching_mods.remove(Mod._NC)

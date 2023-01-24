@@ -11,6 +11,7 @@ import inspect
 import json
 import hashlib
 import functools
+import sys
 
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import (BackendApplicationClient, TokenExpiredError,
@@ -27,24 +28,28 @@ from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore,
     ChangelogListing, MultiplayerScores, MultiplayerScoresCursor,
     BeatmapsetDiscussionVotes, CreatePMResponse, BeatmapsetDiscussions,
     UserCompact, NewsListing, NewsPost, SeasonalBackgrounds, BeatmapsetCompact,
+    BeatmapUserScores, DifficultyAttributes, Users, Beatmaps,
     CreateForumTopicResponse, ForumTopicPoll, ForumPost, ForumTopic)
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
     BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
     SearchMode, MultiplayerScoresSort, BeatmapsetDiscussionVote,
-    BeatmapsetDiscussionVoteSort, BeatmapsetStatus, MessageType, NewsPostKey)
+    BeatmapsetDiscussionVoteSort, BeatmapsetStatus, MessageType,
+    BeatmapsetSearchCategory, BeatmapsetSearchMode,
+    BeatmapsetSearchExplicitContent, BeatmapsetSearchGenre,
+    BeatmapsetSearchLanguage, NewsPostKey)
 from ossapi.utils import (is_compatible_type, is_primitive_type, is_optional,
     is_base_model_type, is_model_type, is_high_model_type, Field)
 from ossapi.mod import Mod
 from ossapi.replay import Replay
 
-# our ``request`` function below relies on the ordering of these types. The
+# our `request` function below relies on the ordering of these types. The
 # base type must come first, with any auxiliary types that the base type accepts
 # coming after.
 # These types are intended to provide better type hinting for consumers. We
-# want to support the ability to pass ``"osu"`` instead of ``GameMode.STD``,
+# want to support the ability to pass `"osu"` instead of `GameMode.STD`,
 # for instance. We automatically convert any value to its base class if the
-# relevant parameter has a type hint of the form below (see ``request`` for
+# relevant parameter has a type hint of the form below (see `request` for
 # details).
 GameModeT = Union[GameMode, str]
 ScoreTypeT = Union[ScoreType, str]
@@ -66,6 +71,11 @@ BeatmapsetDiscussionVoteSortT = Union[BeatmapsetDiscussionVoteSort, str]
 MessageTypeT = Union[MessageType, str]
 BeatmapsetStatusT = Union[BeatmapsetStatus, str]
 NewsPostKeyT = Union[NewsPostKey, str]
+BeatmapsetSearchCategoryT = Union[BeatmapsetSearchCategory, str]
+BeatmapsetSearchModeT = Union[BeatmapsetSearchMode, int]
+BeatmapsetSearchExplicitContentT = Union[BeatmapsetSearchExplicitContent, str]
+BeatmapsetSearchGenreT = Union[BeatmapsetSearchGenre, int]
+BeatmapsetSearchLanguageT = Union[BeatmapsetSearchLanguage, str]
 
 BeatmapIdT = Union[int, BeatmapCompact]
 UserIdT = Union[int, UserCompact]
@@ -106,7 +116,7 @@ def request(scope, *, requires_login=False):
             origin = get_origin(type_)
             args = get_args(type_)
             if origin is Union and is_base_model_type(args[0]):
-                instantiate[name] = args[0]
+                instantiate[name] = type_
 
         arg_names = list(inspect.signature(function).parameters)
 
@@ -145,13 +155,19 @@ def request(scope, *, requires_login=False):
                         return arg.id
 
             # args and kwargs are handled separately, but in a similar fashion.
-            # The difference is that for ``args`` we need to know the name of
+            # The difference is that for `args` we need to know the name of
             # the argument so we can look up its type hint and see if it's a
             # parameter we need to convert.
 
             for i, (arg_name, arg) in enumerate(zip(arg_names, args)):
                 if arg_name in instantiate:
                     type_ = instantiate[arg_name]
+                    # allow users to pass None for optional args. Without this
+                    # we would try to instantiate types like `GameMode(None)`
+                    # which would error.
+                    if is_optional(type_) and arg is None:
+                        continue
+                    type_ = get_args(type_)[0]
                     args[i] = type_(arg)
                 id_ = id_from_id_type(arg_name, arg)
                 if id_:
@@ -160,6 +176,9 @@ def request(scope, *, requires_login=False):
             for arg_name, arg in kwargs.items():
                 if arg_name in instantiate:
                     type_ = instantiate[arg_name]
+                    if is_optional(type_) and arg is None:
+                        continue
+                    type_ = get_args(type_)[0]
                     kwargs[arg_name] = type_(arg)
                 id_ = id_from_id_type(arg_name, arg)
                 if id_:
@@ -270,6 +289,11 @@ class OssapiV2:
         self.log = logging.getLogger(__name__)
         self.token_key = token_key or self.gen_token_key(self.grant,
             self.client_id, self.client_secret, self.scopes)
+
+        # support saving tokens when being run from pyinstaller
+        if hasattr(sys, '_MEIPASS') and not token_directory:
+            token_directory = sys._MEIPASS # pylint: disable=no-member
+
         self.token_directory = (
             Path(token_directory) if token_directory else Path(__file__).parent
         )
@@ -426,6 +450,8 @@ class OssapiV2:
 
     def _request(self, type_, method, url, params={}, data={}):
         params = self._format_params(params)
+        # also format data for post requests
+        data = self._format_params(data)
         try:
             r = self.session.request(method, f"{self.BASE_URL}{url}",
                 params=params, data=data)
@@ -447,13 +473,17 @@ class OssapiV2:
         self.log.info(f"made {method} request to {r.request.url}")
         json_ = r.json()
         self.log.debug(f"received json: \n{json.dumps(json_, indent=4)}")
-        # TODO this should just be ``if "error" in json``, but for some reason
-        # ``self.search_beatmaps`` always returns an error in the response...
+        self._check_response(json_, r.url)
+
+        return self._instantiate_type(type_, json_)
+
+    def _check_response(self, json_, url):
+        # TODO this should just be `if "error" in json`, but for some reason
+        # `self.search_beatmaps` always returns an error in the response...
         # open an issue on osu-web?
         if len(json_) == 1 and "error" in json_:
             raise ValueError(f"api returned an error of `{json_['error']}` for "
                 f"a request to {unquote(url)}")
-        return self._instantiate_type(type_, json_)
 
     def _get(self, type_, url, params={}):
         return self._request(type_, "GET", url, params=params)
@@ -531,8 +561,8 @@ class OssapiV2:
         python's typing system.
         """
         # we want to get the annotations of inherited members as well, which is
-        # why we pass ``type(obj)`` instead of just ``obj``, which would only
-        # return annotations for attributes defined in ``obj`` and not its
+        # why we pass `type(obj)` instead of just `obj`, which would only
+        # return annotations for attributes defined in `obj` and not its
         # inherited attributes.
         annotations = get_type_hints(type(obj))
         override_annotations = obj.override_types()
@@ -546,7 +576,7 @@ class OssapiV2:
                 continue
             type_ = annotations[attr]
             # when we instantiate types, we explicitly fill in optional
-            # attributes with ``None``. We want to skip these, but only if the
+            # attributes with `None`. We want to skip these, but only if the
             # attribute is actually annotated as optional, otherwise we would be
             # skipping fields that are null which aren't supposed to be, and
             # prevent that error from being caught.
@@ -562,7 +592,7 @@ class OssapiV2:
         return obj
 
     def _instantiate_type(self, type_, value, obj=None, attr_name=None):
-        # ``attr_name`` is purely for debugging, it's the name of the attribute
+        # `attr_name` is purely for debugging, it's the name of the attribute
         # being instantiated
         origin = get_origin(type_)
         args = get_args(type_)
@@ -605,7 +635,7 @@ class OssapiV2:
             # check if the list has been instantiated generically; if so,
             # use the concrete type backing the generic type.
             if isinstance(args[0], TypeVar):
-                # ``__orig_class__`` is how we can get the concrete type of
+                # `__orig_class__` is how we can get the concrete type of
                 # a generic. See https://stackoverflow.com/a/60984681 and
                 # https://www.python.org/dev/peps/pep-0560/#mro-entries.
                 type_ = get_args(obj.__orig_class__)[0]
@@ -630,27 +660,27 @@ class OssapiV2:
                 new_value.append(entry)
             return new_value
 
-        # either we ourself are a model type (eg ``Search``), or we are
-        # a special indexed type (eg ``type_ == SearchResult[UserCompact]``,
-        # ``origin == UserCompact``). In either case we want to instantiate
-        # ``type_``.
+        # either we ourself are a model type (eg `Search`), or we are
+        # a special indexed type (eg `type_ == SearchResult[UserCompact]`,
+        # `origin == UserCompact`). In either case we want to instantiate
+        # `type_`.
         if not is_model_type(type_) and not is_model_type(origin):
             return None
         value = self._instantiate(type_, value)
         # we need to resolve the annotations of any nested model types before we
         # set the attribute. This recursion is well-defined because the base
-        # case is when ``value`` has no model types, which will always happen
+        # case is when `value` has no model types, which will always happen
         # eventually.
         return self._resolve_annotations(value)
 
     def _instantiate(self, type_, kwargs):
         self.log.debug(f"instantiating type {type_}")
-        # we need a special case to handle when ``type_`` is a
-        # ``_GenericAlias``. I don't fully understand why this exception is
+        # we need a special case to handle when `type_` is a
+        # `_GenericAlias`. I don't fully understand why this exception is
         # necessary, and it's likely the result of some error on my part in our
         # type handling code. Nevertheless, until I dig more deeply into it,
         # we need to extract the type to use for the init signature and the type
-        # hints from a ``_GenericAlias`` if we see one, as standard methods
+        # hints from a `_GenericAlias` if we see one, as standard methods
         # won't work.
         override_type = type_.override_class(kwargs)
         type_ = override_type or type_
@@ -687,12 +717,12 @@ class OssapiV2:
                 key = field_names[key]
             kwargs[key] = value
 
-        # if we've annotated a class with ``Optional[X]``, and the api response
-        # didn't return a value for that attribute, pass ``None`` for that
+        # if we've annotated a class with `Optional[X]`, and the api response
+        # didn't return a value for that attribute, pass `None` for that
         # attribute.
-        # This is so that we don't have to define a default value of ``None``
+        # This is so that we don't have to define a default value of `None`
         # for each optional attribute of our models, since the default will
-        # always be ``None``.
+        # always be `None`.
         for attribute, annotation in type_hints.items():
             if is_optional(annotation):
                 if attribute not in kwargs:
@@ -701,7 +731,7 @@ class OssapiV2:
         # The osu api often adds new fields to various models, and these are not
         # considered breaking changes. To make this a non-breaking change on our
         # end as well, we ignore any unexpected parameters, unless
-        # ``self.strict`` is ``True``. This means that consumers using old
+        # `self.strict` is `True`. This means that consumers using old
         # ossapi versions (which aren't up to date with the latest parameters
         # list) will have new fields silently ignored instead of erroring.
         # This also means that consumers won't be able to benefit from new
@@ -723,8 +753,8 @@ class OssapiV2:
                 self.log.info(f"ignoring unexpected parameter `{k}` from "
                     f"api response for type {type_}")
 
-        # every model gets a special ``_api`` parameter, which is the
-        # ``OssapiV2`` instance which loaded it (aka us).
+        # every model gets a special `_api` parameter, which is the
+        # `OssapiV2` instance which loaded it (aka us).
         kwargs_["_api"] = self
 
         try:
@@ -759,6 +789,20 @@ class OssapiV2:
             f"/beatmaps/{beatmap_id}/scores/users/{user_id}", params)
 
     @request(Scope.PUBLIC)
+    def beatmap_user_scores(self,
+        beatmap_id: BeatmapIdT,
+        user_id: UserIdT,
+        mode: Optional[GameModeT] = None
+    ) -> List[BeatmapUserScore]:
+        """
+        https://osu.ppy.sh/docs/index.html#get-a-user-beatmap-scores
+        """
+        params = {"mode": mode}
+        scores = self._get(BeatmapUserScores,
+            f"/beatmaps/{beatmap_id}/scores/users/{user_id}/all", params)
+        return scores.scores
+
+    @request(Scope.PUBLIC)
     def beatmap_scores(self,
         beatmap_id: BeatmapIdT,
         mode: Optional[GameModeT] = None,
@@ -787,6 +831,13 @@ class OssapiV2:
                 "filename must be passed")
         params = {"checksum": checksum, "filename": filename, "id": beatmap_id}
         return self._get(Beatmap, "/beatmaps/lookup", params)
+
+    @request(Scope.PUBLIC)
+    def beatmaps(self,
+        beatmap_ids: List[BeatmapIdT]
+    ) -> List[Beatmap]:
+        params = {"ids": beatmap_ids}
+        return self._get(Beatmaps, "/beatmaps", params).beatmaps
 
 
     # /beatmapsets
@@ -854,6 +905,21 @@ class OssapiV2:
             "with_deleted": with_deleted}
         return self._get(BeatmapsetDiscussions,
             "/beatmapsets/discussions", params)
+
+    @request(Scope.PUBLIC)
+    def beatmap_attributes(self,
+        beatmap_id: int,
+        mods: Optional[ModT] = None,
+        ruleset: Optional[GameModeT] = None,
+        ruleset_id: Optional[int] = None
+    ) -> DifficultyAttributes:
+        """
+        https://osu.ppy.sh/docs/index.html#get-beatmap-attributes
+        """
+        data = {"mods": mods, "ruleset": ruleset, "ruleset_id": ruleset_id}
+        return self._post(DifficultyAttributes,
+            f"/beatmaps/{beatmap_id}/attributes", data=data)
+
 
     # /changelog
     # ----------
@@ -1162,6 +1228,10 @@ class OssapiV2:
         return self._get(List[KudosuHistory], f"/users/{user_id}/kudosu",
             params)
 
+    # TODO make most arguments keyword only for most endpoints in v3.x.x,
+    # will be a breaking change but avoids confusion like
+    # https://github.com/circleguard/ossapi/issues/56.
+    # eg for user_scores there should be a `*` after `type_`.
     @request(Scope.PUBLIC)
     def user_scores(self,
         user_id: UserIdT,
@@ -1174,6 +1244,14 @@ class OssapiV2:
         """
         https://osu.ppy.sh/docs/index.html#get-user-scores
         """
+        # `include_fails` is actually a string in the api spec. We'll still
+        # require a bool to be passed, and just do the conversion behind the
+        # scenes.
+        if include_fails is False:
+            include_fails = 0
+        if include_fails is True:
+            include_fails = 1
+
         params = {"include_fails": include_fails, "mode": mode, "limit": limit,
             "offset": offset}
         return self._get(List[Score], f"/users/{user_id}/scores/{type_.value}",
@@ -1224,6 +1302,15 @@ class OssapiV2:
         return self._get(User, f"/users/{user}/{mode.value if mode else ''}",
             params)
 
+    @request(Scope.PUBLIC)
+    def users(self,
+        user_ids: List[UserIdT]
+    ) -> List[UserCompact]:
+        """
+        https://osu.ppy.sh/docs/index.html#get-users
+        """
+        params = {"ids": user_ids}
+        return self._get(Users, "/users", params).users
 
     # /wiki
     # -----
@@ -1252,24 +1339,93 @@ class OssapiV2:
     @request(Scope.PUBLIC, requires_login=True)
     def download_score(self,
         mode: GameModeT,
-        score_id: int
+        score_id: int,
+        *,
+        raw: bool = False
     ) -> Replay:
-        r = self.session.get(f"{self.BASE_URL}/scores/{mode.value}/"
-            f"{score_id}/download")
-        replay = osrparse.parse_replay(r.content)
+        url = f"{self.BASE_URL}/scores/{mode.value}/{score_id}/download"
+        r = self.session.get(url)
+
+        # if the response above succeeded, it will return a raw string
+        # instead of json. If it didn't succeed, it will return json with an
+        # error.
+        # So always try parsing as json to check if there's an error. If parsin
+        # fails, just assume the request succeeded and move on.
+        try:
+            json_ = r.json()
+            self._check_response(json_, url)
+        except json.JSONDecodeError:
+            pass
+
+        if raw:
+            return r.content
+
+        replay = osrparse.Replay.from_string(r.content)
         return Replay(replay, self)
 
     @request(Scope.PUBLIC)
     def search_beatmapsets(self,
         query: Optional[str] = None,
+        mode: BeatmapsetSearchModeT = BeatmapsetSearchMode.ANY,
+        category: BeatmapsetSearchCategoryT =
+            BeatmapsetSearchCategory.HAS_LEADERBOARD,
+        explicit_content: BeatmapsetSearchExplicitContentT =
+            BeatmapsetSearchExplicitContent.HIDE,
+        genre: BeatmapsetSearchGenreT = BeatmapsetSearchGenre.ANY,
+        language: BeatmapsetSearchLanguageT = BeatmapsetSearchLanguage.ANY,
+        # "Extra"
+        force_video: bool = False,
+        force_storyboard: bool = False,
+        # "General"
+        force_recommended_difficulty: bool = False,
+        include_converts: bool = False,
+        force_followed_mappers: bool = False,
+        force_spotlights: bool = False,
+        force_featured_artists: bool = False,
         cursor: Optional[Cursor] = None
     ) -> BeatmapsetSearchResult:
         # Param key names are the same as https://osu.ppy.sh/beatmapsets,
         # so from eg https://osu.ppy.sh/beatmapsets?q=black&s=any we get that
-        # the query uses ``q`` and the category uses ``s``.
-        # TODO implement all possible queries, or wait for them to be
-        # documented. Currently we only implement the most basic "query" option.
-        params = {"cursor": cursor, "q": query}
+        # the query uses `q` and the category uses `s`.
+
+        explicit_content = {
+            BeatmapsetSearchExplicitContent.SHOW: "true",
+            BeatmapsetSearchExplicitContent.HIDE: "false",
+        }[explicit_content]
+
+        extras = []
+        if force_video:
+            extras.append("video")
+        if force_storyboard:
+            extras.append("storyboard")
+        extra = ".".join(extras)
+
+        generals = []
+        if force_recommended_difficulty:
+            generals.append("recommended")
+        if include_converts:
+            generals.append("converts")
+        if force_followed_mappers:
+            generals.append("follows")
+        if force_spotlights:
+            generals.append("spotlights")
+        if force_featured_artists:
+            generals.append("featured_artists")
+        general = ".".join(generals)
+
+        params = {"cursor": cursor, "q": query, "s": category, "m": mode,
+            "g": genre, "l": language, "nsfw": explicit_content, "e": extra,
+            "c": general}
+
+        # BeatmapsetSearchGenre.ANY is the default and doesn't have a correct
+        # corresponding value
+        if genre is BeatmapsetSearchGenre.ANY:
+            del params["g"]
+
+        # same for BeatmapsetSearchLanguage.ANY
+        if language is BeatmapsetSearchLanguage.ANY:
+            del params["l"]
+
         return self._get(BeatmapsetSearchResult, "/beatmapsets/search/", params)
 
     @request(Scope.PUBLIC)

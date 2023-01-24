@@ -18,7 +18,10 @@ from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
     BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
     SearchMode, MultiplayerScoresSort, BeatmapsetDiscussionVote,
-    BeatmapsetDiscussionVoteSort, BeatmapsetStatus, MessageType, NewsPostKey)
+    BeatmapsetDiscussionVoteSort, BeatmapsetStatus, MessageType, NewsPostKey,
+    BeatmapsetSearchCategory, BeatmapsetSearchMode,
+    BeatmapsetSearchExplicitContent, BeatmapsetSearchLanguage,
+    BeatmapsetSearchGenre)
 from ossapi.mod import Mod
 from ossapi.replay import Replay
 from ossapi.version import __version__
@@ -49,7 +52,9 @@ __all__ = [
     "BeatmapsetEventType", "CommentableType", "CommentSort", "ForumTopicSort",
     "SearchMode", "MultiplayerScoresSort", "BeatmapsetDiscussionVote",
     "BeatmapsetDiscussionVoteSort", "BeatmapsetStatus", "MessageType",
-    "NewsPostKey",
+    "BeatmapsetSearchCategory", "BeatmapsetSearchMode",
+    "BeatmapsetSearchExplicitContent", "BeatmapsetSearchLanguage",
+    "BeatmapsetSearchGenre", "NewsPostKey",
     # OssapiV2 exceptions
     "AccessDeniedError", "TokenExpiredError", "InsufficientScopeError",
     # misc

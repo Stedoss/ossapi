@@ -1,6 +1,6 @@
 from json.decoder import JSONDecodeError
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List
 import time
 
@@ -32,7 +32,7 @@ class Ossapi:
     """
 
     # how long in seconds to wait for a request to finish before raising a
-    # ``requests.Timeout`` exception
+    # requests.Timeout` exception
     TIMEOUT = 15
     BASE_URL = "https://osu.ppy.sh/api/"
     # how long in seconds it takes the api to refresh our ratelimits after our
@@ -189,7 +189,9 @@ class Model:
         if attr is None:
             return None
 
-        return datetime.strptime(attr, "%Y-%m-%d %H:%M:%S")
+        date = datetime.strptime(attr, "%Y-%m-%d %H:%M:%S")
+        # all api provided datetimes are in utc
+        return date.replace(tzinfo=timezone.utc)
 
     def _int(self, attr):
         attr = self._data[attr]

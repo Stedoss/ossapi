@@ -13,16 +13,11 @@ from ossapi.enums import (UserAccountHistory, ProfileBanner, UserBadge, Country,
     EventBeatmap, BeatmapsetApproval, EventBeatmapset, KudosuVote,
     BeatmapsetEventType, UserRelationType, UserLevel, UserGradeCounts,
     GithubUser, ChangelogSearch, ForumTopicType, ForumPostBody, ForumTopicSort,
-    ChannelType, ReviewsConfig, NewsSearch)
+    ChannelType, ReviewsConfig, NewsSearch, Nomination, RankHighest)
 from ossapi.utils import Datetime, Model, BaseModel, Field
 
 T = TypeVar("T")
 S = TypeVar("S")
-# if there are no more results, a null cursor is returned instead.
-# So always let the cursor be nullable to catch this. It's the user's
-# responsibility to check for a null cursor to see if there are any more
-# results.
-CursorT = Optional["Cursor"]
 
 """
 a type hint of ``Optional[Any]`` or ``Any`` means that I don't know what type it
@@ -32,6 +27,53 @@ is, not that the api actually lets any type be returned there.
 # =================
 # Documented Models
 # =================
+
+# the weird location of the cursor class and `CursorT` definition is to remove
+# the need for forward type annotations, which breaks typing_utils when they
+# try to evaluate the forwardref (as the `Cursor` class is not in scope at that
+# moment). We would be able to fix this by manually passing forward refs to the
+# lib instead, but I don't want to have to keep track of which forward refs need
+# passing and which don't, or which classes I need to import in various files
+# (it's not as simple as just sticking a `global()` call in and calling it a
+# day). So I'm just going to ban forward refs in the codebase for now, until we
+# want to drop typing_utils (and thus support for python 3.8 and lower).
+# It's also possible I'm missing an obvious fix for this, but I suspect this is
+# a limitation of older python versions.
+
+# Cursors are an interesting case. As I understand it, they don't have a
+# predefined set of attributes across all endpoints, but instead differ per
+# endpoint. I don't want to have dozens of different cursor classes (although
+# that would perhaps be the proper way to go about this), so just allow
+# any attribute.
+# This is essentially a reimplementation of SimpleNamespace to deal with
+# BaseModels being passed the data as a single dict (`_data`) instead of as
+# **kwargs, plus some other weird stuff we're doing like handling cursor
+# objects being passed as data
+# We want cursors to also be instantiatable manually (eg `Cursor(page=199)`),
+# so make `_data` optional and also allow arbitrary `kwargs`.
+
+class Cursor(BaseModel):
+    def __init__(self, _data=None, **kwargs):
+        super().__init__()
+        # allow Cursor to be instantiated with another cursor as a no-op
+        if isinstance(_data, Cursor):
+            _data = _data.__dict__
+        _data = _data or kwargs
+        self.__dict__.update(_data)
+
+    def __repr__(self):
+        keys = sorted(self.__dict__)
+        items = (f"{k}={self.__dict__[k]!r}" for k in keys)
+        return f"{type(self).__name__}({', '.join(items)})"
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
+# if there are no more results, a null cursor is returned instead.
+# So always let the cursor be nullable to catch this. It's the user's
+# responsibility to check for a null cursor to see if there are any more
+# results.
+CursorT = Optional[Cursor]
 
 class UserCompact(Model):
     """
@@ -69,6 +111,8 @@ class UserCompact(Model):
     friends: Optional[List[UserRelation]]
     graveyard_beatmapset_count: Optional[int]
     groups: Optional[List[UserGroup]]
+    # undocumented
+    guest_beatmapset_count: Optional[int]
     is_admin: Optional[bool]
     is_bng: Optional[bool]
     is_full_bn: Optional[bool]
@@ -127,6 +171,9 @@ class User(UserCompact):
     title_url: Optional[str]
     twitter: Optional[str]
     website: Optional[str]
+    scores_pinned_count: int
+    nominated_beatmapset_count: int
+    rank_highest: RankHighest
 
     def expand(self) -> User:
         # we're already expanded, no need to waste an api call
@@ -183,6 +230,12 @@ class Beatmap(BeatmapCompact):
     playcount: int
     ranked: RankStatus
     url: str
+    # user associated with this difficulty (ie diff mapper / owner).
+    # Returned as `user` in the api, but that conflicts with our fk method for
+    # beatmapset owner.
+    # This is optional as a workaround until
+    # https://github.com/ppy/osu-web/issues/9784 is resolved.
+    owner: Optional[UserCompact] = Field(name="user")
 
     # overridden fields
     # -----------------
@@ -217,8 +270,10 @@ class BeatmapsetCompact(Model):
     user_id: int
     video: bool
     nsfw: bool
-    # documented as being in ``Beatmapset`` only, but returned by
-    # ``api.beatmapset_events`` which uses a ``BeatmapsetCompact``.
+    offset: int
+    spotlight: bool
+    # documented as being in `Beatmapset` only, but returned by
+    # `api.beatmapset_events` which uses a `BeatmapsetCompact`.
     hype: Optional[Hype]
 
     # optional fields
@@ -261,6 +316,7 @@ class Beatmapset(BeatmapsetCompact):
     storyboard: bool
     submitted_date: Optional[Datetime]
     tags: str
+    current_nominations: Optional[List[Nomination]]
 
     def expand(self) -> Beatmapset:
         return self
@@ -289,6 +345,7 @@ class Score(Model):
     mode_int: int
     replay: bool
     passed: bool
+    current_user_attributes: Any
 
     beatmap: Optional[Beatmap]
     beatmapset: Optional[BeatmapsetCompact]
@@ -297,13 +354,20 @@ class Score(Model):
     weight: Optional[Weight]
     _user: Optional[UserCompact] = Field(name="user")
     match: Optional[Match]
+    type: str
 
     def user(self) -> Union[UserCompact, User]:
         return self._fk_user(self.user_id, existing=self._user)
 
+    def download(self):
+        return self._api.download_score(self.mode, self.id)
+
 class BeatmapUserScore(Model):
     position: int
     score: Score
+
+class BeatmapUserScores(Model):
+    scores: List[Score]
 
 class BeatmapScores(Model):
     scores: List[Score]
@@ -321,6 +385,7 @@ class CommentableMeta(Model):
     # both undocumented
     owner_id: Optional[int]
     owner_title: Optional[str]
+    current_user_attributes: Any
 
 class Comment(Model):
     commentable_id: int
@@ -345,35 +410,6 @@ class Comment(Model):
 
     def edited_by(self) -> Optional[User]:
         return self._fk_user(self.edited_by_id)
-
-# Cursors are an interesting case. As I understand it, they don't have a
-# predefined set of attributes across all endpoints, but instead differ per
-# endpoint. I don't want to have dozens of different cursor classes (although
-# that would perhaps be the proper way to go about this), so just allow
-# any attribute.
-# This is essentially a reimplementation of SimpleNamespace to deal with
-# BaseModels being passed the data as a single dict (`_data`) instead of as
-# **kwargs, plus some other weird stuff we're doing like handling cursor
-# objects being passed as data
-# We want cursors to also be instantiatable manually (eg `Cursor(page=199)`),
-# so make `_data` optional and also allow arbitrary `kwargs`.
-
-class Cursor(BaseModel):
-    def __init__(self, _data=None, **kwargs):
-        super().__init__()
-        # allow Cursor to be instantiated with another cursor as a no-op
-        if isinstance(_data, Cursor):
-            _data = _data.__dict__
-        _data = _data or kwargs
-        self.__dict__.update(_data)
-
-    def __repr__(self):
-        keys = sorted(self.__dict__)
-        items = (f"{k}={self.__dict__[k]!r}" for k in keys)
-        return f"{type(self).__name__}({', '.join(items)})"
-
-    def __eq__(self, other):
-        return self.__dict__ == other.__dict__
 
 class CommentBundle(Model):
     commentable_meta: List[CommentableMeta]
@@ -421,6 +457,7 @@ class ForumTopic(Model):
     type: ForumTopicType
     updated_at: Datetime
     user_id: int
+    poll: Any
 
     def user(self) -> User:
         return self._fk_user(self.user_id)
@@ -430,6 +467,7 @@ class ForumTopicAndPosts(Model):
     search: ForumTopicSearch
     posts: List[ForumPost]
     topic: ForumTopic
+    cursor_string: Optional[str]
 
 class CreateForumTopicResponse(Model):
     post: ForumPost
@@ -482,6 +520,14 @@ class Spotlight(Model):
 
 class Spotlights(Model):
     spotlights: List[Spotlight]
+
+# return-value wrapper for https://osu.ppy.sh/docs/index.html#get-users.
+class Users(Model):
+    users: List[UserCompact]
+
+# return-value wrapper for https://osu.ppy.sh/docs/index.html#get-beatmaps.
+class Beatmaps(Model):
+    beatmaps: List[Beatmap]
 
 class Rankings(Model):
     beatmapsets: Optional[List[Beatmapset]]
@@ -559,6 +605,7 @@ class BeatmapsetDiscussionVote(Model):
     beatmapset_discussion_id: int
     created_at: Datetime
     updated_at: Datetime
+    cursor_string: Optional[str]
 
     def user(self):
         return self._fk_user(self.user_id)
@@ -745,6 +792,7 @@ class MultiplayerScoresCursor(Model):
 
 class NewsListing(Model):
     cursor: CursorT
+    cursor_string: str
     news_posts: List[NewsPost]
     news_sidebar: NewsSidebar
     search: NewsSearch
@@ -769,7 +817,7 @@ class NewsNavigation(Model):
 class NewsSidebar(Model):
     current_year: int
     news_posts: List[NewsPost]
-    years: list[int]
+    years: List[int]
 
 class SeasonalBackgrounds(Model):
     ends_at: Datetime
@@ -778,6 +826,36 @@ class SeasonalBackgrounds(Model):
 class SeasonalBackground(Model):
     url: str
     user: UserCompact
+
+class DifficultyAttributes(Model):
+    attributes: BeatmapDifficultyAttributes
+
+class BeatmapDifficultyAttributes(Model):
+    max_combo: int
+    star_rating: float
+
+    # osu attributes
+    aim_difficulty: Optional[float]
+    approach_rate: Optional[float]
+    flashlight_difficulty: Optional[float]
+    overall_difficulty: Optional[float]
+    slider_factor: Optional[float]
+    speed_difficulty: Optional[float]
+    speed_note_count: Optional[float]
+
+    # taiko attributes
+    stamina_difficulty: Optional[float]
+    rhythm_difficulty: Optional[float]
+    colour_difficulty: Optional[float]
+    approach_raty: Optional[float]
+    great_hit_windoy: Optional[float]
+
+    # ctb attributes
+    approach_rate: Optional[float]
+
+    # mania attributes
+    great_hit_window: Optional[float]
+    score_multiplier: Optional[float]
 
 
 # ===================
@@ -791,6 +869,7 @@ class BeatmapsetSearchResult(Model):
     error: Optional[str]
     total: int
     search: Any
+    cursor_string: Optional[str]
 
 class BeatmapsetDiscussions(Model):
     beatmaps: List[Beatmap]
@@ -799,6 +878,8 @@ class BeatmapsetDiscussions(Model):
     included_discussions: List[BeatmapsetDiscussion]
     reviews_config: ReviewsConfig
     users: List[UserCompact]
+    cursor_string: Optional[str]
+    beatmapsets: List[Beatmapset]
 
 class BeatmapsetDiscussionReview(Model):
     # https://github.com/ppy/osu-web/blob/master/app/Libraries/BeatmapsetDiscussionReview.php
@@ -810,12 +891,14 @@ class BeatmapsetDiscussionPosts(Model):
     cursor: CursorT
     posts: List[BeatmapsetDiscussionPost]
     users: List[UserCompact]
+    cursor_string: Optional[str]
 
 class BeatmapsetDiscussionVotes(Model):
     cursor: CursorT
     discussions: List[BeatmapsetDiscussion]
     votes: List[BeatmapsetDiscussionVote]
     users: List[UserCompact]
+    cursor_string: Optional[str]
 
 class BeatmapsetEventComment(Model):
     beatmap_discussion_id: int
@@ -879,7 +962,7 @@ class BeatmapsetEvent(Model):
         mapping = {
             BeatmapsetEventType.BEATMAP_OWNER_CHANGE: BeatmapsetEventCommentOwnerChange,
             BeatmapsetEventType.DISCUSSION_DELETE: BeatmapsetEventCommentNoPost,
-            # ``api.beatmapset_events(types=[BeatmapsetEventType.DISCUSSION_LOCK])``
+            # `api.beatmapset_events(types=[BeatmapsetEventType.DISCUSSION_LOCK])`
             # doesn't seem to be recognized, just returns all events. Was this
             # type discontinued?
             # BeatmapsetEventType.DISCUSSION_LOCK: BeatmapsetEventComment,
@@ -987,14 +1070,13 @@ class UserStatistics(Model):
     replays_watched_by_others: int
     is_ranked: bool
     grade_counts: UserGradeCounts
-
-    # optional fields
-    # ---------------
     country_rank: Optional[int]
     global_rank: Optional[int]
     rank: Optional[Any]
     user: Optional[UserCompact]
     variants: Optional[Any]
+    global_rank_exp: Optional[float]
+    pp_exp: float
 
 class UserStatisticsRulesets(Model):
     # undocumented
