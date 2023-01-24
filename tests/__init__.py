@@ -4,11 +4,6 @@ from unittest import TestCase
 from ossapi import OssapiV2, Ossapi, Grant, Scope
 
 
-class DevOssapiV2(OssapiV2):
-    TOKEN_URL = "https://dev.ppy.sh/oauth/token"
-    AUTH_CODE_URL = "https://dev.ppy.sh/oauth/authorize"
-    BASE_URL = "https://dev.ppy.sh/api/v2"
-
 # technically all scopes except Scope.DELEGATE, since I don't own a bot account
 all_scopes = [Scope.CHAT_WRITE, Scope.FORUM_WRITE, Scope.FRIENDS_READ,
     Scope.IDENTIFY, Scope.PUBLIC]
@@ -16,6 +11,13 @@ UNIT_TEST_MESSAGE = ("unit test from ossapi "
     "(https://github.com/circleguard/ossapi/), please ignore")
 
 headless = os.environ.get("OSSAPI_TEST_HEADLESS", False)
+
+
+class DevOssapiV2(OssapiV2):
+    TOKEN_URL = "https://dev.ppy.sh/oauth/token"
+    AUTH_CODE_URL = "https://dev.ppy.sh/oauth/authorize"
+    BASE_URL = "https://dev.ppy.sh/api/v2"
+
 def get_env(name):
     val = os.environ.get(name)
     if not val:
