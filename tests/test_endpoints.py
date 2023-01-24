@@ -33,6 +33,12 @@ class TestBeatmap(TestCase):
     def test_deserialize(self):
         api.beatmap(beatmap_id=221777)
 
+        # beatmap with a diff owner
+        bm = api.beatmap(beatmap_id=1604098)
+        # might need to be updated when
+        # https://github.com/ppy/osu-web/issues/9784 is addressed.
+        self.assertIsNone(bm.owner)
+
 class TestBeatmapset(TestCase):
     def test_deserialize(self):
         api.beatmapset(beatmap_id=3207950)
