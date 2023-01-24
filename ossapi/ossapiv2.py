@@ -976,6 +976,8 @@ class OssapiV2:
             "is_action": is_action}
         return self._post(CreatePMResponse, "/chat/new", data=data)
 
+    # TODO deprecated, remove in v3.x.x
+    create_pm = send_pm
 
     # /comments
     # ---------
