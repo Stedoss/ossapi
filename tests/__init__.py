@@ -5,7 +5,7 @@ from ossapi import OssapiV2, Ossapi, Grant, Scope
 
 
 # technically all scopes except Scope.DELEGATE, since I don't own a bot account
-all_scopes = [Scope.CHAT_WRITE, Scope.FORUM_WRITE, Scope.FRIENDS_READ,
+ALL_SCOPES = [Scope.CHAT_WRITE, Scope.FORUM_WRITE, Scope.FRIENDS_READ,
     Scope.IDENTIFY, Scope.PUBLIC]
 UNIT_TEST_MESSAGE = ("unit test from ossapi "
     "(https://github.com/circleguard/ossapi/), please ignore")
@@ -39,7 +39,7 @@ def setup_api_v2():
     else:
         redirect_uri = get_env("OSU_API_REDIRECT_URI")
         api_v2_full = OssapiV2(client_id, client_secret, redirect_uri,
-            strict=True, grant=Grant.AUTHORIZATION_CODE, scopes=all_scopes)
+            strict=True, grant=Grant.AUTHORIZATION_CODE, scopes=ALL_SCOPES)
 
     return (api_v2, api_v2_full)
 
@@ -53,7 +53,7 @@ def setup_api_v2_dev():
 
     redirect_uri = get_env("OSU_API_REDIRECT_URI_DEV")
     return DevOssapiV2(client_id, client_secret, redirect_uri, strict=True,
-        grant=Grant.AUTHORIZATION_CODE, scopes=all_scopes)
+        grant=Grant.AUTHORIZATION_CODE, scopes=ALL_SCOPES)
 
 api_v1 = setup_api_v1()
 api_v2, api_v2_full = setup_api_v2()
