@@ -1008,6 +1008,7 @@ class ChatChannel(Model):
     moderated: Optional[bool]
     name: str
     type: ChannelType
+    uuid: Optional[str]
 
     # optional fields
     # ---------------
