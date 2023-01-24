@@ -141,7 +141,12 @@ class TestNewsListing(TestCase):
 
 class TestNewsPost(TestCase):
     def test_deserialize(self):
-        api.news_post(1025, key="id")
+        # querying the same post by id or slug should give the same result.
+        post1 = api.news_post(1025, key="id")
+        post2 = api.news_post("2021-10-04-halloween-fanart-contest", key="slug")
+
+        self.assertEqual(post1.id, post2.id)
+        self.assertEqual(post1, post2)
 
 class TestSeasonalBackgrounds(TestCase):
     def test_deserialize(self):

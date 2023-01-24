@@ -350,6 +350,10 @@ class BeatmapsetSearchLanguage(EnumModel):
     POLISH = 13
     OTHER = 14
 
+class NewsPostKey(EnumModel):
+    SLUG = "slug"
+    ID = "id"
+
 # =================
 # Documented Models
 # =================
