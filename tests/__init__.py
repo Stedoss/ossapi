@@ -20,7 +20,7 @@ class DevOssapiV2(OssapiV2):
 
 def get_env(name):
     val = os.environ.get(name)
-    if not val:
+    if val is None:
         val = input(f"Enter a value for {name}: ")
     return val
 
@@ -44,9 +44,24 @@ def setup_api_v2():
     return (api_v2, api_v2_full)
 
 def setup_api_v2_dev():
-
-    if headless or not get_env("OSSAPI_TEST_RUN_DEV"):
+    if headless:
         return None
+
+    run_dev = os.environ.get("OSSAPI_TEST_RUN_DEV")
+    # set OSSAPI_TEST_RUN_DEV to 0 to always skip dev tests.
+    if run_dev == "0":
+        return None
+    # set OSSAPI_TEST_RUN_DEV to any other value to always run dev tests.
+    if run_dev is None:
+        # if the user hasn't set OSSAPI_TEST_RUN_DEV at all (ie most new
+        # developers), give them a chance to back out of dev test runs since
+        # they likely won't have a dev account.
+        use_dev = input("set up dev tests (y/n)? Enter n if you do not have a "
+            "dev account. Set the OSSAPI_TEST_RUN_DEV env var to 0 to always "
+            "answer n to this prompt, and to any other value to always answer "
+            "y to this prompt: ")
+        if use_dev.lower().strip() == "n":
+            return None
 
     client_id = int(get_env("OSU_API_CLIENT_ID_DEV"))
     client_secret = get_env("OSU_API_CLIENT_SECRET_DEV")
