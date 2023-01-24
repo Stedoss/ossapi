@@ -216,8 +216,8 @@ class TestFriends(TestCaseAuthorizationCode):
 
 class TestForumCreateTopic(TestCaseDevServer):
     def test_create(self):
-        api_dev.forum_create_topic("Integration test please ignore",
-            74, "Integration test please ignore")
+        api_dev.forum_create_topic("unit test please ignore",
+            74, "unit test please ignore")
 
     def test_create_with_poll(self):
         poll = {
@@ -227,9 +227,9 @@ class TestForumCreateTopic(TestCaseDevServer):
             "vote_change": True,
             "max_options": 1,
         }
-        api_dev.forum_create_topic(body="Integration test with poll - please ignore" + str(datetime.now()),
+        api_dev.forum_create_topic(body="unit test with poll - please ignore" + str(datetime.now()),
             forum_id=78,
-            title="Integration test with poll - please ignore" + str(datetime.now()),
+            title="unit test with poll - please ignore" + str(datetime.now()),
             with_poll=True, poll=poll)
 
 class TestForumReply(TestCaseDevServer):
