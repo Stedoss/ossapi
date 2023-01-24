@@ -86,6 +86,14 @@ class TestComment(TestCase):
     def test_deserialize(self):
         api.comment(comment_id=1)
 
+class TestDownloadScore(TestCase):
+    def test_deserialize(self):
+        # api instance is using client credentials which doesn't have access to
+        # downloading replays
+        self.assertRaises(AccessDeniedError,
+            lambda: api.download_score(mode="osu", score_id=2797309065))
+
+
 class TestSearchBeatmaps(TestCase):
     def test_deserialize(self):
         api.search_beatmapsets(query="the big black")
@@ -100,6 +108,12 @@ class TestUser(TestCase):
         api.user("tybug2", key="username")
 
         self.assertRaises(Exception, lambda: api.user("tybug2", key="id"))
+
+class TestMe(TestCase):
+    def test_insufficient_scope(self):
+        # client credentials api can't request `Scope.IDENTIFY` and so can't
+        # access /me
+        self.assertRaises(InsufficientScopeError, api.get_me)
 
 class TestWikiPage(TestCase):
     def test_deserialize(self):
@@ -129,6 +143,10 @@ class TestBeatmapsetDiscussions(TestCase):
     def test_deserialize(self):
         api.beatmapset_discussions()
 
+class TestNewsListing(TestCase):
+    def test_deserialize(self):
+        api.news_listing(year=2021)
+
 class TestNewsPost(TestCase):
     def test_deserialize(self):
         # querying the same post by id or slug should give the same result.
@@ -141,27 +159,6 @@ class TestNewsPost(TestCase):
 class TestSeasonalBackgrounds(TestCase):
     def test_deserialize(self):
         api.seasonal_backgrounds()
-
-
-
-# ======================
-# api_v2_full test cases
-# ======================
-
-class TestCreateNewPM(TestCaseAuthorizationCode):
-    def test_deserialize(self):
-        # test_account https://osu.ppy.sh/users/14212521
-        api_full.send_pm(14212521, UNIT_TEST_MESSAGE)
-
-class TestDownloadScore(TestCaseAuthorizationCode):
-    def test_access_denied(self):
-        # make sure client credentials api (`api`) can't access this endpoint
-        self.assertRaises(AccessDeniedError,
-            lambda: api.download_score(mode="osu", score_id=2797309065))
-
-    def test_deserialize(self):
-        # but the authorization code api (`api_v2_full`) can
-        api_full.download_score(mode="osu", score_id=2797309065)
 
 class TestBeatmapAttributes(TestCase):
     def test_deserialize(self):
@@ -192,22 +189,29 @@ class TestScore(TestCase):
         api.score(GameMode.MANIA, 524674141)
         api.score(GameMode.CATCH, 211167989)
 
-class TestMe(TestCaseAuthorizationCode):
-    def test_insufficient_scope(self):
-        # client credentials api can't request `Scope.IDENTIFY` and so can't
-        # access /me
-        self.assertRaises(InsufficientScopeError, api.get_me)
-
-    def test_deserialize(self):
-        # but the authorization code api can
-        api_full.get_me()
-
-class TestFriends(TestCaseAuthorizationCode):
+class TestFriends(TestCase):
     def test_access_denied(self):
         self.assertRaises(InsufficientScopeError, api.friends)
 
+
+# ======================
+# api_v2_full test cases
+# ======================
+
+class TestCreateNewPM(TestCaseAuthorizationCode):
+    def test_deserialize(self):
+        # test_account https://osu.ppy.sh/users/14212521
+        api_full.send_pm(14212521, UNIT_TEST_MESSAGE)
+
+class TestMeAuth(TestCaseAuthorizationCode):
+    def test_deserialize(self):
+        api_full.get_me()
+
+class TestFriendsAuth(TestCaseAuthorizationCode):
     def test_deserialize(self):
         api_full.friends()
+
+
 
 # =====================
 # api_v2_dev test cases
