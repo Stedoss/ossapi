@@ -230,6 +230,12 @@ class Beatmap(BeatmapCompact):
     playcount: int
     ranked: RankStatus
     url: str
+    # user associated with this difficulty (ie diff mapper / owner).
+    # Returned as `user` in the api, but that conflicts with our fk method for
+    # beatmapset owner.
+    # This is optional as a workaround until
+    # https://github.com/ppy/osu-web/issues/9784 is resolved.
+    owner: Optional[UserCompact] = Field(name="user")
 
     # overridden fields
     # -----------------
