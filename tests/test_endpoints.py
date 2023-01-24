@@ -5,7 +5,7 @@ from ossapi import (RankingType, BeatmapsetEventType, AccessDeniedError,
     InsufficientScopeError, Mod, GameMode)
 
 from tests import (
-    TestCaseAuthorizationCode, TestCaseDevServer,
+    TestCaseAuthorizationCode, TestCaseDevServer, UNIT_TEST_MESSAGE,
     api_v2 as api,
     api_v2_full as api_full,
     api_v2_dev as api_dev
@@ -151,8 +151,7 @@ class TestSeasonalBackgrounds(TestCase):
 class TestCreateNewPM(TestCaseAuthorizationCode):
     def test_deserialize(self):
         # test_account https://osu.ppy.sh/users/14212521
-        api_full.send_pm(14212521, "Unit test from ossapi "
-            "(https://github.com/circleguard/ossapi/), please ignore")
+        api_full.send_pm(14212521, UNIT_TEST_MESSAGE)
 
 class TestDownloadScore(TestCaseAuthorizationCode):
     def test_access_denied(self):
@@ -216,8 +215,7 @@ class TestFriends(TestCaseAuthorizationCode):
 
 class TestForumCreateTopic(TestCaseDevServer):
     def test_create(self):
-        api_dev.forum_create_topic("unit test please ignore",
-            74, "unit test please ignore")
+        api_dev.forum_create_topic(UNIT_TEST_MESSAGE, 74, UNIT_TEST_MESSAGE)
 
     def test_create_with_poll(self):
         poll = {
@@ -227,10 +225,12 @@ class TestForumCreateTopic(TestCaseDevServer):
             "vote_change": True,
             "max_options": 1,
         }
-        api_dev.forum_create_topic(body="unit test with poll - please ignore" + str(datetime.now()),
+        api_dev.forum_create_topic(
+            body=f"{UNIT_TEST_MESSAGE} ({datetime.now()})",
             forum_id=78,
-            title="unit test with poll - please ignore" + str(datetime.now()),
-            with_poll=True, poll=poll)
+            title=f"{UNIT_TEST_MESSAGE} ({datetime.now()})",
+            with_poll=True, poll=poll
+        )
 
 class TestForumReply(TestCaseDevServer):
     def test_reply(self):
