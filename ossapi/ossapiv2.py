@@ -76,6 +76,7 @@ BeatmapsetSearchModeT = Union[BeatmapsetSearchMode, int]
 BeatmapsetSearchExplicitContentT = Union[BeatmapsetSearchExplicitContent, str]
 BeatmapsetSearchGenreT = Union[BeatmapsetSearchGenre, int]
 BeatmapsetSearchLanguageT = Union[BeatmapsetSearchLanguage, str]
+NewsPostKeyT = Union[NewsPostKey, str]
 
 BeatmapIdT = Union[int, BeatmapCompact]
 UserIdT = Union[int, UserCompact]
@@ -1152,11 +1153,14 @@ class OssapiV2:
     @request(scope=None)
     def news_post(self,
         news: str,
-        key: Optional[NewsPostKeyT] = None
+        key: Optional[NewsPostKeyT] = NewsPostKey.SLUG
     ) -> NewsPost:
         """
         https://osu.ppy.sh/docs/index.html#get-news-post
         """
+        # docs state key should be "unset to query by slug"
+        if key is NewsPostKey.SLUG:
+            key = None
         params = {"key": key}
         return self._get(NewsPost, f"/news/{news}", params=params)
 

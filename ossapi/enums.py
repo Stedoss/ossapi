@@ -351,8 +351,8 @@ class BeatmapsetSearchLanguage(EnumModel):
     OTHER = 14
 
 class NewsPostKey(EnumModel):
+    SLUG = "slug"
     ID = "id"
-    QUERY = "query"
 
 # =================
 # Documented Models
