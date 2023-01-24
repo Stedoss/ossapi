@@ -857,6 +857,7 @@ class BeatmapsetDiscussions(Model):
     reviews_config: ReviewsConfig
     users: List[UserCompact]
     cursor_string: Optional[str]
+    beatmapsets: List[Beatmapset]
 
 class BeatmapsetDiscussionReview(Model):
     # https://github.com/ppy/osu-web/blob/master/app/Libraries/BeatmapsetDiscussionReview.php
