@@ -145,8 +145,8 @@ class TestSeasonalBackgrounds(TestCase):
 
 class TestCreateNewPM(TestCaseAuthorizationCode):
     def test_deserialize(self):
-        # tillerino
-        api_v2_full.send_pm(2070907, "Unit test from ossapi "
+        # test_account https://osu.ppy.sh/users/14212521
+        api_v2_full.send_pm(14212521, "Unit test from ossapi "
             "(https://github.com/circleguard/ossapi/), please ignore")
 
 class TestDownloadScore(TestCaseAuthorizationCode):
