@@ -3,19 +3,19 @@ from unittest import TestCase
 from ossapi import (User, BeatmapsetCompact, UserCompact, GameMode,
     BeatmapCompact)
 
-from tests import api_v2
+from tests import api_v2 as api
 
 
 class TestMethodTypeConversion(TestCase):
     def test_beatmap_as_parameter(self):
         # make sure we can pass the full model in place of an id
-        beatmap = api_v2.beatmap(221777)
-        self.assertEqual(api_v2.beatmap_scores(beatmap),
-            api_v2.beatmap_scores(beatmap.id))
+        beatmap = api.beatmap(221777)
+        self.assertEqual(api.beatmap_scores(beatmap),
+            api.beatmap_scores(beatmap.id))
 
 class TestExpandableModels(TestCase):
     def test_expand_user(self):
-        user = api_v2.search(query="tybug").users.data[0]
+        user = api.search(query="tybug").users.data[0]
         # `statistics` is only available on User models, so make sure it's not
         # present before expanding and is present afterwards
         self.assertIsNone(user.statistics)
@@ -28,7 +28,7 @@ class TestExpandableModels(TestCase):
         self.assertIs(user_new, user)
 
     def test_expand_beatmapset(self):
-        beatmapset = api_v2.beatmapset_discussion_posts().beatmapsets[0]
+        beatmapset = api.beatmapset_discussion_posts().beatmapsets[0]
         self.assertIsNone(beatmapset.description)
 
         beatmapset = beatmapset.expand()
@@ -42,7 +42,7 @@ class TestExpandableModels(TestCase):
 
 class TestFollowingForeignKeys(TestCase):
     def test_beatmap_fks(self):
-        beatmap = api_v2.beatmap(221777)
+        beatmap = api.beatmap(221777)
 
         user = beatmap.user()
         self.assertIsInstance(user, User)
@@ -54,21 +54,21 @@ class TestFollowingForeignKeys(TestCase):
         self.assertEqual(beatmapset.user_id, 1047883)
 
     def test_beatmapset_fks(self):
-        beatmapset = api_v2.beatmapset(beatmap_id=3207950)
+        beatmapset = api.beatmapset(beatmap_id=3207950)
 
         user = beatmapset.user()
         self.assertIsInstance(user, UserCompact)
         self.assertEqual(user.id, 4693052)
 
     def test_score_fks(self):
-        score = api_v2.score(GameMode.STD, 3685255338)
+        score = api.score(GameMode.STD, 3685255338)
 
         user = score.user()
         self.assertIsInstance(user, UserCompact)
         self.assertEqual(user.id, 12092800)
 
     def test_comment_fks(self):
-        comment = api_v2.comment(1533934).comments[0]
+        comment = api.comment(1533934).comments[0]
 
         user = comment.user()
         self.assertIsInstance(user, User)
@@ -78,7 +78,7 @@ class TestFollowingForeignKeys(TestCase):
         self.assertIsNone(edited_by)
 
     def test_forum_post_fks(self):
-        post = api_v2.forum_topic(141240).posts[0]
+        post = api.forum_topic(141240).posts[0]
 
         user = post.user()
         self.assertIsInstance(user, User)
@@ -88,7 +88,7 @@ class TestFollowingForeignKeys(TestCase):
         self.assertIsNone(edited_by)
 
     def test_forum_topic_fks(self):
-        topic = api_v2.forum_topic(141240).topic
+        topic = api.forum_topic(141240).topic
 
         user = topic.user()
         self.assertIsInstance(user, User)
@@ -96,7 +96,7 @@ class TestFollowingForeignKeys(TestCase):
 
     def test_beatmapset_discussion_post_fks(self):
         # https://osu.ppy.sh/beatmapsets/1576285/discussion#/2641058
-        bmset_disc_post = api_v2.beatmapset_discussion_posts(2641058).posts[0]
+        bmset_disc_post = api.beatmapset_discussion_posts(2641058).posts[0]
 
         user = bmset_disc_post.user()
         self.assertIsInstance(user, User)
@@ -110,7 +110,7 @@ class TestFollowingForeignKeys(TestCase):
         self.assertIsNone(deleted_by)
 
     def test_beatmap_playcount_fks(self):
-        most_played = api_v2.user_beatmaps(user_id=12092800, type_="most_played")
+        most_played = api.user_beatmaps(user_id=12092800, type_="most_played")
         bm_playcount = most_played[0]
 
         beatmap = bm_playcount.beatmap()
