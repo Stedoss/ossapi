@@ -18,7 +18,7 @@ from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
     BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
     SearchMode, MultiplayerScoresSort, BeatmapsetDiscussionVote,
-    BeatmapsetDiscussionVoteSort, BeatmapsetStatus, MessageType, NewsPostKey,
+    BeatmapsetDiscussionVoteSort, BeatmapsetStatus, MessageType,
     BeatmapsetSearchCategory, BeatmapsetSearchMode,
     BeatmapsetSearchExplicitContent, BeatmapsetSearchLanguage,
     BeatmapsetSearchGenre, NewsPostKey)
