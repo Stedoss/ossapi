@@ -140,7 +140,7 @@ print(r.cursor) # None
 
 #### Models as Parameters
 
-As a convenience, you can pass a `User`, `Beatmap`, and `Beatmapset` to any function in place of a `user_id`, `beatmap_id`, or `beatmapset_id` respectively. For instance:
+As a convenience, you can pass a `User`, `Beatmap`, or `Beatmapset` to any function in place of a `user_id`, `beatmap_id`, or `beatmapset_id` respectively. For instance:
 
 ```python
 beatmap = api.beatmap(221777)
