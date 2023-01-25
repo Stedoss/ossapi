@@ -880,7 +880,7 @@ class OssapiV2:
 
     @request(Scope.PUBLIC)
     def beatmapset_discussions(self,
-        beatmapset_id: Optional[int] = None,
+        beatmapset_id: Optional[BeatmapsetIdT] = None,
         beatmap_id: Optional[BeatmapIdT] = None,
         beatmapset_status: Optional[BeatmapsetStatusT] = None,
         limit: Optional[int] = None,
