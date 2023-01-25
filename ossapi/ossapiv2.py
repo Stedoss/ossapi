@@ -37,7 +37,7 @@ from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     BeatmapsetDiscussionVoteSort, BeatmapsetStatus, MessageType,
     BeatmapsetSearchCategory, BeatmapsetSearchMode,
     BeatmapsetSearchExplicitContent, BeatmapsetSearchGenre,
-    BeatmapsetSearchLanguage, NewsPostKey)
+    BeatmapsetSearchLanguage, NewsPostKey, BeatmapsetSearchSort)
 from ossapi.utils import (is_compatible_type, is_primitive_type, is_optional,
     is_base_model_type, is_model_type, is_high_model_type, Field)
 from ossapi.mod import Mod
@@ -76,6 +76,7 @@ BeatmapsetSearchExplicitContentT = Union[BeatmapsetSearchExplicitContent, str]
 BeatmapsetSearchGenreT = Union[BeatmapsetSearchGenre, int]
 BeatmapsetSearchLanguageT = Union[BeatmapsetSearchLanguage, str]
 NewsPostKeyT = Union[NewsPostKey, str]
+BeatmapsetSearchSortT = Union[BeatmapsetSearchSort, str]
 
 BeatmapIdT = Union[int, BeatmapCompact]
 UserIdT = Union[int, UserCompact]
@@ -884,7 +885,7 @@ class OssapiV2:
 
     @request(Scope.PUBLIC)
     def beatmapset_discussions(self,
-        beatmapset_id: Optional[int] = None,
+        beatmapset_id: Optional[BeatmapsetIdT] = None,
         beatmap_id: Optional[BeatmapIdT] = None,
         beatmapset_status: Optional[BeatmapsetStatusT] = None,
         limit: Optional[int] = None,
@@ -1371,6 +1372,7 @@ class OssapiV2:
     @request(Scope.PUBLIC)
     def search_beatmapsets(self,
         query: Optional[str] = None,
+        *,
         mode: BeatmapsetSearchModeT = BeatmapsetSearchMode.ANY,
         category: BeatmapsetSearchCategoryT =
             BeatmapsetSearchCategory.HAS_LEADERBOARD,
@@ -1387,7 +1389,8 @@ class OssapiV2:
         force_followed_mappers: bool = False,
         force_spotlights: bool = False,
         force_featured_artists: bool = False,
-        cursor: Optional[Cursor] = None
+        cursor: Optional[Cursor] = None,
+        sort: Optional[BeatmapsetSearchSortT] = None
     ) -> BeatmapsetSearchResult:
         # Param key names are the same as https://osu.ppy.sh/beatmapsets,
         # so from eg https://osu.ppy.sh/beatmapsets?q=black&s=any we get that
@@ -1420,7 +1423,7 @@ class OssapiV2:
 
         params = {"cursor": cursor, "q": query, "s": category, "m": mode,
             "g": genre, "l": language, "nsfw": explicit_content, "e": extra,
-            "c": general}
+            "c": general, "sort": sort}
 
         # BeatmapsetSearchGenre.ANY is the default and doesn't have a correct
         # corresponding value

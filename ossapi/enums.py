@@ -350,6 +350,29 @@ class BeatmapsetSearchLanguage(EnumModel):
     POLISH = 13
     OTHER = 14
 
+class BeatmapsetSearchSort(EnumModel):
+    TITLE_DESCENDING = "title_desc"
+    TITLE_ASCENDING = "title_asc"
+
+    ARTIST_DESCENDING = "artist_desc"
+    ARTIST_ASCENDING = "artist_asc"
+
+    DIFFICULTY_DESCENDING = "difficulty_desc"
+    DIFFICULTY_ASCENDING = "difficulty_asc"
+
+    RANKED_DESCENDING = "ranked_desc"
+    RANKED_ASCENDING = "ranked_asc"
+
+    RATING_DESCENDING = "rating_desc"
+    RATING_ASCENDING = "rating_asc"
+
+    PLAYS_DESCENDING = "plays_desc"
+    PLAYS_ASCENDING = "plays_asc"
+
+    FAVORITES_DESCENDING = "favourites_desc"
+    FAVORITES_ASCENDING = "favourites_asc"
+
+
 class NewsPostKey(EnumModel):
     SLUG = "slug"
     ID = "id"

@@ -138,16 +138,15 @@ print(r.cursor) # None
 
 ### Advanced Usage
 
-#### User and Beatmap as parameters
+#### Models as Parameters
 
-Some functions, like `api.beatmap_scores`, take a beatmap_id (or user_id). We also allow passing a `Beatmap` / `BeatmapCompact` (or `User` / `UserCompact`) in place of the id as a convenience:
+As a convenience, you can pass a `User`, `Beatmap`, or `Beatmapset` to any function in place of a `user_id`, `beatmap_id`, or `beatmapset_id` respectively. For instance:
 
 ```python
 beatmap = api.beatmap(221777)
-assert api.beatmap_scores(beatmap) == api.beatmap_scores(beatmap.id)
+assert api.beatmap_scores(beatmap) == api.beatmap_scores(221777)
 ```
 
-Internally, we simply take `beatmap.id` (or `user.id`) and supply that to the function.
 
 #### Expandable Models
 
