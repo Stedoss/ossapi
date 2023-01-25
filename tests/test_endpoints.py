@@ -216,9 +216,13 @@ class TestFriendsAuth(TestCaseAuthorizationCode):
 # api_dev test cases
 # =====================
 
-class TestForumCreateTopic(TestCaseDevServer):
+class TestForumCreate(TestCaseDevServer):
     def test_create(self):
-        api_dev.forum_create_topic(UNIT_TEST_MESSAGE, 74, UNIT_TEST_MESSAGE)
+        # test creating both a topic and posting a reply in that topic
+        response = api_dev.forum_create_topic(UNIT_TEST_MESSAGE, 74,
+            UNIT_TEST_MESSAGE)
+        topic_id = response.topic.id
+        api_dev.forum_reply(topic_id, UNIT_TEST_MESSAGE)
 
     def test_create_with_poll(self):
         poll = {
@@ -229,25 +233,23 @@ class TestForumCreateTopic(TestCaseDevServer):
             "max_options": 1,
         }
         api_dev.forum_create_topic(
+            title=f"{UNIT_TEST_MESSAGE}",
             body=f"{UNIT_TEST_MESSAGE} ({datetime.now()})",
             forum_id=78,
-            title=f"{UNIT_TEST_MESSAGE} ({datetime.now()})",
             with_poll=True, poll=poll
         )
 
-class TestForumReply(TestCaseDevServer):
-    def test_reply(self):
-        api_dev.forum_reply(156, "unit test from ossapi "
-            "(https://github.com/circleguard/ossapi/), please ignore")
-
-# TODO first create a topic, then try and edit that one (this will fail if it's
-# not our topic id)
-
-class TestForumEditTopic(TestCaseDevServer):
+class TestForumEdit(TestCaseDevServer):
     def test_edit(self):
-        api_dev.forum_edit_topic(156, f"Title last updated at {datetime.now()}")
+        # create a new topic and post
+        response = api_dev.forum_create_topic(UNIT_TEST_MESSAGE, 74,
+            UNIT_TEST_MESSAGE)
+        topic_id = response.topic.id
+        response = api_dev.forum_reply(topic_id, UNIT_TEST_MESSAGE)
+        post_id = response.id
 
-class TestForumEditPost(TestCaseDevServer):
-    def test_edit(self):
-        api_dev.forum_edit_post(306,
+        # edit both the topic and post
+        api_dev.forum_edit_topic(topic_id,
+            f"This title was last updated at {datetime.now()}")
+        api_dev.forum_edit_post(post_id,
             f"This comment was last edited at {datetime.now()}")
