@@ -194,7 +194,7 @@ class TestFriends(TestCase):
 
 
 # ======================
-# api_v2_full test cases
+# api_full test cases
 # ======================
 
 class TestCreateNewPM(TestCaseAuthorizationCode):
@@ -213,7 +213,7 @@ class TestFriendsAuth(TestCaseAuthorizationCode):
 
 
 # =====================
-# api_v2_dev test cases
+# api_dev test cases
 # =====================
 
 class TestForumCreateTopic(TestCaseDevServer):
