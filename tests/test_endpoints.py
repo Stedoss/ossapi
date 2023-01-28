@@ -1,9 +1,16 @@
+from datetime import datetime
 from unittest import TestCase
 
 from ossapi import (RankingType, BeatmapsetEventType, AccessDeniedError,
-    InsufficientScopeError, Mod, GameMode)
+    InsufficientScopeError, Mod, GameMode, ForumPoll)
 
-from tests import api
+from tests import (
+    TestCaseAuthorizationCode, TestCaseDevServer, UNIT_TEST_MESSAGE,
+    api_v2 as api,
+    api_v2_full as api_full,
+    api_v2_dev as api_dev
+)
+
 
 class TestBeatmapsetDiscussionPosts(TestCase):
     def test_deserialize(self):
@@ -102,9 +109,9 @@ class TestUser(TestCase):
         self.assertRaises(Exception, lambda: api.user("tybug2", key="id"))
 
 class TestMe(TestCase):
-    def test_deserialize(self):
-        # requires an authorization code api for the identify scope, client
-        # credentials can only request the public scope
+    def test_insufficient_scope(self):
+        # client credentials api can't request `Scope.IDENTIFY` and so can't
+        # access /me
         self.assertRaises(InsufficientScopeError, api.get_me)
 
 class TestWikiPage(TestCase):
@@ -181,13 +188,77 @@ class TestScore(TestCase):
         api.score(GameMode.MANIA, 524674141)
         api.score(GameMode.CATCH, 211167989)
 
-# TODO requires friends.read scope
-# class TestFriends(TestCase):
-#     def test_deserialize(self):
-#         api.friends()
+class TestFriends(TestCase):
+    def test_access_denied(self):
+        self.assertRaises(InsufficientScopeError, api.friends)
 
-# TODO requires chat.write scope
-# class TestCreateNewPM(TestCase):
-#     def test_deserialize(self):
-#         api.create_pm(2070907, "Unit test from ossapi "
-#             "(https://github.com/circleguard/ossapi/), please ignore")
+
+# ======================
+# api_full test cases
+# ======================
+
+class TestCreateNewPM(TestCaseAuthorizationCode):
+    def test_deserialize(self):
+        # test_account https://osu.ppy.sh/users/14212521
+        api_full.send_pm(14212521, UNIT_TEST_MESSAGE)
+
+class TestMeAuth(TestCaseAuthorizationCode):
+    def test_deserialize(self):
+        api_full.get_me()
+
+class TestFriendsAuth(TestCaseAuthorizationCode):
+    def test_deserialize(self):
+        api_full.friends()
+
+
+
+# =====================
+# api_dev test cases
+# =====================
+
+class TestForum(TestCaseDevServer):
+    def test_forum(self):
+        # test creating both a topic and posting a reply in that topic.
+        # be careful to post to one of the forums in
+        # `double_post_allowed_forum_ids`, or else we'll be rejected for double
+        # posting.
+        # https://github.com/ppy/osu-web/blob/3d1586392102b05f2a3b264905c4dbb7b
+        # 2d430a2/config/osu.php#L107.
+
+        # create and edit a topic
+        response = api_dev.forum_create_topic(UNIT_TEST_MESSAGE, 85,
+            UNIT_TEST_MESSAGE)
+        topic_id = response.topic.id
+        api_dev.forum_edit_topic(topic_id,
+            f"This title was last updated at {datetime.now()}")
+
+        # unfortunately, 85 (help and technical support) is not one of the
+        # whitelisted double posting allowed forums, so we can't create a reply
+        # right after our post.
+        # We could switch to another forum which does allow double posting
+        # (off-topic), but then we can only make as many topics as we have
+        # playcount, requiring me to constantly play on my dev account to make
+        # the tests work. I'll take less test coverage over that.
+        # Can uncomment if peppy ever grants my dev account a playcount bypass
+        # in the future.
+
+        ## create and edit a post under that topic
+        # response = api_dev.forum_reply(topic_id, UNIT_TEST_MESSAGE)
+        # post_id = response.id
+        # api_dev.forum_edit_post(post_id,
+        #     f"This comment was last edited at {datetime.now()}")
+
+    def test_poll(self):
+        poll = ForumPoll(
+            options=["Option 1", "Option 2"],
+            title="Test Poll",
+            length_days=0,
+            vote_change=True,
+            max_options=1,
+        )
+        api_dev.forum_create_topic(
+            title=f"{UNIT_TEST_MESSAGE}",
+            body=f"{UNIT_TEST_MESSAGE} ({datetime.now()})",
+            forum_id=85,
+            poll=poll
+        )

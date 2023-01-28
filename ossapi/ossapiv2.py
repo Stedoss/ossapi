@@ -28,7 +28,8 @@ from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore,
     ChangelogListing, MultiplayerScores, MultiplayerScoresCursor,
     BeatmapsetDiscussionVotes, CreatePMResponse, BeatmapsetDiscussions,
     UserCompact, NewsListing, NewsPost, SeasonalBackgrounds, BeatmapsetCompact,
-    BeatmapUserScores, DifficultyAttributes, Users, Beatmaps)
+    BeatmapUserScores, DifficultyAttributes, Users, Beatmaps,
+    CreateForumTopicResponse, ForumPoll, ForumPost, ForumTopic)
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
     BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
@@ -469,7 +470,7 @@ class OssapiV2:
             r = self.session.request(method, f"{self.BASE_URL}{url}",
                 params=params, data=data)
 
-        self.log.info(f"made {method} request to {r.request.url}")
+        self.log.info(f"made {method} request to {r.request.url}, data {data}")
         json_ = r.json()
         self.log.debug(f"received json: \n{json.dumps(json_, indent=4)}")
         self._check_response(json_, r.url)
@@ -489,6 +490,9 @@ class OssapiV2:
 
     def _post(self, type_, url, data={}):
         return self._request(type_, "POST", url, data=data)
+
+    def _put(self, type_, url, data={}):
+        return self._request(type_, "PUT", url, data=data)
 
     def _format_params(self, params):
         for key, value in params.copy().items():
@@ -516,6 +520,8 @@ class OssapiV2:
             return 1000 * int(value.timestamp())
         if isinstance(value, Enum):
             return value.value
+        if isinstance(value, bool):
+            return "true" if bool is True else "false"
         return value
 
     def _resolve_annotations(self, obj):
@@ -1012,6 +1018,56 @@ class OssapiV2:
 
     # /forums
     # -------
+
+    @request(Scope.FORUM_WRITE)
+    def forum_create_topic(self,
+       body: str,
+       forum_id: int,
+       title: str,
+       poll: Optional[ForumPoll] = None,
+   ) -> CreateForumTopicResponse:
+        """
+        https://osu.ppy.sh/docs/index.html#create-topic
+        """
+        data = {
+            "body": body,
+            "forum_id": forum_id,
+            "title": title,
+        }
+        if poll:
+            data["with_poll"] = "true"
+            data["forum_topic_poll[hide_results]"] = poll.hide_results
+            data["forum_topic_poll[length_days]"] = poll.length_days
+            data["forum_topic_poll[max_options]"] = poll.max_options
+            data["forum_topic_poll[options]"] = "\r\n".join(poll.options)
+            data["forum_topic_poll[title]"] = poll.title
+            data["forum_topic_poll[vote_change]"] = poll.vote_change
+
+        return self._post(CreateForumTopicResponse, "/forums/topics", data=data)
+
+    @request(Scope.FORUM_WRITE)
+    def forum_reply(self, topic_id: int, body: str) -> ForumPost:
+        """
+        https://osu.ppy.sh/docs/index.html#reply-topic
+        """
+        data = {"body": body}
+        return self._post(ForumPost, f"/forums/topics/{topic_id}/reply", data)
+
+    @request(Scope.FORUM_WRITE)
+    def forum_edit_topic(self, topic_id: int, title: str) -> ForumTopic:
+        """
+        https://osu.ppy.sh/docs/index.html#edit-topic
+        """
+        data = {"forum_topic[topic_title]": title}
+        return self._put(ForumTopic, f"/forums/topics/{topic_id}", data)
+
+    @request(Scope.FORUM_WRITE)
+    def forum_edit_post(self, post_id: int, body: str) -> ForumPost:
+        """
+        https://osu.ppy.sh/docs/index.html#edit-post
+        """
+        data = {"body": body}
+        return self._put(ForumPost, f"/forums/posts/{post_id}", data)
 
     @request(Scope.PUBLIC)
     def forum_topic(self,

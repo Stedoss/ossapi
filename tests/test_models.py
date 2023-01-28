@@ -3,7 +3,7 @@ from unittest import TestCase
 from ossapi import (User, BeatmapsetCompact, UserCompact, GameMode,
     BeatmapCompact)
 
-from tests import api
+from tests import api_v2 as api
 
 
 class TestMethodTypeConversion(TestCase):

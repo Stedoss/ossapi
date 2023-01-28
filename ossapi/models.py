@@ -2,6 +2,7 @@
 # https://docs.python.org/3.7/whatsnew/3.7.html#pep-563-postponed-evaluation-of-annotations
 from __future__ import annotations
 from typing import Optional, TypeVar, Generic, Any, List, Union
+from dataclasses import dataclass
 
 from ossapi.mod import Mod
 from ossapi.enums import (UserAccountHistory, ProfileBanner, UserBadge, Country,
@@ -469,6 +470,10 @@ class ForumTopicAndPosts(Model):
     topic: ForumTopic
     cursor_string: Optional[str]
 
+class CreateForumTopicResponse(Model):
+    post: ForumPost
+    topic: ForumTopic
+
 class ForumTopicSearch(Model):
     sort: Optional[ForumTopicSort]
     limit: Optional[int]
@@ -842,6 +847,26 @@ class BeatmapDifficultyAttributes(Model):
     score_multiplier: Optional[float]
 
 
+
+# ================
+# Parameter Models
+# ================
+
+# models which aren't used for serialization, but to pass to OssapiV2 methods.
+
+@dataclass
+class ForumPoll:
+    options: List[str]
+    title: str
+
+    # default values taken from https://osu.ppy.sh/docs/index.html#create-topic
+    hide_results: bool = False
+    length_days: int = 0
+    max_options: int = 1
+    vote_change: bool = False
+
+
+
 # ===================
 # Undocumented Models
 # ===================
@@ -987,11 +1012,12 @@ class BeatmapsetEvent(Model):
 class ChatChannel(Model):
     channel_id: int
     description: Optional[str]
-    icon: str
+    icon: Optional[str]
     # documented as non-optional (try pming tillerino with this non-optional)
     moderated: Optional[bool]
     name: str
     type: ChannelType
+    uuid: Optional[str]
 
     # optional fields
     # ---------------
