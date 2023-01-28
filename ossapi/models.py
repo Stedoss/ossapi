@@ -2,6 +2,7 @@
 # https://docs.python.org/3.7/whatsnew/3.7.html#pep-563-postponed-evaluation-of-annotations
 from __future__ import annotations
 from typing import Optional, TypeVar, Generic, Any, List, Union
+from dataclasses import dataclass
 
 from ossapi.mod import Mod
 from ossapi.enums import (UserAccountHistory, ProfileBanner, UserBadge, Country,
@@ -473,18 +474,6 @@ class CreateForumTopicResponse(Model):
     post: ForumPost
     topic: ForumTopic
 
-class ForumTopicPoll(Model):
-    options: Union[List[str], str]
-    title: str
-
-    # optional fields
-    # ---------------
-    hide_results: Optional[str]
-    length_days: Optional[int]
-    max_options: Optional[int]
-    vote_change: Optional[bool]
-
-
 class ForumTopicSearch(Model):
     sort: Optional[ForumTopicSort]
     limit: Optional[int]
@@ -856,6 +845,26 @@ class BeatmapDifficultyAttributes(Model):
     # mania attributes
     great_hit_window: Optional[float]
     score_multiplier: Optional[float]
+
+
+
+# ================
+# Parameter Models
+# ================
+
+# models which aren't used for serialization, but to pass to OssapiV2 methods.
+
+@dataclass
+class ForumPoll:
+    options: List[str]
+    title: str
+
+    # default values taken from https://osu.ppy.sh/docs/index.html#create-topic
+    hide_results: bool = False
+    length_days: int = 0
+    max_options: int = 1
+    vote_change: bool = False
+
 
 
 # ===================

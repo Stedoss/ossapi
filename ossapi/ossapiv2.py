@@ -29,7 +29,7 @@ from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore,
     BeatmapsetDiscussionVotes, CreatePMResponse, BeatmapsetDiscussions,
     UserCompact, NewsListing, NewsPost, SeasonalBackgrounds, BeatmapsetCompact,
     BeatmapUserScores, DifficultyAttributes, Users, Beatmaps,
-    CreateForumTopicResponse, ForumTopicPoll, ForumPost, ForumTopic)
+    CreateForumTopicResponse, ForumPoll, ForumPost, ForumTopic)
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
     BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
@@ -62,7 +62,6 @@ UserLookupKeyT = Union[UserLookupKey, str]
 BeatmapsetEventTypeT = Union[BeatmapsetEventType, str]
 CommentableTypeT = Union[CommentableType, str]
 CommentSortT = Union[CommentSort, str]
-ForumTopicPollT = Union[ForumTopicPoll, dict]
 ForumTopicSortT = Union[ForumTopicSort, str]
 SearchModeT = Union[SearchMode, str]
 MultiplayerScoresSortT = Union[MultiplayerScoresSort, str]
@@ -1025,8 +1024,7 @@ class OssapiV2:
        body: str,
        forum_id: int,
        title: str,
-       with_poll: Optional[bool] = None,
-       poll: Optional[ForumTopicPollT] = None,
+       poll: Optional[ForumPoll] = None,
    ) -> CreateForumTopicResponse:
         """
         https://osu.ppy.sh/docs/index.html#create-topic
@@ -1036,13 +1034,14 @@ class OssapiV2:
             "forum_id": forum_id,
             "title": title,
         }
-        if with_poll:
-            if poll is None:
-                raise ValueError("poll data must be provided if with_poll is "
-                    "True")
-
-            data["with_poll"] = True
-            data.update(self._processs_poll_data(poll))
+        if poll:
+            data["with_poll"] = "true"
+            data["forum_topic_poll[hide_results]"] = poll.hide_results
+            data["forum_topic_poll[length_days]"] = poll.length_days
+            data["forum_topic_poll[max_options]"] = poll.max_options
+            data["forum_topic_poll[options]"] = "\r\n".join(poll.options)
+            data["forum_topic_poll[title]"] = poll.title
+            data["forum_topic_poll[vote_change]"] = poll.vote_change
 
         return self._post(CreateForumTopicResponse, "/forums/topics", data=data)
 
@@ -1069,26 +1068,6 @@ class OssapiV2:
         """
         data = {"body": body}
         return self._put(ForumPost, f"/forums/posts/{post_id}", data)
-
-    @staticmethod
-    def _processs_poll_data(poll):
-        if isinstance(poll, dict):
-            poll = ForumTopicPoll(**poll)
-
-        if poll.options and not isinstance(poll.options, str):
-            poll.options = "\n".join(poll.options)
-
-        processed_poll = {
-            f"forum_topic_poll[{attr}]": getattr(poll, attr)
-            for attr in [
-                "options", "title", "hide_results", "length_days", "max_options"
-            ] if getattr(poll, attr) is not None
-        }
-
-        if poll.vote_change:
-            processed_poll["forum_topic_poll[vote_change]"] = True
-
-        return processed_poll
 
     @request(Scope.PUBLIC)
     def forum_topic(self,

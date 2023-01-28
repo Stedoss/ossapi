@@ -2,7 +2,7 @@ from datetime import datetime
 from unittest import TestCase
 
 from ossapi import (RankingType, BeatmapsetEventType, AccessDeniedError,
-    InsufficientScopeError, Mod, GameMode)
+    InsufficientScopeError, Mod, GameMode, ForumPoll)
 
 from tests import (
     TestCaseAuthorizationCode, TestCaseDevServer, UNIT_TEST_MESSAGE,
@@ -216,45 +216,39 @@ class TestFriendsAuth(TestCaseAuthorizationCode):
 # api_dev test cases
 # =====================
 
-class TestForumCreate(TestCaseDevServer):
-    def test_create(self):
+class TestForum(TestCaseDevServer):
+    def test_forum(self):
         # test creating both a topic and posting a reply in that topic.
         # be careful to post to one of the forums in
         # `double_post_allowed_forum_ids`, or else we'll be rejected for double
         # posting.
         # https://github.com/ppy/osu-web/blob/3d1586392102b05f2a3b264905c4dbb7b
         # 2d430a2/config/osu.php#L107.
-        response = api_dev.forum_create_topic(UNIT_TEST_MESSAGE, 84,
+
+        # create and edit a topic
+        response = api_dev.forum_create_topic(UNIT_TEST_MESSAGE, 85,
             UNIT_TEST_MESSAGE)
         topic_id = response.topic.id
-        api_dev.forum_reply(topic_id, UNIT_TEST_MESSAGE)
+        api_dev.forum_edit_topic(topic_id,
+            f"This title was last updated at {datetime.now()}")
 
-    def test_create_with_poll(self):
-        poll = {
-            "options": ["Option 1", "Option 2"],
-            "title": "Test Poll",
-            "length_days": 0,
-            "vote_change": True,
-            "max_options": 1,
-        }
+        ## create and edit a post under that topic
+        # response = api_dev.forum_reply(topic_id, UNIT_TEST_MESSAGE)
+        # post_id = response.id
+        # api_dev.forum_edit_post(post_id,
+        #     f"This comment was last edited at {datetime.now()}")
+
+    def test_poll(self):
+        poll = ForumPoll(
+            options=["Option 1", "Option 2"],
+            title="Test Poll",
+            length_days=0,
+            vote_change=True,
+            max_options=1,
+        )
         api_dev.forum_create_topic(
             title=f"{UNIT_TEST_MESSAGE}",
             body=f"{UNIT_TEST_MESSAGE} ({datetime.now()})",
-            forum_id=78,
-            with_poll=True, poll=poll
+            forum_id=85,
+            poll=poll
         )
-
-class TestForumEdit(TestCaseDevServer):
-    def test_edit(self):
-        # create a new topic and post
-        response = api_dev.forum_create_topic(UNIT_TEST_MESSAGE, 84,
-            UNIT_TEST_MESSAGE)
-        topic_id = response.topic.id
-        response = api_dev.forum_reply(topic_id, UNIT_TEST_MESSAGE)
-        post_id = response.id
-
-        # edit both the topic and post
-        api_dev.forum_edit_topic(topic_id,
-            f"This title was last updated at {datetime.now()}")
-        api_dev.forum_edit_post(post_id,
-            f"This comment was last edited at {datetime.now()}")
