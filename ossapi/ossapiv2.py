@@ -1035,7 +1035,7 @@ class OssapiV2:
             "title": title,
         }
         if poll:
-            data["with_poll"] = "true"
+            data["with_poll"] = True
             data["forum_topic_poll[hide_results]"] = poll.hide_results
             data["forum_topic_poll[length_days]"] = poll.length_days
             data["forum_topic_poll[max_options]"] = poll.max_options
