@@ -471,7 +471,7 @@ class OssapiV2:
             r = self.session.request(method, f"{self.BASE_URL}{url}",
                 params=params, data=data)
 
-        self.log.info(f"made {method} request to {r.request.url}")
+        self.log.info(f"made {method} request to {r.request.url}, data {data}")
         json_ = r.json()
         self.log.debug(f"received json: \n{json.dumps(json_, indent=4)}")
         self._check_response(json_, r.url)
