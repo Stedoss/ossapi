@@ -852,7 +852,7 @@ class BeatmapDifficultyAttributes(Model):
 # Parameter Models
 # ================
 
-# models which aren't used for serialization, but to pass to OssapiV2 methods.
+# models which aren't used for serialization, but passed to OssapiV2 methods.
 
 @dataclass
 class ForumPoll:
