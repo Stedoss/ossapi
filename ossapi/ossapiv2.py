@@ -521,6 +521,8 @@ class OssapiV2:
             return 1000 * int(value.timestamp())
         if isinstance(value, Enum):
             return value.value
+        if isinstance(value, bool):
+            return "true" if bool is True else "false"
         return value
 
     def _resolve_annotations(self, obj):
