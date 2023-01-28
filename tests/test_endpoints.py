@@ -232,6 +232,16 @@ class TestForum(TestCaseDevServer):
         api_dev.forum_edit_topic(topic_id,
             f"This title was last updated at {datetime.now()}")
 
+        # unfortunately, 85 (help and technical support) is not one of the
+        # whitelisted double posting allowed forums, so we can't create a reply
+        # right after our post.
+        # We could switch to another forum which does allow double posting
+        # (off-topic), but then we can only make as many topics as we have
+        # playcount, requiring me to constantly play on my dev account to make
+        # the tests work. I'll take less test coverage over that.
+        # Can uncomment if peppy ever grants my dev account a playcount bypass
+        # in the future.
+
         ## create and edit a post under that topic
         # response = api_dev.forum_reply(topic_id, UNIT_TEST_MESSAGE)
         # post_id = response.id
