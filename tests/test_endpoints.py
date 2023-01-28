@@ -224,7 +224,7 @@ class TestForumCreate(TestCaseDevServer):
         # posting.
         # https://github.com/ppy/osu-web/blob/3d1586392102b05f2a3b264905c4dbb7b
         # 2d430a2/config/osu.php#L107.
-        response = api_dev.forum_create_topic(UNIT_TEST_MESSAGE, 52,
+        response = api_dev.forum_create_topic(UNIT_TEST_MESSAGE, 84,
             UNIT_TEST_MESSAGE)
         topic_id = response.topic.id
         api_dev.forum_reply(topic_id, UNIT_TEST_MESSAGE)
@@ -247,7 +247,7 @@ class TestForumCreate(TestCaseDevServer):
 class TestForumEdit(TestCaseDevServer):
     def test_edit(self):
         # create a new topic and post
-        response = api_dev.forum_create_topic(UNIT_TEST_MESSAGE, 52,
+        response = api_dev.forum_create_topic(UNIT_TEST_MESSAGE, 84,
             UNIT_TEST_MESSAGE)
         topic_id = response.topic.id
         response = api_dev.forum_reply(topic_id, UNIT_TEST_MESSAGE)
