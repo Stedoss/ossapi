@@ -1206,14 +1206,23 @@ class OssapiV2:
 
     @request(Scope.PUBLIC)
     def room(self, room_id: RoomIdT) -> Room:
+        """
+        https://osu.ppy.sh/docs/index.html#roomsroom
+        """
         return self._get(Room, f"/rooms/{room_id}")
 
     @request(Scope.PUBLIC, requires_user=True)
     def room_leaderboard(self, room_id: RoomIdT) -> RoomLeaderboard:
+        """
+        https://osu.ppy.sh/docs/index.html#roomsroomleaderboard
+        """
         return self._get(RoomLeaderboard, f"/rooms/{room_id}/leaderboard")
 
     @request(Scope.PUBLIC, requires_user=True)
     def rooms(self, type: Optional[RoomSearchTypeT] = None) -> List[Room]:
+        """
+        https://osu.ppy.sh/docs/index.html#roomsmode
+        """
         return self._get(List[Room], f"/rooms/{type.value if type else ''}")
 
 
