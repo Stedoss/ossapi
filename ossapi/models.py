@@ -1110,8 +1110,10 @@ class RoomPlaylistItem(Model):
     required_mods: List[RoomPlaylistItemMod]
     expired: bool
     owner_id: int
-    playlist_order: int
-    played_at: Datetime
+    # null for playlist items which haven't finished yet, I think
+    playlist_order: Optional[int]
+    # null for playlist items which haven't finished yet, I think
+    played_at: Optional[Datetime]
     beatmap: BeatmapCompact
 
 class Room(Model):
