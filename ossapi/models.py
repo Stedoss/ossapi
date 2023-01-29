@@ -1,7 +1,7 @@
 # opt-in to forward type annotations
 # https://docs.python.org/3.7/whatsnew/3.7.html#pep-563-postponed-evaluation-of-annotations
 from __future__ import annotations
-from typing import Optional, TypeVar, Generic, Any, List, Union
+from typing import Optional, TypeVar, Generic, Any, List, Union, Dict
 from dataclasses import dataclass
 
 from ossapi.mod import Mod
@@ -1097,10 +1097,9 @@ class UserStatisticsRulesets(Model):
     fruits: Optional[UserStatistics]
     mania: Optional[UserStatistics]
 
-# TODO remove this class and just make RoomPlaylistItem.allowed_mods of type
-# List[Mod] probably, this model has no information beyond the acronym
 class RoomPlaylistItemMod(Model):
     acronym: str
+    settings: Dict[str, Any]
 
 class RoomPlaylistItem(Model):
     id: int
