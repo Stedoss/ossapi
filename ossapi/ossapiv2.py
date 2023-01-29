@@ -38,7 +38,7 @@ from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     BeatmapsetDiscussionVoteSort, BeatmapsetStatus, MessageType,
     BeatmapsetSearchCategory, BeatmapsetSearchMode,
     BeatmapsetSearchExplicitContent, BeatmapsetSearchGenre,
-    BeatmapsetSearchLanguage, NewsPostKey, BeatmapsetSearchSort)
+    BeatmapsetSearchLanguage, NewsPostKey, BeatmapsetSearchSort, RoomSearchType)
 from ossapi.utils import (is_compatible_type, is_primitive_type, is_optional,
     is_base_model_type, is_model_type, is_high_model_type, Field)
 from ossapi.mod import Mod
@@ -77,6 +77,7 @@ BeatmapsetSearchGenreT = Union[BeatmapsetSearchGenre, int]
 BeatmapsetSearchLanguageT = Union[BeatmapsetSearchLanguage, str]
 NewsPostKeyT = Union[NewsPostKey, str]
 BeatmapsetSearchSortT = Union[BeatmapsetSearchSort, str]
+RoomSearchTypeT = Union[RoomSearchType, str]
 
 BeatmapIdT = Union[int, BeatmapCompact]
 UserIdT = Union[int, UserCompact]
@@ -1210,6 +1211,11 @@ class OssapiV2:
     @request(Scope.PUBLIC, requires_user=True)
     def room_leaderboard(self, room_id: RoomIdT) -> RoomLeaderboard:
         return self._get(RoomLeaderboard, f"/rooms/{room_id}/leaderboard")
+
+    @request(Scope.PUBLIC, requires_user=True)
+    def rooms(self, type: Optional[RoomSearchTypeT] = None) -> List[Room]:
+        return self._get(List[Room], f"/rooms/{type.value if type else ''}")
+
 
     # /users
     # ------
