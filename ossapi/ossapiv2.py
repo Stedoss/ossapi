@@ -82,7 +82,7 @@ UserIdT = Union[int, UserCompact]
 BeatmapsetIdT = Union[int, BeatmapCompact, BeatmapsetCompact]
 RoomIdT = Union[int, Room]
 
-def request(scope, *, requires_login=False):
+def request(scope, *, requires_user=False):
     """
     Handles various validation and preparation tasks for any endpoint request
     method.
@@ -107,8 +107,8 @@ def request(scope, *, requires_login=False):
     scope: Scope
         The scope required for this endpoint. If ``None``, no scope is required
         and any authenticated cliient can access it.
-    requires_login: bool
-        Whether this endpoint requires a "logged-in" client to retrieve it.
+    requires_user: bool
+        Whether this endpoint requires a user to be associated with the grant.
         Currently, only authtorization code grants can access these endpoints.
     """
     def decorator(function):
@@ -129,7 +129,7 @@ def request(scope, *, requires_login=False):
                     "for this endpoint. Your client's current scopes are "
                     f"{self.scopes}")
 
-            if requires_login and self.grant is Grant.CLIENT_CREDENTIALS:
+            if requires_user and self.grant is Grant.CLIENT_CREDENTIALS:
                 raise AccessDeniedError("To access this endpoint you must be "
                     "authorized using the authorization code grant. You are "
                     "currently authorized with the client credentials grant")
@@ -1330,7 +1330,7 @@ class OssapiV2:
     ) -> Score:
         return self._get(Score, f"/scores/{mode.value}/{score_id}")
 
-    @request(Scope.PUBLIC, requires_login=True)
+    @request(Scope.PUBLIC, requires_user=True)
     def download_score(self,
         mode: GameModeT,
         score_id: int,
