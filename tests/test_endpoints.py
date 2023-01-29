@@ -197,10 +197,7 @@ class TestRoom(TestCase):
         # https://osu.ppy.sh/multiplayer/rooms/257524
         api.room(257524)
 
-class TestRoomLeaderboard(TestCase):
-    def test_deserialize(self):
-        # https://osu.ppy.sh/multiplayer/rooms/232594
-        api.room_leaderboard(232594)
+
 
 # ======================
 # api_full test cases
@@ -218,6 +215,11 @@ class TestMeAuth(TestCaseAuthorizationCode):
 class TestFriendsAuth(TestCaseAuthorizationCode):
     def test_deserialize(self):
         api_full.friends()
+
+class TestRoomLeaderboard(TestCase):
+    def test_deserialize(self):
+        # https://osu.ppy.sh/multiplayer/rooms/232594
+        api_full.room_leaderboard(232594)
 
 
 
