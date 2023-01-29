@@ -173,6 +173,9 @@ class Datetime(datetime, BaseModel):
             return datetime.strptime(value, "%Y-%m-%dT%H:%M:%S%z")
         if cls._matches_datetime(value, "%Y-%m-%d"):
             return datetime.strptime(value, "%Y-%m-%d")
+        # returned by eg https://osu.ppy.sh/api/v2/rooms/257524
+        if cls._matches_datetime(value, "%Y-%m-%d %H:%M:%S"):
+            return datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
         raise ValueError(f"invalid datetime string {value}")
 
     @staticmethod

@@ -192,6 +192,9 @@ class TestFriends(TestCase):
     def test_access_denied(self):
         self.assertRaises(InsufficientScopeError, api.friends)
 
+class TestRoom(TestCase):
+    def test_deserialize(self):
+        api.room(257524)
 
 # ======================
 # api_full test cases

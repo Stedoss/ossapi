@@ -207,6 +207,18 @@ class Grade(EnumModel):
     D = "D"
     F = "F"
 
+class RoomType(EnumModel):
+    # https://github.com/ppy/osu-web/blob/3d1586392102b05f2a3b264905c4dbb7b2d43
+    # 0a2/resources/js/interfaces/room-json.ts#L10
+    PLAYLISTS = "playlists"
+    HEAD_TO_HEAD = "head_to_head"
+    TEAM_VERSUS = "team_versus"
+
+class RoomCategory(EnumModel):
+    # https://github.com/ppy/osu-web/blob/3d1586392102b05f2a3b264905c4dbb7b2d
+    # 430a2/resources/js/interfaces/room-json.ts#L7
+    NORMAL = "normal"
+    SPOTLIGHT = "spotlight"
 
 # ===============
 # Parameter Enums

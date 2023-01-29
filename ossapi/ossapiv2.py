@@ -29,7 +29,7 @@ from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore,
     BeatmapsetDiscussionVotes, CreatePMResponse, BeatmapsetDiscussions,
     UserCompact, NewsListing, NewsPost, SeasonalBackgrounds, BeatmapsetCompact,
     BeatmapUserScores, DifficultyAttributes, Users, Beatmaps,
-    CreateForumTopicResponse, ForumPoll, ForumPost, ForumTopic)
+    CreateForumTopicResponse, ForumPoll, ForumPost, ForumTopic, Room)
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
     BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
@@ -80,6 +80,7 @@ BeatmapsetSearchSortT = Union[BeatmapsetSearchSort, str]
 BeatmapIdT = Union[int, BeatmapCompact]
 UserIdT = Union[int, UserCompact]
 BeatmapsetIdT = Union[int, BeatmapCompact, BeatmapsetCompact]
+RoomIdT = Union[int, Room]
 
 def request(scope, *, requires_login=False):
     """
@@ -152,6 +153,9 @@ def request(scope, *, requires_login=False):
                         return arg.id
                 elif issubtype(UserIdT, arg_type):
                     if isinstance(arg, UserCompact):
+                        return arg.id
+                elif issubtype(RoomIdT, arg_type):
+                    if isinstance(arg, Room):
                         return arg.id
 
             # args and kwargs are handled separately, but in a similar fashion.
@@ -1198,6 +1202,9 @@ class OssapiV2:
         return self._get(MultiplayerScores,
             f"/rooms/{room_id}/playlist/{playlist_id}/scores", params=params)
 
+    @request(Scope.PUBLIC)
+    def room(self, room_id: RoomIdT) -> Room:
+        return self._get(Room, f"/rooms/{room_id}")
 
     # /users
     # ------

@@ -13,6 +13,11 @@ class TestMethodTypeConversion(TestCase):
         self.assertEqual(api.beatmap_scores(beatmap),
             api.beatmap_scores(beatmap.id))
 
+    def test_room_as_parameter(self):
+        room1 = api.room(257524)
+        room2 = api.room(room1)
+        self.assertEqual(room1, room2)
+
 class TestExpandableModels(TestCase):
     def test_expand_user(self):
         user = api.search(query="tybug").users.data[0]

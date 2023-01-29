@@ -14,7 +14,8 @@ from ossapi.enums import (UserAccountHistory, ProfileBanner, UserBadge, Country,
     EventBeatmap, BeatmapsetApproval, EventBeatmapset, KudosuVote,
     BeatmapsetEventType, UserRelationType, UserLevel, UserGradeCounts,
     GithubUser, ChangelogSearch, ForumTopicType, ForumPostBody, ForumTopicSort,
-    ChannelType, ReviewsConfig, NewsSearch, Nomination, RankHighest)
+    ChannelType, ReviewsConfig, NewsSearch, Nomination, RankHighest, RoomType,
+    RoomCategory)
 from ossapi.utils import Datetime, Model, BaseModel, Field
 
 T = TypeVar("T")
@@ -1095,3 +1096,41 @@ class UserStatisticsRulesets(Model):
     taiko: Optional[UserStatistics]
     fruits: Optional[UserStatistics]
     mania: Optional[UserStatistics]
+
+# TODO remove this class and just make RoomPlaylistItem.allowed_mods of type
+# List[Mod] probably, this model has no information beyond the acronym
+class RoomPlaylistItemMod(Model):
+    acronym: str
+
+class RoomPlaylistItem(Model):
+    id: int
+    room_id: int
+    beatmap_id: int
+    ruleset_id: int
+    allowed_mods: List[RoomPlaylistItemMod]
+    required_mods: List[RoomPlaylistItemMod]
+    expired: bool
+    owner_id: int
+    playlist_order: int
+    played_at: Datetime
+    beatmap: BeatmapCompact
+
+class Room(Model):
+    id: int
+    name: str
+    # TODO enumify. example value: "normal"
+    category: RoomCategory
+    type: RoomType
+    user_id: int
+    starts_at: Datetime
+    ends_at: Datetime
+    max_attempts: Optional[int]
+    participant_count: int
+    channel_id: int
+    active: bool
+    has_password: bool
+    queue_mode: str
+    auto_skip: bool
+    host: UserCompact
+    playlist: List[RoomPlaylistItem]
+    recent_participants: List[UserCompact]

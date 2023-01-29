@@ -13,7 +13,8 @@ from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore,
     Spotlights, WikiPage, _Event, Event, BeatmapsetDiscussionPosts, Build,
     ChangelogListing, MultiplayerScores, MultiplayerScoresCursor,
     BeatmapsetDiscussionVotes, CreatePMResponse, BeatmapsetDiscussions,
-    UserCompact, BeatmapsetCompact, ForumPoll)
+    UserCompact, BeatmapsetCompact, ForumPoll, Room, RoomPlaylistItem,
+    RoomPlaylistItemMod)
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
     BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
@@ -21,7 +22,8 @@ from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     BeatmapsetDiscussionVoteSort, BeatmapsetStatus, MessageType,
     BeatmapsetSearchCategory, BeatmapsetSearchMode,
     BeatmapsetSearchExplicitContent, BeatmapsetSearchLanguage,
-    BeatmapsetSearchGenre, NewsPostKey, BeatmapsetSearchSort)
+    BeatmapsetSearchGenre, NewsPostKey, BeatmapsetSearchSort, RoomType,
+    RoomCategory)
 from ossapi.mod import Mod
 from ossapi.replay import Replay
 from ossapi.version import __version__
@@ -46,6 +48,7 @@ __all__ = [
     "Build", "ChangelogListing", "MultiplayerScores", "MultiplayerScoresCursor",
     "BeatmapsetDiscussionVotes", "CreatePMResponse",
     "BeatmapsetDiscussions", "UserCompact", "BeatmapsetCompact", "ForumPoll",
+    "Room", "RoomPlaylistItem", "RoomPlaylistItemMod",
     # OssapiV2 enums
     "GameMode", "ScoreType", "RankingFilter", "RankingType",
     "UserBeatmapType", "BeatmapDiscussionPostSort", "UserLookupKey",
@@ -54,7 +57,8 @@ __all__ = [
     "BeatmapsetDiscussionVoteSort", "BeatmapsetStatus", "MessageType",
     "BeatmapsetSearchCategory", "BeatmapsetSearchMode",
     "BeatmapsetSearchExplicitContent", "BeatmapsetSearchLanguage",
-    "BeatmapsetSearchGenre", "NewsPostKey", "BeatmapsetSearchSort",
+    "BeatmapsetSearchGenre", "NewsPostKey", "BeatmapsetSearchSort", "RoomType",
+    "RoomCategory",
     # OssapiV2 exceptions
     "AccessDeniedError", "TokenExpiredError", "InsufficientScopeError",
     # misc
