@@ -194,7 +194,13 @@ class TestFriends(TestCase):
 
 class TestRoom(TestCase):
     def test_deserialize(self):
+        # https://osu.ppy.sh/multiplayer/rooms/257524
         api.room(257524)
+
+class TestRoomLeaderboard(TestCase):
+    def test_deserialize(self):
+        # https://osu.ppy.sh/multiplayer/rooms/232594
+        api.room_leaderboard(232594)
 
 # ======================
 # api_full test cases

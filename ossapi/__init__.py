@@ -14,7 +14,8 @@ from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore,
     ChangelogListing, MultiplayerScores, MultiplayerScoresCursor,
     BeatmapsetDiscussionVotes, CreatePMResponse, BeatmapsetDiscussions,
     UserCompact, BeatmapsetCompact, ForumPoll, Room, RoomPlaylistItem,
-    RoomPlaylistItemMod)
+    RoomPlaylistItemMod, RoomLeaderboardScore, RoomLeaderboardUserScore,
+    RoomLeaderboard)
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
     BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
@@ -48,7 +49,8 @@ __all__ = [
     "Build", "ChangelogListing", "MultiplayerScores", "MultiplayerScoresCursor",
     "BeatmapsetDiscussionVotes", "CreatePMResponse",
     "BeatmapsetDiscussions", "UserCompact", "BeatmapsetCompact", "ForumPoll",
-    "Room", "RoomPlaylistItem", "RoomPlaylistItemMod",
+    "Room", "RoomPlaylistItem", "RoomPlaylistItemMod", "RoomLeaderboardScore",
+    "RoomLeaderboardUserScore", "RoomLeaderboard",
     # OssapiV2 enums
     "GameMode", "ScoreType", "RankingFilter", "RankingType",
     "UserBeatmapType", "BeatmapDiscussionPostSort", "UserLookupKey",

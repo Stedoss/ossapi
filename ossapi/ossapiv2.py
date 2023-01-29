@@ -29,7 +29,8 @@ from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore,
     BeatmapsetDiscussionVotes, CreatePMResponse, BeatmapsetDiscussions,
     UserCompact, NewsListing, NewsPost, SeasonalBackgrounds, BeatmapsetCompact,
     BeatmapUserScores, DifficultyAttributes, Users, Beatmaps,
-    CreateForumTopicResponse, ForumPoll, ForumPost, ForumTopic, Room)
+    CreateForumTopicResponse, ForumPoll, ForumPost, ForumTopic, Room,
+    RoomLeaderboard)
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
     BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
@@ -1205,6 +1206,10 @@ class OssapiV2:
     @request(Scope.PUBLIC)
     def room(self, room_id: RoomIdT) -> Room:
         return self._get(Room, f"/rooms/{room_id}")
+
+    @request(Scope.PUBLIC, requires_user=True)
+    def room_leaderboard(self, room_id: RoomIdT) -> RoomLeaderboard:
+        return self._get(RoomLeaderboard, f"/rooms/{room_id}/leaderboard")
 
     # /users
     # ------

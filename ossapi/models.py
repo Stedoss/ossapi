@@ -1134,3 +1134,20 @@ class Room(Model):
     host: UserCompact
     playlist: List[RoomPlaylistItem]
     recent_participants: List[UserCompact]
+
+class RoomLeaderboardScore(Model):
+    accuracy: float
+    attempts: int
+    completed: int
+    pp: float
+    room_id: int
+    total_score: int
+    user_id: int
+    user: UserCompact
+
+class RoomLeaderboardUserScore(RoomLeaderboardScore):
+    position: int
+
+class RoomLeaderboard(Model):
+    leaderboard: List[RoomLeaderboardScore]
+    user_score: RoomLeaderboardUserScore
