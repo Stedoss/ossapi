@@ -1,5 +1,6 @@
 # opt-in to forward type annotations
-# https://docs.python.org/3.7/whatsnew/3.7.html#pep-563-postponed-evaluation-of-annotations
+# https://docs.python.org/3.7/whatsnew/3.7.html#pep-563-postponed-evaluation-
+# of-annotations
 from __future__ import annotations
 from typing import Optional, TypeVar, Generic, Any, List, Union, Dict
 from dataclasses import dataclass
@@ -904,7 +905,8 @@ class BeatmapsetDiscussions(Model):
     beatmapsets: List[Beatmapset]
 
 class BeatmapsetDiscussionReview(Model):
-    # https://github.com/ppy/osu-web/blob/master/app/Libraries/BeatmapsetDiscussionReview.php
+    # https://github.com/ppy/osu-web/blob/master/app/Libraries/BeatmapsetDis
+    # cussionReview.php
     max_blocks: int
 
 class BeatmapsetDiscussionPosts(Model):
@@ -970,7 +972,10 @@ class BeatmapsetEventCommentWithSourceUser(BeatmapsetEventCommentNoPost):
 
 class BeatmapsetEvent(Model):
     # https://github.com/ppy/osu-web/blob/master/app/Models/BeatmapsetEvent.php
-    # https://github.com/ppy/osu-web/blob/master/app/Transformers/BeatmapsetEventTransformer.php
+    #
+    # https://github.com/ppy/osu-web/blob/master/app/Transformers/BeatmapsetEv
+    # entTransformer.php
+
     id: int
     type: BeatmapsetEventType
     comment: str
@@ -1060,14 +1065,16 @@ class CreatePMResponse(Model):
     presence: Optional[List[ChatChannel]]
 
 class ModdingHistoryEventsBundle(Model):
-    # https://github.com/ppy/osu-web/blob/master/app/Libraries/ModdingHistoryEventsBundle.php#L84
+    # https://github.com/ppy/osu-web/blob/master/app/Libraries/ModdingHistor
+    # yEventsBundle.php#L84
     events: List[BeatmapsetEvent]
     reviewsConfig: BeatmapsetDiscussionReview
     users: List[UserCompact]
 
 class UserRelation(Model):
     # undocumented (and not a class on osu-web)
-    # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserRelationTransformer.php#L16
+    # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserRelatio
+    # nTransformer.php#L16
     target_id: int
     relation_type: UserRelationType
     mutual: bool
@@ -1103,7 +1110,8 @@ class UserStatistics(Model):
 
 class UserStatisticsRulesets(Model):
     # undocumented
-    # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserStatisticsRulesetsTransformer.php
+    # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserStatisti
+    # csRulesetsTransformer.php
     osu: Optional[UserStatistics]
     taiko: Optional[UserStatistics]
     fruits: Optional[UserStatistics]

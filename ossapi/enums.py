@@ -192,7 +192,8 @@ class ForumTopicType(EnumModel):
 
 class UserRelationType(EnumModel):
     # undocumented
-    # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserRelationTransformer.php#L20
+    # https://github.com/ppy/osu-web/blob/master/app/Transformers/
+    # UserRelationTransformer.php#L20
     FRIEND = "friend"
     BLOCK = "block"
 
