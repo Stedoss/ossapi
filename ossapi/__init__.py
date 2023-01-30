@@ -15,7 +15,8 @@ from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore,
     BeatmapsetDiscussionVotes, CreatePMResponse, BeatmapsetDiscussions,
     UserCompact, BeatmapsetCompact, ForumPoll, Room, RoomPlaylistItem,
     RoomPlaylistItemMod, RoomLeaderboardScore, RoomLeaderboardUserScore,
-    RoomLeaderboard)
+    RoomLeaderboard, Match, Matches, MatchResponse, ScoreMatchInfo, MatchGame,
+    MatchEventDetail, MatchEvent)
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
     BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
@@ -24,7 +25,7 @@ from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     BeatmapsetSearchCategory, BeatmapsetSearchMode,
     BeatmapsetSearchExplicitContent, BeatmapsetSearchLanguage,
     BeatmapsetSearchGenre, NewsPostKey, BeatmapsetSearchSort, RoomType,
-    RoomCategory, RoomSearchType)
+    RoomCategory, RoomSearchType, MatchEventType)
 from ossapi.mod import Mod
 from ossapi.replay import Replay
 from ossapi.version import __version__
@@ -50,7 +51,9 @@ __all__ = [
     "BeatmapsetDiscussionVotes", "CreatePMResponse",
     "BeatmapsetDiscussions", "UserCompact", "BeatmapsetCompact", "ForumPoll",
     "Room", "RoomPlaylistItem", "RoomPlaylistItemMod", "RoomLeaderboardScore",
-    "RoomLeaderboardUserScore", "RoomLeaderboard",
+    "RoomLeaderboardUserScore", "RoomLeaderboard", "Match", "Matches",
+    "MatchResponse", "ScoreMatchInfo", "MatchGame", "MatchEventDetail",
+    "MatchEvent",
     # OssapiV2 enums
     "GameMode", "ScoreType", "RankingFilter", "RankingType",
     "UserBeatmapType", "BeatmapDiscussionPostSort", "UserLookupKey",
@@ -60,7 +63,7 @@ __all__ = [
     "BeatmapsetSearchCategory", "BeatmapsetSearchMode",
     "BeatmapsetSearchExplicitContent", "BeatmapsetSearchLanguage",
     "BeatmapsetSearchGenre", "NewsPostKey", "BeatmapsetSearchSort", "RoomType",
-    "RoomCategory", "RoomSearchType",
+    "RoomCategory", "RoomSearchType", "MatchEventType",
     # OssapiV2 exceptions
     "AccessDeniedError", "TokenExpiredError", "InsufficientScopeError",
     # misc

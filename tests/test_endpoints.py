@@ -197,6 +197,14 @@ class TestRoom(TestCase):
         # https://osu.ppy.sh/multiplayer/rooms/257524
         api.room(257524)
 
+class TestMatches(TestCase):
+    def test_deserialize(self):
+        api.matches()
+
+class TestMatch(TestCase):
+    def test_deserialize(self):
+        # https://osu.ppy.sh/community/matches/97947404, tournament match
+        api.match(97947404)
 
 
 # ======================

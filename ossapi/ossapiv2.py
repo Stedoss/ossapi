@@ -30,7 +30,7 @@ from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore,
     UserCompact, NewsListing, NewsPost, SeasonalBackgrounds, BeatmapsetCompact,
     BeatmapUserScores, DifficultyAttributes, Users, Beatmaps,
     CreateForumTopicResponse, ForumPoll, ForumPost, ForumTopic, Room,
-    RoomLeaderboard)
+    RoomLeaderboard, Matches, Match, MatchResponse)
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
     BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
@@ -83,6 +83,7 @@ BeatmapIdT = Union[int, BeatmapCompact]
 UserIdT = Union[int, UserCompact]
 BeatmapsetIdT = Union[int, BeatmapCompact, BeatmapsetCompact]
 RoomIdT = Union[int, Room]
+MatchIdT = Union[int, Match]
 
 def request(scope, *, requires_user=False):
     """
@@ -158,6 +159,9 @@ def request(scope, *, requires_user=False):
                         return arg.id
                 elif issubtype(RoomIdT, arg_type):
                     if isinstance(arg, Room):
+                        return arg.id
+                elif issubtype(MatchIdT, arg_type):
+                    if isinstance(arg, Match):
                         return arg.id
 
             # args and kwargs are handled separately, but in a similar fashion.
@@ -1113,6 +1117,18 @@ class OssapiV2:
         """
         params = {"mode": mode, "query": query, "page": page}
         return self._get(Search, "/search", params)
+
+
+    # /matches
+    # --------
+
+    @request(Scope.PUBLIC)
+    def matches(self) -> Matches:
+        return self._get(Matches, "/matches")
+
+    @request(Scope.PUBLIC)
+    def match(self, match_id: MatchIdT) -> MatchResponse:
+        return self._get(MatchResponse, f"/matches/{match_id}")
 
 
     # /me

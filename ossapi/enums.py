@@ -220,6 +220,19 @@ class RoomCategory(EnumModel):
     NORMAL = "normal"
     SPOTLIGHT = "spotlight"
 
+class MatchEventType(EnumModel):
+    # https://github.dev/ppy/osu-web/blob/3d1586392102b05f2a3b264905c4dbb7b2
+    # d430a2/app/Models/LegacyMatch/Event.php#L30
+    PLAYER_LEFT = "player-left"
+    PLAYER_JOINED = "player-joined"
+    PLAYER_KICKED = "player-kicked"
+    MATCH_CREATED = "match-created"
+    MATCH_DISBANDED = "match-disbanded"
+    HOST_CHANGED = "host-changed"
+    OTHER = "other"
+
+
+
 # ===============
 # Parameter Enums
 # ===============

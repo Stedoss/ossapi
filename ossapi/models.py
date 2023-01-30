@@ -15,7 +15,7 @@ from ossapi.enums import (UserAccountHistory, ProfileBanner, UserBadge, Country,
     BeatmapsetEventType, UserRelationType, UserLevel, UserGradeCounts,
     GithubUser, ChangelogSearch, ForumTopicType, ForumPostBody, ForumTopicSort,
     ChannelType, ReviewsConfig, NewsSearch, Nomination, RankHighest, RoomType,
-    RoomCategory)
+    RoomCategory, MatchEventType)
 from ossapi.utils import Datetime, Model, BaseModel, Field
 
 T = TypeVar("T")
@@ -333,7 +333,9 @@ class Score(Model):
     """
     https://osu.ppy.sh/docs/index.html#score
     """
-    id: int
+    # can be null for match scores, eg the scores
+    # in https://osu.ppy.sh/community/matches/97947404
+    id: Optional[int]
     best_id: Optional[int]
     user_id: int
     accuracy: float
@@ -359,6 +361,14 @@ class Score(Model):
     _user: Optional[UserCompact] = Field(name="user")
     match: Optional[ScoreMatchInfo]
     type: str
+
+    @classmethod
+    def preprocess_data(cls, data):
+        # scores from matches (api.match) return perfect as an int instead of a
+        # bool (same as api v1). Convert to a bool here.
+        if isinstance(data["perfect"], int):
+            data["perfect"] = bool(data["perfect"])
+        return data
 
     def user(self) -> Union[UserCompact, User]:
         return self._fk_user(self.user_id, existing=self._user)
@@ -1154,3 +1164,50 @@ class RoomLeaderboardUserScore(RoomLeaderboardScore):
 class RoomLeaderboard(Model):
     leaderboard: List[RoomLeaderboardScore]
     user_score: RoomLeaderboardUserScore
+
+class Match(Model):
+    id: int
+    start_time: Datetime
+    # null for matches which haven't finished yet, I think
+    end_time: Optional[Datetime]
+    name: str
+
+class Matches(Model):
+    matches: List[Match]
+    cursor: CursorT
+    params: Any
+
+class MatchGame(Model):
+    id: int
+    start_time: Datetime
+    end_time: Datetime
+    mode: GameMode
+    mode_int: int
+    # TODO enumify. example value: "scorev2"
+    scoring_type: str
+    # TODO enumify. example value: "team-vs"
+    team_type: str
+    mods: List[Mod]
+    beatmap: BeatmapCompact
+    scores: List[Score]
+
+class MatchEventDetail(Model):
+    type: MatchEventType
+    # seems to only be used for MatchEventType.OTHER
+    text: Optional[str]
+
+class MatchEvent(Model):
+    id: int
+    detail: MatchEventDetail
+    timestamp: Datetime
+    # can be none for MatchEventType.OTHER
+    user_id: Optional[int]
+    game: Optional[MatchGame]
+
+class MatchResponse(Model):
+    match: Match
+    events: List[MatchEvent]
+    users: List[UserCompact]
+    first_event_id: int
+    latest_event_id: int
+    current_game_id: Optional[int]
