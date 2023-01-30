@@ -323,9 +323,11 @@ class Beatmapset(BeatmapsetCompact):
     def expand(self) -> Beatmapset:
         return self
 
-
-class Match(Model):
-    pass
+# undocumented, but defined here to avoid a forward reference in Score.
+class ScoreMatchInfo(Model):
+    slot: int
+    team: str
+    pass_: bool = Field(name="pass")
 
 class Score(Model):
     """
@@ -355,7 +357,7 @@ class Score(Model):
     rank_global: Optional[int]
     weight: Optional[Weight]
     _user: Optional[UserCompact] = Field(name="user")
-    match: Optional[Match]
+    match: Optional[ScoreMatchInfo]
     type: str
 
     def user(self) -> Union[UserCompact, User]:
