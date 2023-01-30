@@ -15,7 +15,7 @@ from ossapi.enums import (UserAccountHistory, ProfileBanner, UserBadge, Country,
     BeatmapsetEventType, UserRelationType, UserLevel, UserGradeCounts,
     GithubUser, ChangelogSearch, ForumTopicType, ForumPostBody, ForumTopicSort,
     ChannelType, ReviewsConfig, NewsSearch, Nomination, RankHighest, RoomType,
-    RoomCategory, MatchEventType)
+    RoomCategory, MatchEventType, ScoringType, TeamType)
 from ossapi.utils import Datetime, Model, BaseModel, Field
 
 T = TypeVar("T")
@@ -1183,10 +1183,8 @@ class MatchGame(Model):
     end_time: Datetime
     mode: GameMode
     mode_int: int
-    # TODO enumify. example value: "scorev2"
-    scoring_type: str
-    # TODO enumify. example value: "team-vs"
-    team_type: str
+    scoring_type: ScoringType
+    team_type: TeamType
     mods: List[Mod]
     beatmap: BeatmapCompact
     scores: List[Score]

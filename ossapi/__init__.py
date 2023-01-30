@@ -16,7 +16,7 @@ from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore,
     UserCompact, BeatmapsetCompact, ForumPoll, Room, RoomPlaylistItem,
     RoomPlaylistItemMod, RoomLeaderboardScore, RoomLeaderboardUserScore,
     RoomLeaderboard, Match, Matches, MatchResponse, ScoreMatchInfo, MatchGame,
-    MatchEventDetail, MatchEvent)
+    MatchEventDetail, MatchEvent, ScoringType, TeamType)
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
     BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
@@ -63,7 +63,8 @@ __all__ = [
     "BeatmapsetSearchCategory", "BeatmapsetSearchMode",
     "BeatmapsetSearchExplicitContent", "BeatmapsetSearchLanguage",
     "BeatmapsetSearchGenre", "NewsPostKey", "BeatmapsetSearchSort", "RoomType",
-    "RoomCategory", "RoomSearchType", "MatchEventType",
+    "RoomCategory", "RoomSearchType", "MatchEventType", "ScoringType",
+    "TeamType",
     # OssapiV2 exceptions
     "AccessDeniedError", "TokenExpiredError", "InsufficientScopeError",
     # misc

@@ -232,6 +232,19 @@ class MatchEventType(EnumModel):
     OTHER = "other"
 
 
+class ScoringType(EnumModel):
+    SCORE = 0
+    ACCURACY = 1
+    COMBO = 2
+    SCORE_V2 = 3
+
+class TeamType(EnumModel):
+    HEAD_TO_HEAD = 0
+    TAG_COOP = 1
+    TEAM_VS = 2
+    TAG_TEAM_VS = 3
+
+
 
 # ===============
 # Parameter Enums
