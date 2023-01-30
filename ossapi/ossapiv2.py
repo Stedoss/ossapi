@@ -994,6 +994,8 @@ class OssapiV2:
     # TODO deprecated, remove in v3.x.x
     create_pm = send_pm
 
+    # this method requires a user in the announce group, so I've never tested
+    # it.
     @request(Scope.CHAT_WRITE)
     def send_announcement(self,
         channel_name: str,
