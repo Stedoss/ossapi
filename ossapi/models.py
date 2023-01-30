@@ -1139,7 +1139,6 @@ class RoomPlaylistItem(Model):
 class Room(Model):
     id: int
     name: str
-    # TODO enumify. example value: "normal"
     category: RoomCategory
     type: RoomType
     user_id: int
