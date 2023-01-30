@@ -30,7 +30,7 @@ from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore,
     UserCompact, NewsListing, NewsPost, SeasonalBackgrounds, BeatmapsetCompact,
     BeatmapUserScores, DifficultyAttributes, Users, Beatmaps,
     CreateForumTopicResponse, ForumPoll, ForumPost, ForumTopic, Room,
-    RoomLeaderboard, Matches, Match, MatchResponse)
+    RoomLeaderboard, Matches, Match, MatchResponse, ChatChannel)
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
     BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
@@ -993,6 +993,35 @@ class OssapiV2:
 
     # TODO deprecated, remove in v3.x.x
     create_pm = send_pm
+
+    @request(Scope.CHAT_WRITE)
+    def send_announcement(self,
+        channel_name: str,
+        channel_description: str,
+        message: str,
+        # TODO need to add support to automatic conversion for lists of id types
+        # instead of just bare types (: UserIdT)
+        target_ids: List[UserIdT],
+    ) -> ChatChannel:
+        """
+        https://osu.ppy.sh/docs/index.html#create-channel
+
+        Only implements the ANNOUNCE functionality of the above endpoint. If you
+        want to create a pm channel (ie send a pm), use `OssapiV2#send_pm`
+        instead.
+
+        You must be in the announce usergroup to use this endpoint. If you don't
+        know whether you're in it, you're not.
+        """
+        data = {
+            "channel.name": channel_name,
+            "channel.description": channel_description,
+            "message": message,
+            "target_ids": target_ids,
+            "type": "ANNOUNCE"
+        }
+        return self._post(ChatChannel, "/chat/channels", data=data)
+
 
     # /comments
     # ---------
