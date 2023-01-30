@@ -1031,7 +1031,8 @@ class ChatChannel(Model):
     channel_id: int
     description: Optional[str]
     icon: Optional[str]
-    # documented as non-optional (try pming tillerino with this non-optional)
+    # documented as non-optional (but try pming tillerino to see that it can be
+    # null)
     moderated: Optional[bool]
     name: str
     type: ChannelType
