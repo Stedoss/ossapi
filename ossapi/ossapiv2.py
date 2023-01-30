@@ -683,6 +683,13 @@ class OssapiV2:
 
     def _instantiate(self, type_, kwargs):
         self.log.debug(f"instantiating type {type_}")
+
+        kwargs = type_.preprocess_data(kwargs)
+        override_type = type_.override_class(kwargs)
+
+        type_ = override_type or type_
+        signature_type = type_
+
         # we need a special case to handle when `type_` is a
         # `_GenericAlias`. I don't fully understand why this exception is
         # necessary, and it's likely the result of some error on my part in our
@@ -690,9 +697,6 @@ class OssapiV2:
         # we need to extract the type to use for the init signature and the type
         # hints from a `_GenericAlias` if we see one, as standard methods
         # won't work.
-        override_type = type_.override_class(kwargs)
-        type_ = override_type or type_
-        signature_type = type_
         try:
             type_hints = get_type_hints(type_)
         except TypeError:

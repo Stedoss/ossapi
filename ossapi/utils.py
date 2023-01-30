@@ -72,6 +72,23 @@ class _Model:
         """
         return None
 
+    @classmethod
+    def preprocess_data(cls, data):
+        """
+        A hook that allows model classes to modify data from the api before it
+        is used to instantiate the model.
+
+        For example, if a model attribute come as either a bool or an integer
+        (0 for false and 1 for true), this method can be overridden to convert
+        the integer to a boolean before model instantiation. This lets you
+        define the attribute as type bool instead of type Union[int, bool].
+
+        ``preprocess_data`` is called before ``override_class`` and
+        ``override_types``, so changes to the data in ``preprocess_data`` will
+        affect the data passed to those methods.
+        """
+        return data
+
 class ModelMeta(type):
     def __new__(cls, name, bases, dct):
         model = super().__new__(cls, name, bases, dct)
