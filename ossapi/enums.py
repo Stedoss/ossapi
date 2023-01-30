@@ -233,12 +233,16 @@ class MatchEventType(EnumModel):
 
 
 class ScoringType(EnumModel):
+    # https://github.com/ppy/osu-web/blob/3d1586392102b05f2a3b264905c4dbb7b2d4
+    # 30a2/app/Models/LegacyMatch/Game.php#L40
     SCORE = 0
     ACCURACY = 1
     COMBO = 2
     SCORE_V2 = 3
 
 class TeamType(EnumModel):
+    # https://github.com/ppy/osu-web/blob/3d1586392102b05f2a3b264905c4dbb7b2d43
+    # 0a2/app/Models/LegacyMatch/Game.php#L47
     HEAD_TO_HEAD = 0
     TAG_COOP = 1
     TEAM_VS = 2
