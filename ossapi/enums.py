@@ -171,9 +171,7 @@ class EventType(EnumModel):
     USER_SUPPORT_GIFT = "userSupportGift"
     USERNAME_CHANGE = "usernameChange"
 
-# TODO this is just a subset of `RankStatus`, and is only (currently) used for
-# `EventType.BEATMAPSET_APPROVE`. Find some way to de-duplicate? Could move to
-# `RankStatus`, but then how to enforce taking on only a subset of values?
+# used for `EventType.BEATMAPSET_APPROVE`
 class BeatmapsetApproval(EnumModel):
     RANKED = "ranked"
     APPROVED = "approved"
@@ -547,8 +545,7 @@ class KudosuGiver(Model):
 
 class KudosuPost(Model):
     url: Optional[str]
-    # will be "[deleted beatmap]" for deleted beatmaps. TODO codify this
-    # somehow? another enum perhaps? see
+    # will be "[deleted beatmap]" for deleted beatmaps. See
     # https://osu.ppy.sh/docs/index.html#kudosuhistory
     title: str
 
