@@ -85,7 +85,7 @@ BeatmapsetIdT = Union[int, BeatmapCompact, BeatmapsetCompact]
 RoomIdT = Union[int, Room]
 MatchIdT = Union[int, Match]
 
-def request(scope, *, requires_user=False):
+def request(scope, *, requires_user=False, category):
     """
     Handles various validation and preparation tasks for any endpoint request
     method.
@@ -113,6 +113,9 @@ def request(scope, *, requires_user=False):
     requires_user: bool
         Whether this endpoint requires a user to be associated with the grant.
         Currently, only authtorization code grants can access these endpoints.
+    category: str
+        What category of endpoints this endpoint belongs to. Used for grouping
+        in the docs.
     """
     def decorator(function):
         instantiate = {}
@@ -195,6 +198,8 @@ def request(scope, *, requires_user=False):
                     kwargs[arg_name] = id_
 
             return function(*args, **kwargs)
+
+        wrapper.__ossapi_category__ = category
         return wrapper
     return decorator
 
@@ -790,7 +795,7 @@ class OssapiV2:
     # /beatmaps
     # ---------
 
-    @request(Scope.PUBLIC)
+    @request(Scope.PUBLIC, category="beatmaps")
     def beatmap_user_score(self,
         beatmap_id: BeatmapIdT,
         user_id: UserIdT,
@@ -804,7 +809,7 @@ class OssapiV2:
         return self._get(BeatmapUserScore,
             f"/beatmaps/{beatmap_id}/scores/users/{user_id}", params)
 
-    @request(Scope.PUBLIC)
+    @request(Scope.PUBLIC, category="beatmaps")
     def beatmap_user_scores(self,
         beatmap_id: BeatmapIdT,
         user_id: UserIdT,
@@ -818,7 +823,7 @@ class OssapiV2:
             f"/beatmaps/{beatmap_id}/scores/users/{user_id}/all", params)
         return scores.scores
 
-    @request(Scope.PUBLIC)
+    @request(Scope.PUBLIC, category="beatmaps")
     def beatmap_scores(self,
         beatmap_id: BeatmapIdT,
         mode: Optional[GameModeT] = None,
@@ -832,7 +837,7 @@ class OssapiV2:
         return self._get(BeatmapScores, f"/beatmaps/{beatmap_id}/scores",
             params)
 
-    @request(Scope.PUBLIC)
+    @request(Scope.PUBLIC, category="beatmaps")
     def beatmap(self,
         beatmap_id: Optional[BeatmapIdT] = None,
         checksum: Optional[str] = None,
@@ -848,18 +853,32 @@ class OssapiV2:
         params = {"checksum": checksum, "filename": filename, "id": beatmap_id}
         return self._get(Beatmap, "/beatmaps/lookup", params)
 
-    @request(Scope.PUBLIC)
+    @request(Scope.PUBLIC, category="beatmaps")
     def beatmaps(self,
         beatmap_ids: List[BeatmapIdT]
     ) -> List[Beatmap]:
         params = {"ids": beatmap_ids}
         return self._get(Beatmaps, "/beatmaps", params).beatmaps
 
+    @request(Scope.PUBLIC, category="beatmaps")
+    def beatmap_attributes(self,
+        beatmap_id: int,
+        mods: Optional[ModT] = None,
+        ruleset: Optional[GameModeT] = None,
+        ruleset_id: Optional[int] = None
+    ) -> DifficultyAttributes:
+        """
+        https://osu.ppy.sh/docs/index.html#get-beatmap-attributes
+        """
+        data = {"mods": mods, "ruleset": ruleset, "ruleset_id": ruleset_id}
+        return self._post(DifficultyAttributes,
+            f"/beatmaps/{beatmap_id}/attributes", data=data)
+
 
     # /beatmapsets
     # ------------
 
-    @request(Scope.PUBLIC)
+    @request(Scope.PUBLIC, category="beatmapsets")
     def beatmapset_discussion_posts(self,
         beatmapset_discussion_id: Optional[int] = None,
         limit: Optional[int] = None,
@@ -877,7 +896,7 @@ class OssapiV2:
         return self._get(BeatmapsetDiscussionPosts,
             "/beatmapsets/discussions/posts", params)
 
-    @request(Scope.PUBLIC)
+    @request(Scope.PUBLIC, category="beatmapsets")
     def beatmapset_discussion_votes(self,
         beatmapset_discussion_id: Optional[int] = None,
         limit: Optional[int] = None,
@@ -898,7 +917,7 @@ class OssapiV2:
         return self._get(BeatmapsetDiscussionVotes,
             "/beatmapsets/discussions/votes", params)
 
-    @request(Scope.PUBLIC)
+    @request(Scope.PUBLIC, category="beatmapsets")
     def beatmapset_discussions(self,
         beatmapset_id: Optional[BeatmapsetIdT] = None,
         beatmap_id: Optional[BeatmapIdT] = None,
@@ -922,513 +941,7 @@ class OssapiV2:
         return self._get(BeatmapsetDiscussions,
             "/beatmapsets/discussions", params)
 
-    @request(Scope.PUBLIC)
-    def beatmap_attributes(self,
-        beatmap_id: int,
-        mods: Optional[ModT] = None,
-        ruleset: Optional[GameModeT] = None,
-        ruleset_id: Optional[int] = None
-    ) -> DifficultyAttributes:
-        """
-        https://osu.ppy.sh/docs/index.html#get-beatmap-attributes
-        """
-        data = {"mods": mods, "ruleset": ruleset, "ruleset_id": ruleset_id}
-        return self._post(DifficultyAttributes,
-            f"/beatmaps/{beatmap_id}/attributes", data=data)
-
-
-    # /changelog
-    # ----------
-
-    @request(scope=None)
-    def changelog_build(self,
-        stream: str,
-        build: str
-    ) -> Build:
-        """
-        https://osu.ppy.sh/docs/index.html#get-changelog-build
-        """
-        return self._get(Build, f"/changelog/{stream}/{build}")
-
-    @request(scope=None)
-    def changelog_listing(self,
-        from_: Optional[str] = None,
-        to: Optional[str] = None,
-        max_id: Optional[int] = None,
-        stream: Optional[str] = None
-    ) -> ChangelogListing:
-        """
-        https://osu.ppy.sh/docs/index.html#get-changelog-listing
-        """
-        params = {"from": from_, "to": to, "max_id": max_id, "stream": stream}
-        return self._get(ChangelogListing, "/changelog", params)
-
-    @request(scope=None)
-    def changelog_lookup(self,
-        changelog: str,
-        key: Optional[str] = None
-    ) -> Build:
-        """
-        https://osu.ppy.sh/docs/index.html#lookup-changelog-build
-        """
-        params = {"key": key}
-        return self._get(Build, f"/changelog/{changelog}", params)
-
-
-    # /chat
-    # -----
-
-    @request(Scope.CHAT_WRITE)
-    def send_pm(self,
-        user_id: UserIdT,
-        message: str,
-        is_action: Optional[bool] = False
-    ) -> CreatePMResponse:
-        """
-        https://osu.ppy.sh/docs/index.html#create-new-pm
-        """
-        data = {"target_id": user_id, "message": message,
-            "is_action": is_action}
-        return self._post(CreatePMResponse, "/chat/new", data=data)
-
-    # TODO deprecated, remove in v3.x.x
-    create_pm = send_pm
-
-    # this method requires a user in the announce group, so I've never tested
-    # it.
-    @request(Scope.CHAT_WRITE)
-    def send_announcement(self,
-        channel_name: str,
-        channel_description: str,
-        message: str,
-        # TODO need to add support to automatic conversion for lists of id types
-        # instead of just bare types (: UserIdT)
-        target_ids: List[UserIdT],
-    ) -> ChatChannel:
-        """
-        https://osu.ppy.sh/docs/index.html#create-channel
-
-        Only implements the ANNOUNCE functionality of the above endpoint. If you
-        want to create a pm channel (ie send a pm), use `OssapiV2#send_pm`
-        instead.
-
-        You must be in the announce usergroup to use this endpoint. If you don't
-        know whether you're in it, you're not.
-        """
-        data = {
-            "channel.name": channel_name,
-            "channel.description": channel_description,
-            "message": message,
-            "target_ids": target_ids,
-            "type": "ANNOUNCE"
-        }
-        return self._post(ChatChannel, "/chat/channels", data=data)
-
-
-    # /comments
-    # ---------
-
-    @request(Scope.PUBLIC)
-    def comments(self,
-        commentable_type: Optional[CommentableTypeT] = None,
-        commentable_id: Optional[int] = None,
-        cursor: Optional[Cursor] = None,
-        parent_id: Optional[int] = None,
-        sort: Optional[CommentSortT] = None
-    ) -> CommentBundle:
-        """
-        A list of comments and their replies, up to 2 levels deep.
-
-        https://osu.ppy.sh/docs/index.html#get-comments
-
-        Notes
-        -----
-        ``pinned_comments`` is only included when ``commentable_type`` and
-        ``commentable_id`` are specified.
-        """
-        params = {"commentable_type": commentable_type,
-            "commentable_id": commentable_id, "cursor": cursor,
-            "parent_id": parent_id, "sort": sort}
-        return self._get(CommentBundle, "/comments", params)
-
-    @request(scope=None)
-    def comment(self,
-        comment_id: int
-    ) -> CommentBundle:
-        """
-        https://osu.ppy.sh/docs/index.html#get-a-comment
-        """
-        return self._get(CommentBundle, f"/comments/{comment_id}")
-
-
-    # /forums
-    # -------
-
-    @request(Scope.FORUM_WRITE)
-    def forum_create_topic(self,
-       body: str,
-       forum_id: int,
-       title: str,
-       poll: Optional[ForumPoll] = None,
-   ) -> CreateForumTopicResponse:
-        """
-        https://osu.ppy.sh/docs/index.html#create-topic
-        """
-        data = {
-            "body": body,
-            "forum_id": forum_id,
-            "title": title,
-        }
-        if poll:
-            data["with_poll"] = True
-            data["forum_topic_poll[hide_results]"] = poll.hide_results
-            data["forum_topic_poll[length_days]"] = poll.length_days
-            data["forum_topic_poll[max_options]"] = poll.max_options
-            data["forum_topic_poll[options]"] = "\r\n".join(poll.options)
-            data["forum_topic_poll[title]"] = poll.title
-            data["forum_topic_poll[vote_change]"] = poll.vote_change
-
-        return self._post(CreateForumTopicResponse, "/forums/topics", data=data)
-
-    @request(Scope.FORUM_WRITE)
-    def forum_reply(self, topic_id: int, body: str) -> ForumPost:
-        """
-        https://osu.ppy.sh/docs/index.html#reply-topic
-        """
-        data = {"body": body}
-        return self._post(ForumPost, f"/forums/topics/{topic_id}/reply", data)
-
-    @request(Scope.FORUM_WRITE)
-    def forum_edit_topic(self, topic_id: int, title: str) -> ForumTopic:
-        """
-        https://osu.ppy.sh/docs/index.html#edit-topic
-        """
-        data = {"forum_topic[topic_title]": title}
-        return self._put(ForumTopic, f"/forums/topics/{topic_id}", data)
-
-    @request(Scope.FORUM_WRITE)
-    def forum_edit_post(self, post_id: int, body: str) -> ForumPost:
-        """
-        https://osu.ppy.sh/docs/index.html#edit-post
-        """
-        data = {"body": body}
-        return self._put(ForumPost, f"/forums/posts/{post_id}", data)
-
-    @request(Scope.PUBLIC)
-    def forum_topic(self,
-        topic_id: int,
-        cursor: Optional[Cursor] = None,
-        sort: Optional[ForumTopicSortT] = None,
-        limit: Optional[int] = None,
-        start: Optional[int] = None,
-        end: Optional[int] = None
-    ) -> ForumTopicAndPosts:
-        """
-        A topic and its posts.
-
-        https://osu.ppy.sh/docs/index.html#get-topic-and-posts
-        """
-        params = {"cursor": cursor, "sort": sort, "limit": limit,
-            "start": start, "end": end}
-        return self._get(ForumTopicAndPosts, f"/forums/topics/{topic_id}",
-            params)
-
-
-    # / ("home")
-    # ----------
-
-    @request(Scope.PUBLIC)
-    def search(self,
-        mode: Optional[SearchModeT] = None,
-        query: Optional[str] = None,
-        page: Optional[int] = None
-    ) -> Search:
-        """
-        https://osu.ppy.sh/docs/index.html#search
-        """
-        params = {"mode": mode, "query": query, "page": page}
-        return self._get(Search, "/search", params)
-
-
-    # /matches
-    # --------
-
-    @request(Scope.PUBLIC)
-    def matches(self) -> Matches:
-        return self._get(Matches, "/matches")
-
-    @request(Scope.PUBLIC)
-    def match(self, match_id: MatchIdT) -> MatchResponse:
-        return self._get(MatchResponse, f"/matches/{match_id}")
-
-
-    # /me
-    # ---
-
-    @request(Scope.IDENTIFY)
-    def get_me(self,
-        mode: Optional[GameModeT] = None
-    ):
-        """
-        https://osu.ppy.sh/docs/index.html#get-own-data
-        """
-        return self._get(User, f"/me/{mode.value if mode else ''}")
-
-
-    # /news
-    # -----
-
-    @request(scope=None)
-    def news_listing(self,
-        limit: Optional[int] = None,
-        year: Optional[int] = None,
-        cursor: Optional[Cursor] = None
-    ) -> NewsListing:
-        """
-        https://osu.ppy.sh/docs/index.html#get-news-listing
-        """
-        params = {"limit": limit, "year": year, "cursor": cursor}
-        return self._get(NewsListing, "/news", params=params)
-
-    @request(scope=None)
-    def news_post(self,
-        news: str,
-        key: Optional[NewsPostKeyT] = NewsPostKey.SLUG
-    ) -> NewsPost:
-        """
-        https://osu.ppy.sh/docs/index.html#get-news-post
-        """
-        # docs state key should be "unset to query by slug"
-        if key is NewsPostKey.SLUG:
-            key = None
-        params = {"key": key}
-        return self._get(NewsPost, f"/news/{news}", params=params)
-
-
-    # /rankings
-    # ---------
-
-    @request(Scope.PUBLIC)
-    def ranking(self,
-        mode: GameModeT,
-        type_: RankingTypeT,
-        country: Optional[str] = None,
-        cursor: Optional[Cursor] = None,
-        filter_: RankingFilterT = RankingFilter.ALL,
-        spotlight: Optional[int] = None,
-        variant: Optional[str] = None
-    ) -> Rankings:
-        """
-        https://osu.ppy.sh/docs/index.html#get-ranking
-        """
-        params = {"country": country, "cursor": cursor, "filter": filter_,
-            "spotlight": spotlight, "variant": variant}
-        return self._get(Rankings, f"/rankings/{mode.value}/{type_.value}",
-            params=params)
-
-    @request(Scope.PUBLIC)
-    def spotlights(self) -> List[Spotlight]:
-        """
-        https://osu.ppy.sh/docs/index.html#get-spotlights
-        """
-        spotlights = self._get(Spotlights, "/spotlights")
-        return spotlights.spotlights
-
-
-    # /rooms
-    # ------
-
-    # TODO add test for this once I figure out values for room_id and
-    # playlist_id that actually produce a response lol
-    @request(Scope.PUBLIC)
-    def multiplayer_scores(self,
-        room_id: int,
-        playlist_id: int,
-        limit: Optional[int] = None,
-        sort: Optional[MultiplayerScoresSortT] = None,
-        cursor: Optional[MultiplayerScoresCursor] = None
-    ) -> MultiplayerScores:
-        """
-        https://osu.ppy.sh/docs/index.html#get-scores
-        """
-        params = {"limit": limit, "sort": sort, "cursor": cursor}
-        return self._get(MultiplayerScores,
-            f"/rooms/{room_id}/playlist/{playlist_id}/scores", params=params)
-
-    @request(Scope.PUBLIC)
-    def room(self, room_id: RoomIdT) -> Room:
-        """
-        https://osu.ppy.sh/docs/index.html#roomsroom
-        """
-        return self._get(Room, f"/rooms/{room_id}")
-
-    @request(Scope.PUBLIC, requires_user=True)
-    def room_leaderboard(self, room_id: RoomIdT) -> RoomLeaderboard:
-        """
-        https://osu.ppy.sh/docs/index.html#roomsroomleaderboard
-        """
-        return self._get(RoomLeaderboard, f"/rooms/{room_id}/leaderboard")
-
-    @request(Scope.PUBLIC, requires_user=True)
-    def rooms(self, type: Optional[RoomSearchTypeT] = None) -> List[Room]:
-        """
-        https://osu.ppy.sh/docs/index.html#roomsmode
-        """
-        return self._get(List[Room], f"/rooms/{type.value if type else ''}")
-
-
-    # /users
-    # ------
-
-    @request(Scope.PUBLIC)
-    def user_kudosu(self,
-        user_id: UserIdT,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None
-    ) -> List[KudosuHistory]:
-        """
-        https://osu.ppy.sh/docs/index.html#get-user-kudosu
-        """
-        params = {"limit": limit, "offset": offset}
-        return self._get(List[KudosuHistory], f"/users/{user_id}/kudosu",
-            params)
-
-    # TODO make most arguments keyword only for most endpoints in v3.x.x,
-    # will be a breaking change but avoids confusion like
-    # https://github.com/circleguard/ossapi/issues/56.
-    # eg for user_scores there should be a `*` after `type_`.
-    @request(Scope.PUBLIC)
-    def user_scores(self,
-        user_id: UserIdT,
-        type_: ScoreTypeT,
-        include_fails: Optional[bool] = None,
-        mode: Optional[GameModeT] = None,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None
-    ) -> List[Score]:
-        """
-        https://osu.ppy.sh/docs/index.html#get-user-scores
-        """
-        # `include_fails` is actually a string in the api spec. We'll still
-        # require a bool to be passed, and just do the conversion behind the
-        # scenes.
-        if include_fails is False:
-            include_fails = 0
-        if include_fails is True:
-            include_fails = 1
-
-        params = {"include_fails": include_fails, "mode": mode, "limit": limit,
-            "offset": offset}
-        return self._get(List[Score], f"/users/{user_id}/scores/{type_.value}",
-            params)
-
-    @request(Scope.PUBLIC)
-    def user_beatmaps(self,
-        user_id: UserIdT,
-        type_: UserBeatmapTypeT,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None
-    ) -> Union[List[Beatmapset], List[BeatmapPlaycount]]:
-        """
-        https://osu.ppy.sh/docs/index.html#get-user-beatmaps
-        """
-        params = {"limit": limit, "offset": offset}
-
-        return_type = List[Beatmapset]
-        if type_ is UserBeatmapType.MOST_PLAYED:
-            return_type = List[BeatmapPlaycount]
-
-        return self._get(return_type,
-            f"/users/{user_id}/beatmapsets/{type_.value}", params)
-
-    @request(Scope.PUBLIC)
-    def user_recent_activity(self,
-        user_id: UserIdT,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None
-    ) -> List[Event]:
-        """
-        https://osu.ppy.sh/docs/index.html#get-user-recent-activity
-        """
-        params = {"limit": limit, "offset": offset}
-        return self._get(List[_Event], f"/users/{user_id}/recent_activity/",
-            params)
-
-    @request(Scope.PUBLIC)
-    def user(self,
-        user: Union[UserIdT, str],
-        mode: Optional[GameModeT] = None,
-        key: Optional[UserLookupKeyT] = None
-    ) -> User:
-        """
-        https://osu.ppy.sh/docs/index.html#get-user
-        """
-        params = {"key": key}
-        return self._get(User, f"/users/{user}/{mode.value if mode else ''}",
-            params)
-
-    @request(Scope.PUBLIC)
-    def users(self,
-        user_ids: List[UserIdT]
-    ) -> List[UserCompact]:
-        """
-        https://osu.ppy.sh/docs/index.html#get-users
-        """
-        params = {"ids": user_ids}
-        return self._get(Users, "/users", params).users
-
-    # /wiki
-    # -----
-
-    @request(scope=None)
-    def wiki_page(self,
-        locale: str,
-        path: str
-    ) -> WikiPage:
-        """
-        https://osu.ppy.sh/docs/index.html#get-wiki-page
-        """
-        return self._get(WikiPage, f"/wiki/{locale}/{path}")
-
-
-    # undocumented
-    # ------------
-
-    @request(Scope.PUBLIC)
-    def score(self,
-        mode: GameModeT,
-        score_id: int
-    ) -> Score:
-        return self._get(Score, f"/scores/{mode.value}/{score_id}")
-
-    @request(Scope.PUBLIC, requires_user=True)
-    def download_score(self,
-        mode: GameModeT,
-        score_id: int,
-        *,
-        raw: bool = False
-    ) -> Replay:
-        url = f"{self.BASE_URL}/scores/{mode.value}/{score_id}/download"
-        r = self.session.get(url)
-
-        # if the response above succeeded, it will return a raw string
-        # instead of json. If it didn't succeed, it will return json with an
-        # error.
-        # So always try parsing as json to check if there's an error. If parsin
-        # fails, just assume the request succeeded and move on.
-        try:
-            json_ = r.json()
-            self._check_response(json_, url)
-        except json.JSONDecodeError:
-            pass
-
-        if raw:
-            return r.content
-
-        replay = osrparse.Replay.from_string(r.content)
-        return Replay(replay, self)
-
-    @request(Scope.PUBLIC)
+    @request(Scope.PUBLIC, category="beatmapsets")
     def search_beatmapsets(self,
         query: Optional[str] = None,
         *,
@@ -1495,7 +1008,7 @@ class OssapiV2:
 
         return self._get(BeatmapsetSearchResult, "/beatmapsets/search/", params)
 
-    @request(Scope.PUBLIC)
+    @request(Scope.PUBLIC, category="beatmapsets")
     def beatmapset(self,
         beatmapset_id: Optional[BeatmapsetIdT] = None,
         beatmap_id: Optional[BeatmapIdT] = None
@@ -1512,7 +1025,7 @@ class OssapiV2:
             return self._get(Beatmapset, "/beatmapsets/lookup", params)
         return self._get(Beatmapset, f"/beatmapsets/{beatmapset_id}")
 
-    @request(Scope.PUBLIC)
+    @request(Scope.PUBLIC, category="beatmapsets")
     def beatmapset_events(self,
         limit: Optional[int] = None,
         page: Optional[int] = None,
@@ -1530,17 +1043,526 @@ class OssapiV2:
         return self._get(ModdingHistoryEventsBundle, "/beatmapsets/events",
             params)
 
-    @request(Scope.FRIENDS_READ)
+
+    # /changelog
+    # ----------
+
+    @request(scope=None, category="changelog")
+    def changelog_build(self,
+        stream: str,
+        build: str
+    ) -> Build:
+        """
+        https://osu.ppy.sh/docs/index.html#get-changelog-build
+        """
+        return self._get(Build, f"/changelog/{stream}/{build}")
+
+    @request(scope=None, category="changelog")
+    def changelog_listing(self,
+        from_: Optional[str] = None,
+        to: Optional[str] = None,
+        max_id: Optional[int] = None,
+        stream: Optional[str] = None
+    ) -> ChangelogListing:
+        """
+        https://osu.ppy.sh/docs/index.html#get-changelog-listing
+        """
+        params = {"from": from_, "to": to, "max_id": max_id, "stream": stream}
+        return self._get(ChangelogListing, "/changelog", params)
+
+    @request(scope=None, category="changelog")
+    def changelog_lookup(self,
+        changelog: str,
+        key: Optional[str] = None
+    ) -> Build:
+        """
+        https://osu.ppy.sh/docs/index.html#lookup-changelog-build
+        """
+        params = {"key": key}
+        return self._get(Build, f"/changelog/{changelog}", params)
+
+
+    # /chat
+    # -----
+
+    @request(Scope.CHAT_WRITE, category="chat")
+    def send_pm(self,
+        user_id: UserIdT,
+        message: str,
+        is_action: Optional[bool] = False
+    ) -> CreatePMResponse:
+        """
+        https://osu.ppy.sh/docs/index.html#create-new-pm
+        """
+        data = {"target_id": user_id, "message": message,
+            "is_action": is_action}
+        return self._post(CreatePMResponse, "/chat/new", data=data)
+
+    # TODO deprecated, remove in v3.x.x
+    create_pm = send_pm
+
+    # this method requires a user in the announce group, so I've never tested
+    # it.
+    @request(Scope.CHAT_WRITE, category="chat")
+    def send_announcement(self,
+        channel_name: str,
+        channel_description: str,
+        message: str,
+        # TODO need to add support to automatic conversion for lists of id types
+        # instead of just bare types (: UserIdT)
+        target_ids: List[UserIdT],
+    ) -> ChatChannel:
+        """
+        https://osu.ppy.sh/docs/index.html#create-channel
+
+        Only implements the ANNOUNCE functionality of the above endpoint. If you
+        want to create a pm channel (ie send a pm), use `OssapiV2#send_pm`
+        instead.
+
+        You must be in the announce usergroup to use this endpoint. If you don't
+        know whether you're in it, you're not.
+        """
+        data = {
+            "channel.name": channel_name,
+            "channel.description": channel_description,
+            "message": message,
+            "target_ids": target_ids,
+            "type": "ANNOUNCE"
+        }
+        return self._post(ChatChannel, "/chat/channels", data=data)
+
+
+    # /comments
+    # ---------
+
+    @request(Scope.PUBLIC, category="comments")
+    def comments(self,
+        commentable_type: Optional[CommentableTypeT] = None,
+        commentable_id: Optional[int] = None,
+        cursor: Optional[Cursor] = None,
+        parent_id: Optional[int] = None,
+        sort: Optional[CommentSortT] = None
+    ) -> CommentBundle:
+        """
+        A list of comments and their replies, up to 2 levels deep.
+
+        https://osu.ppy.sh/docs/index.html#get-comments
+
+        Notes
+        -----
+        ``pinned_comments`` is only included when ``commentable_type`` and
+        ``commentable_id`` are specified.
+        """
+        params = {"commentable_type": commentable_type,
+            "commentable_id": commentable_id, "cursor": cursor,
+            "parent_id": parent_id, "sort": sort}
+        return self._get(CommentBundle, "/comments", params)
+
+    @request(scope=None, category="comments")
+    def comment(self,
+        comment_id: int
+    ) -> CommentBundle:
+        """
+        https://osu.ppy.sh/docs/index.html#get-a-comment
+        """
+        return self._get(CommentBundle, f"/comments/{comment_id}")
+
+
+    # /forums
+    # -------
+
+    @request(Scope.FORUM_WRITE, category="forums")
+    def forum_create_topic(self,
+       body: str,
+       forum_id: int,
+       title: str,
+       poll: Optional[ForumPoll] = None,
+   ) -> CreateForumTopicResponse:
+        """
+        https://osu.ppy.sh/docs/index.html#create-topic
+        """
+        data = {
+            "body": body,
+            "forum_id": forum_id,
+            "title": title,
+        }
+        if poll:
+            data["with_poll"] = True
+            data["forum_topic_poll[hide_results]"] = poll.hide_results
+            data["forum_topic_poll[length_days]"] = poll.length_days
+            data["forum_topic_poll[max_options]"] = poll.max_options
+            data["forum_topic_poll[options]"] = "\r\n".join(poll.options)
+            data["forum_topic_poll[title]"] = poll.title
+            data["forum_topic_poll[vote_change]"] = poll.vote_change
+
+        return self._post(CreateForumTopicResponse, "/forums/topics", data=data)
+
+    @request(Scope.FORUM_WRITE, category="forums")
+    def forum_reply(self, topic_id: int, body: str) -> ForumPost:
+        """
+        https://osu.ppy.sh/docs/index.html#reply-topic
+        """
+        data = {"body": body}
+        return self._post(ForumPost, f"/forums/topics/{topic_id}/reply", data)
+
+    @request(Scope.FORUM_WRITE, category="forums")
+    def forum_edit_topic(self, topic_id: int, title: str) -> ForumTopic:
+        """
+        https://osu.ppy.sh/docs/index.html#edit-topic
+        """
+        data = {"forum_topic[topic_title]": title}
+        return self._put(ForumTopic, f"/forums/topics/{topic_id}", data)
+
+    @request(Scope.FORUM_WRITE, category="forums")
+    def forum_edit_post(self, post_id: int, body: str) -> ForumPost:
+        """
+        https://osu.ppy.sh/docs/index.html#edit-post
+        """
+        data = {"body": body}
+        return self._put(ForumPost, f"/forums/posts/{post_id}", data)
+
+    @request(Scope.PUBLIC, category="forums")
+    def forum_topic(self,
+        topic_id: int,
+        cursor: Optional[Cursor] = None,
+        sort: Optional[ForumTopicSortT] = None,
+        limit: Optional[int] = None,
+        start: Optional[int] = None,
+        end: Optional[int] = None
+    ) -> ForumTopicAndPosts:
+        """
+        A topic and its posts.
+
+        https://osu.ppy.sh/docs/index.html#get-topic-and-posts
+        """
+        params = {"cursor": cursor, "sort": sort, "limit": limit,
+            "start": start, "end": end}
+        return self._get(ForumTopicAndPosts, f"/forums/topics/{topic_id}",
+            params)
+
+
+    # /friends
+    # --------
+
+    @request(Scope.FRIENDS_READ, category="friends")
     def friends(self) -> List[UserCompact]:
         return self._get(List[UserCompact], "/friends")
 
-    @request(scope=None)
-    def seasonal_backgrounds(self) -> SeasonalBackgrounds:
-        return self._get(SeasonalBackgrounds, "/seasonal-backgrounds")
+
+    # / ("home")
+    # ----------
+
+    @request(Scope.PUBLIC, category="home")
+    def search(self,
+        mode: Optional[SearchModeT] = None,
+        query: Optional[str] = None,
+        page: Optional[int] = None
+    ) -> Search:
+        """
+        https://osu.ppy.sh/docs/index.html#search
+        """
+        params = {"mode": mode, "query": query, "page": page}
+        return self._get(Search, "/search", params)
+
+
+    # /matches
+    # --------
+
+    @request(Scope.PUBLIC, category="matches")
+    def matches(self) -> Matches:
+        return self._get(Matches, "/matches")
+
+    @request(Scope.PUBLIC, category="matches")
+    def match(self, match_id: MatchIdT) -> MatchResponse:
+        return self._get(MatchResponse, f"/matches/{match_id}")
+
+
+    # /me
+    # ---
+
+    @request(Scope.IDENTIFY, category="me")
+    def get_me(self,
+        mode: Optional[GameModeT] = None
+    ):
+        """
+        https://osu.ppy.sh/docs/index.html#get-own-data
+        """
+        return self._get(User, f"/me/{mode.value if mode else ''}")
+
+
+    # /news
+    # -----
+
+    @request(scope=None, category="news")
+    def news_listing(self,
+        limit: Optional[int] = None,
+        year: Optional[int] = None,
+        cursor: Optional[Cursor] = None
+    ) -> NewsListing:
+        """
+        https://osu.ppy.sh/docs/index.html#get-news-listing
+        """
+        params = {"limit": limit, "year": year, "cursor": cursor}
+        return self._get(NewsListing, "/news", params=params)
+
+    @request(scope=None, category="news")
+    def news_post(self,
+        news: str,
+        key: Optional[NewsPostKeyT] = NewsPostKey.SLUG
+    ) -> NewsPost:
+        """
+        https://osu.ppy.sh/docs/index.html#get-news-post
+        """
+        # docs state key should be "unset to query by slug"
+        if key is NewsPostKey.SLUG:
+            key = None
+        params = {"key": key}
+        return self._get(NewsPost, f"/news/{news}", params=params)
+
 
     # /oauth
     # ------
 
+    @request(scope=None, category="oauth")
     def revoke_token(self):
+        """
+        https://osu.ppy.sh/docs/index.html#oauth-tokens
+        """
         self.session.delete(f"{self.BASE_URL}/oauth/tokens/current")
         self.remove_token(self.token_key, self.token_directory)
+
+
+    # /rankings
+    # ---------
+
+    @request(Scope.PUBLIC, category="rankings")
+    def ranking(self,
+        mode: GameModeT,
+        type_: RankingTypeT,
+        country: Optional[str] = None,
+        cursor: Optional[Cursor] = None,
+        filter_: RankingFilterT = RankingFilter.ALL,
+        spotlight: Optional[int] = None,
+        variant: Optional[str] = None
+    ) -> Rankings:
+        """
+        https://osu.ppy.sh/docs/index.html#get-ranking
+        """
+        params = {"country": country, "cursor": cursor, "filter": filter_,
+            "spotlight": spotlight, "variant": variant}
+        return self._get(Rankings, f"/rankings/{mode.value}/{type_.value}",
+            params=params)
+
+
+    # /rooms
+    # ------
+
+    # TODO add test for this once I figure out values for room_id and
+    # playlist_id that actually produce a response lol
+    @request(Scope.PUBLIC, category="rooms")
+    def multiplayer_scores(self,
+        room_id: int,
+        playlist_id: int,
+        limit: Optional[int] = None,
+        sort: Optional[MultiplayerScoresSortT] = None,
+        cursor: Optional[MultiplayerScoresCursor] = None
+    ) -> MultiplayerScores:
+        """
+        https://osu.ppy.sh/docs/index.html#get-scores
+        """
+        params = {"limit": limit, "sort": sort, "cursor": cursor}
+        return self._get(MultiplayerScores,
+            f"/rooms/{room_id}/playlist/{playlist_id}/scores", params=params)
+
+    @request(Scope.PUBLIC, category="rooms")
+    def room(self, room_id: RoomIdT) -> Room:
+        """
+        https://osu.ppy.sh/docs/index.html#roomsroom
+        """
+        return self._get(Room, f"/rooms/{room_id}")
+
+    @request(Scope.PUBLIC, requires_user=True, category="rooms")
+    def room_leaderboard(self, room_id: RoomIdT) -> RoomLeaderboard:
+        """
+        https://osu.ppy.sh/docs/index.html#roomsroomleaderboard
+        """
+        return self._get(RoomLeaderboard, f"/rooms/{room_id}/leaderboard")
+
+    @request(Scope.PUBLIC, requires_user=True, category="rooms")
+    def rooms(self, type: Optional[RoomSearchTypeT] = None) -> List[Room]:
+        """
+        https://osu.ppy.sh/docs/index.html#roomsmode
+        """
+        return self._get(List[Room], f"/rooms/{type.value if type else ''}")
+
+
+    # /scores
+    # -------
+
+    @request(Scope.PUBLIC, category="scores")
+    def score(self,
+        mode: GameModeT,
+        score_id: int
+    ) -> Score:
+        return self._get(Score, f"/scores/{mode.value}/{score_id}")
+
+    @request(Scope.PUBLIC, requires_user=True, category="scores")
+    def download_score(self,
+        mode: GameModeT,
+        score_id: int,
+        *,
+        raw: bool = False
+    ) -> Replay:
+        url = f"{self.BASE_URL}/scores/{mode.value}/{score_id}/download"
+        r = self.session.get(url)
+
+        # if the response above succeeded, it will return a raw string
+        # instead of json. If it didn't succeed, it will return json with an
+        # error.
+        # So always try parsing as json to check if there's an error. If parsin
+        # fails, just assume the request succeeded and move on.
+        try:
+            json_ = r.json()
+            self._check_response(json_, url)
+        except json.JSONDecodeError:
+            pass
+
+        if raw:
+            return r.content
+
+        replay = osrparse.Replay.from_string(r.content)
+        return Replay(replay, self)
+
+
+    # seasonal backgrounds
+    # --------------------
+
+    @request(scope=None, category="seasonal backgrounds")
+    def seasonal_backgrounds(self) -> SeasonalBackgrounds:
+        return self._get(SeasonalBackgrounds, "/seasonal-backgrounds")
+
+
+    # /spotlights
+    # -----------
+
+    @request(Scope.PUBLIC, category="spotlights")
+    def spotlights(self) -> List[Spotlight]:
+        """
+        https://osu.ppy.sh/docs/index.html#get-spotlights
+        """
+        spotlights = self._get(Spotlights, "/spotlights")
+        return spotlights.spotlights
+
+
+    # /users
+    # ------
+
+    @request(Scope.PUBLIC, category="users")
+    def user_kudosu(self,
+        user_id: UserIdT,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None
+    ) -> List[KudosuHistory]:
+        """
+        https://osu.ppy.sh/docs/index.html#get-user-kudosu
+        """
+        params = {"limit": limit, "offset": offset}
+        return self._get(List[KudosuHistory], f"/users/{user_id}/kudosu",
+            params)
+
+    # TODO make most arguments keyword only for most endpoints in v3.x.x,
+    # will be a breaking change but avoids confusion like
+    # https://github.com/circleguard/ossapi/issues/56.
+    # eg for user_scores there should be a `*` after `type_`.
+    @request(Scope.PUBLIC, category="users")
+    def user_scores(self,
+        user_id: UserIdT,
+        type_: ScoreTypeT,
+        include_fails: Optional[bool] = None,
+        mode: Optional[GameModeT] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None
+    ) -> List[Score]:
+        """
+        https://osu.ppy.sh/docs/index.html#get-user-scores
+        """
+        # `include_fails` is actually a string in the api spec. We'll still
+        # require a bool to be passed, and just do the conversion behind the
+        # scenes.
+        if include_fails is False:
+            include_fails = 0
+        if include_fails is True:
+            include_fails = 1
+
+        params = {"include_fails": include_fails, "mode": mode, "limit": limit,
+            "offset": offset}
+        return self._get(List[Score], f"/users/{user_id}/scores/{type_.value}",
+            params)
+
+    @request(Scope.PUBLIC, category="users")
+    def user_beatmaps(self,
+        user_id: UserIdT,
+        type_: UserBeatmapTypeT,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None
+    ) -> Union[List[Beatmapset], List[BeatmapPlaycount]]:
+        """
+        https://osu.ppy.sh/docs/index.html#get-user-beatmaps
+        """
+        params = {"limit": limit, "offset": offset}
+
+        return_type = List[Beatmapset]
+        if type_ is UserBeatmapType.MOST_PLAYED:
+            return_type = List[BeatmapPlaycount]
+
+        return self._get(return_type,
+            f"/users/{user_id}/beatmapsets/{type_.value}", params)
+
+    @request(Scope.PUBLIC, category="users")
+    def user_recent_activity(self,
+        user_id: UserIdT,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None
+    ) -> List[Event]:
+        """
+        https://osu.ppy.sh/docs/index.html#get-user-recent-activity
+        """
+        params = {"limit": limit, "offset": offset}
+        return self._get(List[_Event], f"/users/{user_id}/recent_activity/",
+            params)
+
+    @request(Scope.PUBLIC, category="users")
+    def user(self,
+        user: Union[UserIdT, str],
+        mode: Optional[GameModeT] = None,
+        key: Optional[UserLookupKeyT] = None
+    ) -> User:
+        """
+        https://osu.ppy.sh/docs/index.html#get-user
+        """
+        params = {"key": key}
+        return self._get(User, f"/users/{user}/{mode.value if mode else ''}",
+            params)
+
+    @request(Scope.PUBLIC, category="users")
+    def users(self,
+        user_ids: List[UserIdT]
+    ) -> List[UserCompact]:
+        """
+        https://osu.ppy.sh/docs/index.html#get-users
+        """
+        params = {"ids": user_ids}
+        return self._get(Users, "/users", params).users
+
+    # /wiki
+    # -----
+
+    @request(scope=None, category="wiki")
+    def wiki_page(self,
+        locale: str,
+        path: str
+    ) -> WikiPage:
+        """
+        https://osu.ppy.sh/docs/index.html#get-wiki-page
+        """
+        return self._get(WikiPage, f"/wiki/{locale}/{path}")
