@@ -49,7 +49,7 @@ To get started, read the docs: https://circleguard.github.io/ossapi/.
 
 ## Quickstart
 
-[The docs](https://circleguard.github.io/ossapi/) have an [in depth quickstart](https://circleguard.github.io/ossapi/creating-a-client.html), but here's a super short version:
+[The docs](https://circleguard.github.io/ossapi/) have an [in depth quickstart](https://circleguard.github.io/ossapi/creating-a-client.html), but here's a super short version for api v2:
 
 ```python
 from ossapi import Ossapi
