@@ -27,11 +27,19 @@ Links
     self
 
 .. toctree::
-    :maxdepth: 3
     :caption: Quickstart
 
     creating-a-client
     grants
+
+.. toctree::
+    :caption: Advanced
+
+    pagination
+    expandable-models
+    foreign-keys
+    serializing-models
+
 
 .. toctree::
     :maxdepth: 3

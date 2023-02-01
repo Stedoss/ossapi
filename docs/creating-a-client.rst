@@ -32,7 +32,7 @@ Let's make a simple api call to make sure things are working:
     user = api.user("tybug2", key=UserLookupKey.USERNAME)
     print(user.id)
 
-With that, you're ready to go! Take a look at :doc:`Endpoints <endpoints>` to see documentation for other endpoints, grouped by category (or look at the left sidebar).
+With that, you're ready to go! Take a look at :doc:`Endpoints <endpoints>` to see documentation for all endpoints, grouped by category (or look at the left sidebar).
 
 ossapi's documentation follows the style of `osu-web's documentation <https://osu.ppy.sh/docs/index.html>`__ very closely, and models in ossapi match osu-web almost 1:1, so you can use the docs of one to supplement the other.
 
