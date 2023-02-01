@@ -20,10 +20,6 @@ class GameMode(EnumModel):
     TAIKO = "taiko"
     CATCH = "fruits"
     MANIA = "mania"
-    # deprecated, remove in 3.x.x
-    CTB   = "fruits"
-    # deprecated, remove in 3.x.x
-    STD   = "osu"
 
 class PlayStyles(IntFlagModel):
     MOUSE = 1
@@ -183,6 +179,9 @@ class ForumTopicType(EnumModel):
     STICKY = "sticky"
     ANNOUNCEMENT = "announcement"
 
+class ChangelogMessageFormat(EnumModel):
+    HTML = "html"
+    MARKDOWN = "markdown"
 
 # ==================
 # Undocumented Enums

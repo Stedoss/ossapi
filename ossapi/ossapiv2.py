@@ -25,7 +25,7 @@ from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore,
     BeatmapsetSearchResult, ModdingHistoryEventsBundle, User, Rankings,
     BeatmapScores, KudosuHistory, Beatmapset, BeatmapPlaycount, Spotlight,
     Spotlights, WikiPage, _Event, Event, BeatmapsetDiscussionPosts, Build,
-    ChangelogListing, MultiplayerScores, MultiplayerScoresCursor,
+    ChangelogListing, MultiplayerScores,
     BeatmapsetDiscussionVotes, CreatePMResponse, BeatmapsetDiscussions,
     UserCompact, NewsListing, NewsPost, SeasonalBackgrounds, BeatmapsetCompact,
     BeatmapUserScores, DifficultyAttributes, Users, Beatmaps,
@@ -38,7 +38,8 @@ from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     BeatmapsetDiscussionVoteSort, BeatmapsetStatus, MessageType,
     BeatmapsetSearchCategory, BeatmapsetSearchMode,
     BeatmapsetSearchExplicitContent, BeatmapsetSearchGenre,
-    BeatmapsetSearchLanguage, NewsPostKey, BeatmapsetSearchSort, RoomSearchType)
+    BeatmapsetSearchLanguage, NewsPostKey, BeatmapsetSearchSort, RoomSearchType,
+    ChangelogMessageFormat)
 from ossapi.utils import (is_compatible_type, is_primitive_type, is_optional,
     is_base_model_type, is_model_type, is_high_model_type, Field)
 from ossapi.mod import Mod
@@ -803,7 +804,25 @@ class OssapiV2:
         mods: Optional[ModT] = None
     ) -> BeatmapUserScore:
         """
-        https://osu.ppy.sh/docs/index.html#get-a-user-beatmap-score
+        Get a user's best score on a beatmap. If you want to retrieve all
+        scores, see :meth:`beatmap_user_scores`.
+
+        Parameters
+        ----------
+        beatmap_id
+            The beatmap the score was set on.
+        user_id
+            The user who set the score.
+        mode
+            The mode the scores were set on.
+        mods
+            The mods the score was set with.
+
+        Notes
+        -----
+        Implements the `User Beatmap Score
+        <https://osu.ppy.sh/docs/index.html#get-a-user-beatmap-score>`__
+        endpoint.
         """
         params = {"mode": mode, "mods": mods}
         return self._get(BeatmapUserScore,
@@ -816,7 +835,23 @@ class OssapiV2:
         mode: Optional[GameModeT] = None
     ) -> List[BeatmapUserScore]:
         """
-        https://osu.ppy.sh/docs/index.html#get-a-user-beatmap-scores
+        Get all of a user's scores on a beatmap. If you only want the top user
+        score, see :meth:`beatmap_user_score`.
+
+        Parameters
+        ----------
+        beatmap_id
+            The beatmap the scores were set on.
+        user_id
+            The user who set the scores.
+        mode
+            The mode the scores were set on.
+
+        Notes
+        -----
+        Implements to `User Beatmap Scores
+        <https://osu.ppy.sh/docs/index.html#get-a-user-beatmap-scores>`__
+        endpoint.
         """
         params = {"mode": mode}
         scores = self._get(BeatmapUserScores,
@@ -828,12 +863,28 @@ class OssapiV2:
         beatmap_id: BeatmapIdT,
         mode: Optional[GameModeT] = None,
         mods: Optional[ModT] = None,
-        type_: Optional[RankingTypeT] = None
+        type: Optional[RankingTypeT] = None
     ) -> BeatmapScores:
         """
-        https://osu.ppy.sh/docs/index.html#get-beatmap-scores
+        Get the top scores of a beatmap.
+
+        Parameters
+        ----------
+        beatmap_id
+            The beatmap to get scores of.
+        mode
+            The mode to get scores of.
+        mods
+            Get the top scores set with exactly these mods, if passed.
+        type
+            How to order the scores. Defaults to ordering by score.
+
+        Notes
+        -----
+        Implements the `Get Beatmap Scores
+        <https://osu.ppy.sh/docs/index.html#get-beatmap-scores>`__ endpoint.
         """
-        params = {"mode": mode, "mods": mods, "type": type_}
+        params = {"mode": mode, "mods": mods, "type": type}
         return self._get(BeatmapScores, f"/beatmaps/{beatmap_id}/scores",
             params)
 
@@ -844,8 +895,23 @@ class OssapiV2:
         filename: Optional[str] = None,
     ) -> Beatmap:
         """
-        combines https://osu.ppy.sh/docs/index.html#get-beatmap and
-        https://osu.ppy.sh/docs/index.html#lookup-beatmap
+        Get a beatmap from an id, checksum, or filename.
+
+        Parameters
+        ----------
+        beatmap_id
+            The id of the beatmap.
+        checksum
+            The md5 hash of the beatmap.
+        filename
+            The filename of the beatmap.
+
+        Notes
+        -----
+        Combines the
+        `Get Beatmap <https://osu.ppy.sh/docs/index.html#get-beatmapL>`_ and
+        `Lookup Beatmap <https://osu.ppy.sh/docs/index.html#lookup-beatmap>`_
+        endpoints.
         """
         if not (beatmap_id or checksum or filename):
             raise ValueError("at least one of beatmap_id, checksum, or "
@@ -857,6 +923,21 @@ class OssapiV2:
     def beatmaps(self,
         beatmap_ids: List[BeatmapIdT]
     ) -> List[Beatmap]:
+        """
+        Batch get beatmaps by id. If you only want to retrieve a single beatmap,
+        or want to retrieve beatmaps by something other than id (eg checksum),
+        see :meth:`beatmap`.
+
+        Parameters
+        ----------
+        beatmap_ids
+            The beatmaps to get.
+
+        Notes
+        -----
+        Implements the `Get Beatmaps
+        <https://osu.ppy.sh/docs/index.html#get-beatmaps>`__ endpoint.
+        """
         params = {"ids": beatmap_ids}
         return self._get(Beatmaps, "/beatmaps", params).beatmaps
 
@@ -868,7 +949,24 @@ class OssapiV2:
         ruleset_id: Optional[int] = None
     ) -> DifficultyAttributes:
         """
-        https://osu.ppy.sh/docs/index.html#get-beatmap-attributes
+        Get the difficult attributes of a beatmap. Used for pp calculation.
+
+        Parameters
+        ----------
+        beatmap_id
+            The beatmap to get the difficulty attributes of.
+        mods
+            The mods to calculate difficulty attributes with.
+        ruleset
+            The ruleset (gamemode) to calculate difficulty attributes of.
+        ruleset_id
+            Alternative parameter to ruleset which takes an integer (ruleset id)
+            instead of a string (ruleset name).
+
+        Notes
+        -----
+        Implements the `Get Beatmap Attributes
+        <https://osu.ppy.sh/docs/index.html#get-beatmap-attributes>`__ endpoint.
         """
         data = {"mods": mods, "ruleset": ruleset, "ruleset_id": ruleset_id}
         return self._post(DifficultyAttributes,
@@ -888,7 +986,29 @@ class OssapiV2:
         with_deleted: Optional[bool] = None
     ) -> BeatmapsetDiscussionPosts:
         """
-        https://osu.ppy.sh/docs/index.html#get-beatmapset-discussion-posts
+        Get the posts of a beatmapset discussion.
+
+        Parameters
+        ----------
+        beatmapset_discussion_id
+            The beatmapset discussion to get the posts of.
+        limit
+            Maximum number of posts to return.
+        page
+            Pagination for results.
+        sort
+            How to sort the posts.
+        user_id
+
+        with_deleted
+            Whether to include deleted posts. Currently has no effect even if
+            you are a gmt/admin.
+
+        Notes
+        -----
+        Implements the `Get Beatmapset Discussion Posts
+        <https://osu.ppy.sh/docs/index.html#get-beatmapset-discussion-posts>`__
+        endpoint.
         """
         params = {"beatmapset_discussion_id": beatmapset_discussion_id,
             "limit": limit, "page": page, "sort": sort, "user": user_id,
@@ -908,7 +1028,33 @@ class OssapiV2:
         with_deleted: Optional[bool] = None
     ) -> BeatmapsetDiscussionVotes:
         """
-        https://osu.ppy.sh/docs/index.html#get-beatmapset-discussion-votes
+        Get beatmapset discussion votes.
+
+        Parameters
+        ----------
+        beatmapset_discussion_id
+            Filter by a beatmapset discussion.
+        limit
+            Maximum number of votes to return.
+        page
+            Pagination for results.
+        receiver_id
+            Filter by the user receiving the votes.
+        vote
+            Specify to return either only upvotes or only downvotes.
+        sort
+            How to sort the votes.
+        user_id
+            Filter by the user giving the votes.
+        with_deleted
+            Whether to include deleted posts. Currently has no effect even if
+            you are a gmt/admin.
+
+        Notes
+        -----
+        Implements the `Get Beatmapset Discussion Posts
+        <https://osu.ppy.sh/docs/index.html#get-beatmapset-discussion-posts>`__
+        endpoint.
         """
         params = {"beatmapset_discussion_id": beatmapset_discussion_id,
             "limit": limit, "page": page, "receiver": receiver_id,
@@ -931,7 +1077,37 @@ class OssapiV2:
         with_deleted: Optional[bool] = None,
     ) -> BeatmapsetDiscussions:
         """
-        https://osu.ppy.sh/docs/index.html#get-beatmapset-discussions
+        Get beatmapset discussions.
+
+        Parameters
+        ----------
+        beatmapset_id
+            Filter by a beatmapset.
+        beatmap_id
+            Filter by a beatmap.
+        beatmapset_status
+            Filter by a category of beatmapsets.
+        limit
+            Maximum number of discussions to return.
+        message_types
+            Filter by a discussion message type.
+        only_unresolved
+            ``True`` to only show unresolved issues. Defaults to ``False``.
+        page
+            Pagination for results.
+        sort
+            How to sort the discussions.
+        user
+            Filter by poster id.
+        with_deleted
+            Whether to include deleted posts. Currently has no effect even if
+            you are a gmt/admin.
+
+        Notes
+        -----
+        Implements the `Get Beatmapset Discussion Posts
+        <https://osu.ppy.sh/docs/index.html#get-beatmapset-discussion-posts>`__
+        endpoint.
         """
         params = {"beatmapset_id": beatmapset_id, "beatmap_id": beatmap_id,
             "beatmapset_status": beatmapset_status, "limit": limit,
@@ -964,6 +1140,49 @@ class OssapiV2:
         cursor: Optional[Cursor] = None,
         sort: Optional[BeatmapsetSearchSortT] = None
     ) -> BeatmapsetSearchResult:
+        """
+        Search beatmapsets. Equivalent to the beatmapset search page on the
+        website (https://osu.ppy.sh/beatmapsets).
+
+        Parameters
+        ----------
+        query
+            The search query. Can include filters like ``ranked<2019``.
+        mode
+            Filter by mode.
+        category
+            Filter by category.
+        explicit_content
+            Whether to include beatmaps with explicit content.
+        genre
+            Filter by genre.
+        language
+            Filter by language.
+        force_video
+            ``True`` to only return beatmapsets with videos.
+        force_storyboard
+            ``True`` to only return beatmapsets with storyboards.
+        force_recommended_difficulty
+            ``True`` to filter by recommended difficulty.
+        include_converts
+            ``True`` to include converted beatmapsets.
+        force_followed_mappers
+            ``True`` to only return beatmapsets by mappers you follow.
+        force_spotlights
+            ``True`` to only return beatmapsets which have been in a spotlight.
+        force_featured_artists
+            ``True`` to only return beatmapsets by a featured artist.
+        cursor
+            Cursor for pagination.
+        sort
+            How to sort the beatmapsets.
+
+        Notes
+        -----
+        Implements the `Search Beatmapsets
+        <https://osu.ppy.sh/docs/index.html#beatmapsetssearchfilters>`__
+        endpoint.
+        """
         # Param key names are the same as https://osu.ppy.sh/beatmapsets,
         # so from eg https://osu.ppy.sh/beatmapsets?q=black&s=any we get that
         # the query uses `q` and the category uses `s`.
@@ -1014,8 +1233,21 @@ class OssapiV2:
         beatmap_id: Optional[BeatmapIdT] = None
     ) -> Beatmapset:
         """
-        Combines https://osu.ppy.sh/docs/index.html#beatmapsetslookup and
-        https://osu.ppy.sh/docs/index.html#beatmapsetsbeatmapset.
+        Get a beatmapset from a beatmapset id or a beatmap id.
+
+        Parameters
+        ----------
+        beatmapset_id
+            The beatmapset to get.
+        beatmap_id
+            Get the beatmapset associated with this beatmap.
+
+        Notes
+        -----
+        Combines the `Get Beatmapset
+        <https://osu.ppy.sh/docs/index.html#beatmapsetsbeatmapset>`__ and
+        `Beatmapset Lookup
+        <https://osu.ppy.sh/docs/index.html#beatmapsetslookup>`__ endpoints.
         """
         if not bool(beatmap_id) ^ bool(beatmapset_id):
             raise ValueError("exactly one of beatmap_id and beatmapset_id must "
@@ -1035,7 +1267,28 @@ class OssapiV2:
         max_date: Optional[datetime] = None
     ) -> ModdingHistoryEventsBundle:
         """
-        https://osu.ppy.sh/beatmapsets/events
+        Get beatmapset events. Equivalent to the events search page on the
+        website (https://osu.ppy.sh/beatmapsets/events).
+
+        Parameters
+        ----------
+        limit
+            Maximum number of events to return.
+        page
+            Pagination for events.
+        user_id
+            Filter by event author.
+        types
+            Filter by event type.
+        min_date
+            Filter by event date.
+        max_date
+            Filter by event date.
+
+        Notes
+        -----
+        Implements the `Beatmapset Events
+        <https://osu.ppy.sh/docs/index.html#beatmapsetsevents>`__ endpoint.
         """
         # limit is 5-50
         params = {"limit": limit, "page": page, "user": user_id,
@@ -1053,7 +1306,19 @@ class OssapiV2:
         build: str
     ) -> Build:
         """
-        https://osu.ppy.sh/docs/index.html#get-changelog-build
+        Get changelog build details.
+
+        Parameters
+        ----------
+        stream
+            The changelog stream name (eg ``stable40``).
+        build
+            The changelog build name (eg ``20230121.1``)
+
+        Notes
+        -----
+        Implements the `Get Changelog Build
+        <https://osu.ppy.sh/docs/index.html#get-changelog-build>`__ endpoint.
         """
         return self._get(Build, f"/changelog/{stream}/{build}")
 
@@ -1062,23 +1327,64 @@ class OssapiV2:
         from_: Optional[str] = None,
         to: Optional[str] = None,
         max_id: Optional[int] = None,
-        stream: Optional[str] = None
+        stream: Optional[str] = None,
+        message_formats: List[ChangelogMessageFormat] =
+            [ChangelogMessageFormat.HTML, ChangelogMessageFormat.MARKDOWN]
     ) -> ChangelogListing:
         """
-        https://osu.ppy.sh/docs/index.html#get-changelog-listing
+        Get list of changelogs.
+
+        Parameters
+        ----------
+        from_
+            Minimum build version.
+        to
+            Maximum build version.
+        max_id
+            Maximum build id.
+        stream
+            Filter changelogs by stream.
+        message_formats
+            Format to return text of changelog entries in.
+
+        Notes
+        -----
+        Implements the `Get Changelog Listing
+        <https://osu.ppy.sh/docs/index.html#get-changelog-listing>`__ endpoint.
         """
-        params = {"from": from_, "to": to, "max_id": max_id, "stream": stream}
+        params = {"from": from_, "to": to, "max_id": max_id, "stream": stream,
+            "message_formats": message_formats}
         return self._get(ChangelogListing, "/changelog", params)
 
+    # TODO can almost certainly be combined with changelog_build endpoint, in
+    # line with other get/lookup endpoint combinations (beatmap, beatmapset)
     @request(scope=None, category="changelog")
-    def changelog_lookup(self,
+    def changelog_build_lookup(self,
         changelog: str,
-        key: Optional[str] = None
+        key: Optional[str] = None,
+        message_formats: List[ChangelogMessageFormat] =
+            [ChangelogMessageFormat.HTML, ChangelogMessageFormat.MARKDOWN]
     ) -> Build:
         """
-        https://osu.ppy.sh/docs/index.html#lookup-changelog-build
+        Look up a changelog build by version, update stream name, or id.
+
+        Parameters
+        ----------
+        changelog
+            Build version, update stream name, or build id.
+        key
+            Unset to query by build version or stream name, or ``id`` to query
+            by build id.
+        message_formats
+            Format to return text of changelog entries in.
+
+        Notes
+        -----
+        Implements the `Lookup Changelog Build
+        <https://osu.ppy.sh/docs/index.html#lookup-changelog-build>`__ endpoint.
+
         """
-        params = {"key": key}
+        params = {"key": key, "message_formats": message_formats}
         return self._get(Build, f"/changelog/{changelog}", params)
 
 
@@ -1092,14 +1398,24 @@ class OssapiV2:
         is_action: Optional[bool] = False
     ) -> CreatePMResponse:
         """
-        https://osu.ppy.sh/docs/index.html#create-new-pm
+        Send a pm to a user.
+
+        Parameters
+        ----------
+        user_id
+            The user to send a message to.
+        message
+            The message to send.
+        is_action
+
+        Notes
+        -----
+        Implements the `Create New PM
+        <https://osu.ppy.sh/docs/index.html#create-new-pm>`__ endpoint.
         """
         data = {"target_id": user_id, "message": message,
             "is_action": is_action}
         return self._post(CreatePMResponse, "/chat/new", data=data)
-
-    # TODO deprecated, remove in v3.x.x
-    create_pm = send_pm
 
     # this method requires a user in the announce group, so I've never tested
     # it.
@@ -1113,14 +1429,33 @@ class OssapiV2:
         target_ids: List[UserIdT],
     ) -> ChatChannel:
         """
-        https://osu.ppy.sh/docs/index.html#create-channel
+        Send an announcement message. You must be in the announce usergroup to
+        use this endpoint (and if you don't know what that is, then you aren't
+        in it).
 
-        Only implements the ANNOUNCE functionality of the above endpoint. If you
-        want to create a pm channel (ie send a pm), use `OssapiV2#send_pm`
-        instead.
+        If you want to send a normal pm, see :meth:`send_pm`.
 
-        You must be in the announce usergroup to use this endpoint. If you don't
-        know whether you're in it, you're not.
+        Parameters
+        ----------
+        channel_name
+            The name of the announce channel that will be created.
+        channel_description
+            The description of the announce channel that will be created.
+        message
+            The message to send.
+        target_ids
+            The users to send the message to.
+
+        Notes
+        -----
+        Implements the `Create Channel
+        <https://osu.ppy.sh/docs/index.html#create-channel>`__ endpoint.
+
+        Warnings
+        --------
+        I don't have an account in the announce usergroup, so I've never tested
+        this endpoint. If it breaks for you, please open an issue on github or
+        dm me on discord (tybug#8490)!
         """
         data = {
             "channel.name": channel_name,
@@ -1144,14 +1479,27 @@ class OssapiV2:
         sort: Optional[CommentSortT] = None
     ) -> CommentBundle:
         """
-        A list of comments and their replies, up to 2 levels deep.
+        Get comments and their replies (up to 2 levels deep). If you only want
+        to retrieve a single comment, see :meth:`comment`.
 
-        https://osu.ppy.sh/docs/index.html#get-comments
+        Parameters
+        ----------
+        commentable_type
+            The type of resource to get comments for.
+        commentable_id
+            The id of the resource to get comments for.
+        cursor
+            Cursor for pagination.
+        parent_id
+            Filter by id of the parent comment.
+        sort
+            How to sort the comments. Defaults to ``new`` for guest account and
+            the user-specified default when authenticated.
 
         Notes
         -----
-        ``pinned_comments`` is only included when ``commentable_type`` and
-        ``commentable_id`` are specified.
+        Implements the `Get Comments
+        <https://osu.ppy.sh/docs/index.html#get-comments>`__ endpoint.
         """
         params = {"commentable_type": commentable_type,
             "commentable_id": commentable_id, "cursor": cursor,
@@ -1163,7 +1511,17 @@ class OssapiV2:
         comment_id: int
     ) -> CommentBundle:
         """
-        https://osu.ppy.sh/docs/index.html#get-a-comment
+        Get a comment and its replies (up to 2 levels deep).
+
+        Parameters
+        ----------
+        comment_id
+            The comment to get.
+
+        Notes
+        -----
+        Implements the `Get a Comment
+        <https://osu.ppy.sh/docs/index.html#get-a-comment>`__ endpoint.
         """
         return self._get(CommentBundle, f"/comments/{comment_id}")
 
@@ -1200,7 +1558,19 @@ class OssapiV2:
     @request(Scope.FORUM_WRITE, category="forums")
     def forum_reply(self, topic_id: int, body: str) -> ForumPost:
         """
-        https://osu.ppy.sh/docs/index.html#reply-topic
+        Reply to a forum topic.
+
+        Parameters
+        ----------
+        topic_id
+            The topic to reply to.
+        body
+            Content of the reply.
+
+        Notes
+        -----
+        Implements the `Reply Topic
+        <https://osu.ppy.sh/docs/index.html#reply-topic>`__ endpoint.
         """
         data = {"body": body}
         return self._post(ForumPost, f"/forums/topics/{topic_id}/reply", data)
@@ -1208,7 +1578,19 @@ class OssapiV2:
     @request(Scope.FORUM_WRITE, category="forums")
     def forum_edit_topic(self, topic_id: int, title: str) -> ForumTopic:
         """
-        https://osu.ppy.sh/docs/index.html#edit-topic
+        Edit a forum topic.
+
+        Parameters
+        ---------
+        topic_id
+            The topic to edit.
+        title
+            The new title of the topic.
+
+        Notes
+        -----
+        Implements the `Edit Topic
+        <https://osu.ppy.sh/docs/index.html#edit-topic>`__ endpoint.
         """
         data = {"forum_topic[topic_title]": title}
         return self._put(ForumTopic, f"/forums/topics/{topic_id}", data)
@@ -1216,7 +1598,19 @@ class OssapiV2:
     @request(Scope.FORUM_WRITE, category="forums")
     def forum_edit_post(self, post_id: int, body: str) -> ForumPost:
         """
-        https://osu.ppy.sh/docs/index.html#edit-post
+        Edit a forum post.
+
+        Parameters
+        ----------
+        post_id
+            The post to edit.
+        body
+            The new content of the post.
+
+        Notes
+        -----
+        Implements the `Edit Post
+        <https://osu.ppy.sh/docs/index.html#edit-post>`__ endpoint.
         """
         data = {"body": body}
         return self._put(ForumPost, f"/forums/posts/{post_id}", data)
@@ -1224,18 +1618,40 @@ class OssapiV2:
     @request(Scope.PUBLIC, category="forums")
     def forum_topic(self,
         topic_id: int,
-        cursor: Optional[Cursor] = None,
+        cursor_string: Optional[str] = None,
         sort: Optional[ForumTopicSortT] = None,
         limit: Optional[int] = None,
         start: Optional[int] = None,
         end: Optional[int] = None
     ) -> ForumTopicAndPosts:
         """
-        A topic and its posts.
+        Get a forum topic and its posts.
 
-        https://osu.ppy.sh/docs/index.html#get-topic-and-posts
+        Parameters
+        ----------
+        topic_id
+            The topic to get.
+        cursor_string
+            Cursor for pagination.
+        sort
+            How to sort the posts.
+        limit
+            Maximum number of posts to return.
+        start
+            First post id to be returned when ``sort`` is
+            :data:`ForumTopicSort.NEW <ossapi.enums.ForumTopicSort.NEW>`.
+            Ignored otherwise.
+        end
+            First post id to be returned when ``sort`` is
+            :data:`ForumTopicSort.OLD <ossapi.enums.ForumTopicSort.OLD>`.
+            Ignored otherwise.
+
+        Notes
+        -----
+        Implements the `Get Topic and Posts
+        <https://osu.ppy.sh/docs/index.html#get-topic-and-posts>`__ endpoint.
         """
-        params = {"cursor": cursor, "sort": sort, "limit": limit,
+        params = {"cursor_string": cursor_string, "sort": sort, "limit": limit,
             "start": start, "end": end}
         return self._get(ForumTopicAndPosts, f"/forums/topics/{topic_id}",
             params)
@@ -1246,6 +1662,14 @@ class OssapiV2:
 
     @request(Scope.FRIENDS_READ, category="friends")
     def friends(self) -> List[UserCompact]:
+        """
+        Get friends of the authenticated user.
+
+        Notes
+        -----
+        Implements the `Get Friends
+        <https://osu.ppy.sh/docs/index.html#friends>`__ endpoint.
+        """
         return self._get(List[UserCompact], "/friends")
 
 
@@ -1259,7 +1683,22 @@ class OssapiV2:
         page: Optional[int] = None
     ) -> Search:
         """
-        https://osu.ppy.sh/docs/index.html#search
+        Search users and wiki pages. If you want to search beatmapsets, see
+        :meth:`search_beatmapsets`.
+
+        Parameters
+        ----------
+        mode
+            Filter results by mode.
+        query
+            Search query.
+        page
+            Pagination for results.
+
+        Notes
+        -----
+        Implements the `Search
+        <https://osu.ppy.sh/docs/index.html#search>`__ endpoint.
         """
         params = {"mode": mode, "query": query, "page": page}
         return self._get(Search, "/search", params)
@@ -1270,10 +1709,32 @@ class OssapiV2:
 
     @request(Scope.PUBLIC, category="matches")
     def matches(self) -> Matches:
+        """
+        Get current matches. If you want to get a specific match, see
+        :meth:`match`.
+
+        Notes
+        -----
+        Implements the `Get Matches
+        <https://osu.ppy.sh/docs/index.html#matches>`__ endpoint.
+        """
         return self._get(Matches, "/matches")
 
     @request(Scope.PUBLIC, category="matches")
     def match(self, match_id: MatchIdT) -> MatchResponse:
+        """
+        Get a match (eg https://osu.ppy.sh/community/matches/97947404).
+
+        Parameters
+        ----------
+        match_id
+            The match to get.
+
+        Notes
+        -----
+        Implements the `Get Match
+        <https://osu.ppy.sh/docs/index.html#matchesmatch>`__ endpoint.
+        """
         return self._get(MatchResponse, f"/matches/{match_id}")
 
 
@@ -1285,7 +1746,18 @@ class OssapiV2:
         mode: Optional[GameModeT] = None
     ):
         """
-        https://osu.ppy.sh/docs/index.html#get-own-data
+        Get data about the authenticated user.
+
+        Parameters
+        ----------
+        mode
+            Get data dabout the specified mode. Defaults to the user's default
+            mode.
+
+        Notes
+        -----
+        Implements the `Get Own Data
+        <https://osu.ppy.sh/docs/index.html#get-own-data>`__ endpoint.
         """
         return self._get(User, f"/me/{mode.value if mode else ''}")
 
@@ -1297,12 +1769,26 @@ class OssapiV2:
     def news_listing(self,
         limit: Optional[int] = None,
         year: Optional[int] = None,
-        cursor: Optional[Cursor] = None
+        cursor_string: Optional[str] = None
     ) -> NewsListing:
         """
-        https://osu.ppy.sh/docs/index.html#get-news-listing
+        Get news posts.
+
+        Parameters
+        ----------
+        limit
+            Maximum number of news posts to return.
+        year
+            Filter by year the news post was created.
+        cursor_string
+            Cursor for pagination.
+
+        Notes
+        -----
+        Implements the `Get News Listing
+        <https://osu.ppy.sh/docs/index.html#get-news-listing>`__ endpoint.
         """
-        params = {"limit": limit, "year": year, "cursor": cursor}
+        params = {"limit": limit, "year": year, "cursor_string": cursor_string}
         return self._get(NewsListing, "/news", params=params)
 
     @request(scope=None, category="news")
@@ -1311,7 +1797,19 @@ class OssapiV2:
         key: Optional[NewsPostKeyT] = NewsPostKey.SLUG
     ) -> NewsPost:
         """
-        https://osu.ppy.sh/docs/index.html#get-news-post
+        Get a news post by id or slug.
+
+        Parameters
+        ----------
+        news
+            The id or slug of the news post.
+        key
+            Whether to query by id or slug.
+
+        Notes
+        -----
+        Implements the `Get News Post
+        <https://osu.ppy.sh/docs/index.html#get-news-post>`__ endpoint.
         """
         # docs state key should be "unset to query by slug"
         if key is NewsPostKey.SLUG:
@@ -1326,7 +1824,13 @@ class OssapiV2:
     @request(scope=None, category="oauth")
     def revoke_token(self):
         """
-        https://osu.ppy.sh/docs/index.html#oauth-tokens
+        Revoke the current token. This will remove any authentication and leave
+        you unable to make any more api calls until you re-authenticate.
+
+        Notes
+        -----
+        Implements the `Revoke Current Token
+        <https://osu.ppy.sh/docs/index.html#revoke-current-token>`__ endpoint.
         """
         self.session.delete(f"{self.BASE_URL}/oauth/tokens/current")
         self.remove_token(self.token_key, self.token_directory)
@@ -1338,7 +1842,7 @@ class OssapiV2:
     @request(Scope.PUBLIC, category="rankings")
     def ranking(self,
         mode: GameModeT,
-        type_: RankingTypeT,
+        type: RankingTypeT,
         country: Optional[str] = None,
         cursor: Optional[Cursor] = None,
         filter_: RankingFilterT = RankingFilter.ALL,
@@ -1346,11 +1850,38 @@ class OssapiV2:
         variant: Optional[str] = None
     ) -> Rankings:
         """
-        https://osu.ppy.sh/docs/index.html#get-ranking
+        Get current rankings for the specified game mode. Can specify ``type_``
+        to get different types of rankings (performance, score, country, etc).
+
+        Parameters
+        ----------
+        mode
+            The mode to get rankings for.
+        type
+            The type of ranking to get.
+        country
+            Filter ranking by 2 letter country code. Only available for
+            ``RankingType.PERFORMANCE``.
+        cursor
+            Cursor for pagination.
+        filter_
+            Filter ranking by specified filter.
+        spotlight
+            The id of the spotlight to return rankings for. Ranking for latest
+            spotlight will be returned if not specified. Only available for
+            ``RankingType.SPOTLIGHT``.
+        variant
+            Filter ranking by game mode variant. Either ``4k`` or ``7k`` for
+            mania. Only available for ``RankingType.PERFORMANCE``.
+
+        Notes
+        -----
+        Implements the `Get Ranking
+        <https://osu.ppy.sh/docs/index.html#get-ranking>`__ endpoint.
         """
         params = {"country": country, "cursor": cursor, "filter": filter_,
             "spotlight": spotlight, "variant": variant}
-        return self._get(Rankings, f"/rankings/{mode.value}/{type_.value}",
+        return self._get(Rankings, f"/rankings/{mode.value}/{type.value}",
             params=params)
 
 
@@ -1365,33 +1896,79 @@ class OssapiV2:
         playlist_id: int,
         limit: Optional[int] = None,
         sort: Optional[MultiplayerScoresSortT] = None,
-        cursor: Optional[MultiplayerScoresCursor] = None
+        cursor_string: Optional[str] = None
     ) -> MultiplayerScores:
         """
-        https://osu.ppy.sh/docs/index.html#get-scores
+        Get scores on a playlist item in a room.
+
+        Parameters
+        ----------
+        room_id
+            The room to get the scores from.
+        playlist_id
+            The playlist to get the scores from.
+        limit
+            Maximum number of scores to get.
+        sort
+            How to sort the scores.
+        cursor_string
+            Cursor for pagination.
+
+        Notes
+        -----
+        Implements the `Get Scores
+        <https://osu.ppy.sh/docs/index.html#get-scores>`__ endpoint.
         """
-        params = {"limit": limit, "sort": sort, "cursor": cursor}
+        params = {"limit": limit, "sort": sort, "cursor_string": cursor_string}
         return self._get(MultiplayerScores,
             f"/rooms/{room_id}/playlist/{playlist_id}/scores", params=params)
 
     @request(Scope.PUBLIC, category="rooms")
     def room(self, room_id: RoomIdT) -> Room:
         """
-        https://osu.ppy.sh/docs/index.html#roomsroom
+        Get a room.
+
+        Parameters
+        ----------
+        room_id
+            The room to get.
+
+        Notes
+        -----
+        Implements the `Get Room
+        <https://osu.ppy.sh/docs/index.html#roomsroom>`__ endpoint.
         """
         return self._get(Room, f"/rooms/{room_id}")
 
     @request(Scope.PUBLIC, requires_user=True, category="rooms")
     def room_leaderboard(self, room_id: RoomIdT) -> RoomLeaderboard:
         """
-        https://osu.ppy.sh/docs/index.html#roomsroomleaderboard
+        Get the leaderboard of a room.
+
+        Parameters
+        ----------
+        room_id
+            The room to get the leaderboard of.
+
+        Notes
+        -----
+        Implements the `Get Room Leaderboard
+        <https://osu.ppy.sh/docs/index.html#roomsroomleaderboard>`__ endpoint.
         """
         return self._get(RoomLeaderboard, f"/rooms/{room_id}/leaderboard")
 
     @request(Scope.PUBLIC, requires_user=True, category="rooms")
     def rooms(self, type: Optional[RoomSearchTypeT] = None) -> List[Room]:
         """
-        https://osu.ppy.sh/docs/index.html#roomsmode
+        Get the list of current rooms.
+
+        type
+            Filter by room type. Default to all rooms.
+
+        Notes
+        -----
+        Implements the `Get Rooms
+        <https://osu.ppy.sh/docs/index.html#roomsmode>`__ endpoint.
         """
         return self._get(List[Room], f"/rooms/{type.value if type else ''}")
 
@@ -1404,6 +1981,21 @@ class OssapiV2:
         mode: GameModeT,
         score_id: int
     ) -> Score:
+        """
+        Get a score.
+
+        Parameters
+        ----------
+        mode
+            The mode the score was set on.
+        score_id
+            The score to get.
+
+        Notes
+        -----
+        Implements the `Get Score
+        <https://osu.ppy.sh/docs/index.html#scoresmodescore>`__ endpoint.
+        """
         return self._get(Score, f"/scores/{mode.value}/{score_id}")
 
     @request(Scope.PUBLIC, requires_user=True, category="scores")
@@ -1413,6 +2005,17 @@ class OssapiV2:
         *,
         raw: bool = False
     ) -> Replay:
+        """
+        Download the replay data of a score.
+
+        mode
+            The mode of the score to download.
+        score_id
+            The score to download.
+        raw
+            If ``True``, will return the raw string response from the api
+            instead of a :class:`~ossapi.replay.Replay` object.
+        """
         url = f"{self.BASE_URL}/scores/{mode.value}/{score_id}/download"
         r = self.session.get(url)
 
@@ -1439,6 +2042,14 @@ class OssapiV2:
 
     @request(scope=None, category="seasonal backgrounds")
     def seasonal_backgrounds(self) -> SeasonalBackgrounds:
+        """
+        Get current seasonal backgrounds.
+
+        Notes
+        -----
+        Implements the `Seasonal Backgrounds
+        <https://osu.ppy.sh/docs/index.html#seasonal-backgrounds>`__ endpoint.
+        """
         return self._get(SeasonalBackgrounds, "/seasonal-backgrounds")
 
 
@@ -1448,7 +2059,12 @@ class OssapiV2:
     @request(Scope.PUBLIC, category="spotlights")
     def spotlights(self) -> List[Spotlight]:
         """
-        https://osu.ppy.sh/docs/index.html#get-spotlights
+        Get active spotlights.
+
+        Notes
+        -----
+        Implements the `Get Spotlights
+        <https://osu.ppy.sh/docs/index.html#get-spotlights>`__ endpoint.
         """
         spotlights = self._get(Spotlights, "/spotlights")
         return spotlights.spotlights
@@ -1464,27 +2080,53 @@ class OssapiV2:
         offset: Optional[int] = None
     ) -> List[KudosuHistory]:
         """
-        https://osu.ppy.sh/docs/index.html#get-user-kudosu
+        Get user kudosu history.
+
+        user_id
+            User to get kudosu history of.
+        limit
+            Maximum number of history events to return.
+        offset
+            Offset for pagination.
+
+        Notes
+        -----
+        Implements the `Get User Kudosu
+        <https://osu.ppy.sh/docs/index.html#get-user-kudosu>`__ endpoint.
         """
         params = {"limit": limit, "offset": offset}
         return self._get(List[KudosuHistory], f"/users/{user_id}/kudosu",
             params)
 
-    # TODO make most arguments keyword only for most endpoints in v3.x.x,
-    # will be a breaking change but avoids confusion like
-    # https://github.com/circleguard/ossapi/issues/56.
-    # eg for user_scores there should be a `*` after `type_`.
     @request(Scope.PUBLIC, category="users")
     def user_scores(self,
         user_id: UserIdT,
-        type_: ScoreTypeT,
+        type: ScoreTypeT,
         include_fails: Optional[bool] = None,
         mode: Optional[GameModeT] = None,
         limit: Optional[int] = None,
         offset: Optional[int] = None
     ) -> List[Score]:
         """
-        https://osu.ppy.sh/docs/index.html#get-user-scores
+        Get scores of a user.
+
+        user_id
+            The user to get scores of.
+        type
+            Type of score to get.
+        include_fails
+            Whether to include failed scores.
+        mode
+            Filter scores by game mode. Defaults to the user's default mode.
+        limit
+            Maximum number of scores to return.
+        offset
+            Offset for pagination.
+
+        Notes
+        -----
+        Implements the `Get User Scores
+        <https://osu.ppy.sh/docs/index.html#get-user-scores>`__ endpoint.
         """
         # `include_fails` is actually a string in the api spec. We'll still
         # require a bool to be passed, and just do the conversion behind the
@@ -1496,27 +2138,46 @@ class OssapiV2:
 
         params = {"include_fails": include_fails, "mode": mode, "limit": limit,
             "offset": offset}
-        return self._get(List[Score], f"/users/{user_id}/scores/{type_.value}",
+        return self._get(List[Score], f"/users/{user_id}/scores/{type.value}",
             params)
 
     @request(Scope.PUBLIC, category="users")
     def user_beatmaps(self,
         user_id: UserIdT,
-        type_: UserBeatmapTypeT,
+        type: UserBeatmapTypeT,
         limit: Optional[int] = None,
         offset: Optional[int] = None
     ) -> Union[List[Beatmapset], List[BeatmapPlaycount]]:
         """
-        https://osu.ppy.sh/docs/index.html#get-user-beatmaps
+        Get beatmaps of a user.
+
+        Parameters
+        ----------
+        user_id
+            The user to get beatmaps of.
+        type_
+            The type of beatmaps to get.
+        limit
+            Maximum number of beatmaps to get.
+        offset
+            Offset for pagination.
+
+        Notes
+        -----
+        Returns :class:`~.BeatmapPlaycount` for ``UserBeatmapType.MOST_PLAYED``,
+        and :class:`~.Beatmapset` otherwise.
+
+        Implements `Get User Beatmaps
+        <https://osu.ppy.sh/docs/index.html#get-user-beatmaps>`__ endpoint.
         """
         params = {"limit": limit, "offset": offset}
 
         return_type = List[Beatmapset]
-        if type_ is UserBeatmapType.MOST_PLAYED:
+        if type is UserBeatmapType.MOST_PLAYED:
             return_type = List[BeatmapPlaycount]
 
         return self._get(return_type,
-            f"/users/{user_id}/beatmapsets/{type_.value}", params)
+            f"/users/{user_id}/beatmapsets/{type.value}", params)
 
     @request(Scope.PUBLIC, category="users")
     def user_recent_activity(self,
@@ -1525,7 +2186,22 @@ class OssapiV2:
         offset: Optional[int] = None
     ) -> List[Event]:
         """
-        https://osu.ppy.sh/docs/index.html#get-user-recent-activity
+        Get recent activity of a user.
+
+        Parameters
+        ----------
+        user_id
+            The user to get recent activity of.
+        limit
+            Maximum number of events to return.
+        offset
+            Offset for pagination.
+
+        Notes
+        -----
+        Implements the `Get User Recent Activity
+        <https://osu.ppy.sh/docs/index.html#get-user-recent-activity>`__
+        endpoint.
         """
         params = {"limit": limit, "offset": offset}
         return self._get(List[_Event], f"/users/{user_id}/recent_activity/",
@@ -1538,7 +2214,21 @@ class OssapiV2:
         key: Optional[UserLookupKeyT] = None
     ) -> User:
         """
-        https://osu.ppy.sh/docs/index.html#get-user
+        Get a user by id or username.
+
+        user
+            The user id or username of the user to get.
+        mode
+            The mode of the user to get details from. Default mode of the user
+            will be used if not specified.
+        key
+            Whether to query by id or username. Defaults to automatic detection
+            if not passed.
+
+        Notes
+        -----
+        Implements the `Get User
+        <https://osu.ppy.sh/docs/index.html#get-user>`__ endpoint.
         """
         params = {"key": key}
         return self._get(User, f"/users/{user}/{mode.value if mode else ''}",
@@ -1546,10 +2236,21 @@ class OssapiV2:
 
     @request(Scope.PUBLIC, category="users")
     def users(self,
-        user_ids: List[UserIdT]
+        user_ids: List[int]
     ) -> List[UserCompact]:
         """
-        https://osu.ppy.sh/docs/index.html#get-users
+        Batch get users by id. If you only want to retrieve a single user, or
+        want to retrieve users by username instead of id, see :meth:`user`.
+
+        Parameters
+        ---------
+        user_ids
+            The users to get.
+
+        Notes
+        -----
+        Implements the `Get Users
+        <https://osu.ppy.sh/docs/index.html#get-users>`__ endpoint.
         """
         params = {"ids": user_ids}
         return self._get(Users, "/users", params).users
@@ -1563,6 +2264,18 @@ class OssapiV2:
         path: str
     ) -> WikiPage:
         """
-        https://osu.ppy.sh/docs/index.html#get-wiki-page
+        Get a wiki page.
+
+        Parameters
+        ----------
+        locale
+            two letter language code of the wiki page.
+        path
+            The path name of the wiki page.
+
+        Notes
+        -----
+        Implements the `Get Wiki Page
+        <https://osu.ppy.sh/docs/index.html#get-wiki-page>`__ endpoint.
         """
         return self._get(WikiPage, f"/wiki/{locale}/{path}")

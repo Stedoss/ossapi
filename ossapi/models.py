@@ -760,7 +760,7 @@ class ChangelogListing(Model):
     streams: List[UpdateStream]
 
 class MultiplayerScores(Model):
-    cursor: MultiplayerScoresCursor
+    cursor_string: str
     params: str
     scores: List[MultiplayerScore]
     total: Optional[int]
@@ -788,10 +788,6 @@ class MultiplayerScore(Model):
 class MultiplayerScoresAround(Model):
     higher: List[MultiplayerScore]
     lower: List[MultiplayerScore]
-
-class MultiplayerScoresCursor(Model):
-    score_id: int
-    total_score: int
 
 class NewsListing(Model):
     cursor: CursorT

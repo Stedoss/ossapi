@@ -5,9 +5,9 @@ from ossapi.mod import Mod
 from ossapi.enums import UserLookupKey
 
 game_mode_map = {
-    OsrparseGameMode.STD:   GameMode.STD,
+    OsrparseGameMode.STD:   GameMode.OSU,
     OsrparseGameMode.TAIKO: GameMode.TAIKO,
-    OsrparseGameMode.CTB:   GameMode.CTB,
+    OsrparseGameMode.CTB:   GameMode.CATCH,
     OsrparseGameMode.MANIA: GameMode.MANIA,
 }
 
@@ -17,9 +17,9 @@ class Replay:
 
     Notes
     -----
-    This is a thin shim around an osrparse.Replay instance. It converts some
-    attributes to more appropriate types and adds #user and #beatmap to retrieve
-    api-related objects.
+    This is a thin wrapper around an :class:`osrparse.replay.Replay` instance.
+    It converts some attributes to more appropriate types and adds :meth:`.user`
+    and :meth:`.beatmap` to retrieve api-related objects.
     """
     def __init__(self, replay, api):
         self._api = api
