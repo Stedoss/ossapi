@@ -26,7 +26,7 @@ class TestSpotlights(TestCase):
 
 class TestUserBeatmaps(TestCase):
     def test_deserialize(self):
-        api.user_beatmaps(user_id=12092800, type_="most_played")
+        api.user_beatmaps(user_id=12092800, type="most_played")
 
 class TestUserKudosu(TestCase):
     def test_deserialize(self):
@@ -128,7 +128,7 @@ class TestChangelogListing(TestCase):
 
 class TestChangelogLookup(TestCase):
     def test_deserialize(self):
-        api.changelog_lookup("lazer")
+        api.changelog_build_lookup("lazer")
 
 class TestForumTopic(TestCase):
     def test_deserialize(self):
