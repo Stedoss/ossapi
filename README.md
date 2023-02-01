@@ -70,7 +70,7 @@ print(api.user("tybug2"))
 
 ## Endpoints
 
-Endpoints for api v2.
+All endpoints for api v2.
 
 * Beatmaps<a name="endpoints-beatmaps"></a>
   * [`api.beatmap`](https://circleguard.github.io/ossapi/endpoints.html#ossapi.ossapiv2.Ossapi.beatmap)
