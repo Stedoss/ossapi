@@ -30,7 +30,7 @@ Specifying a Grant
 Scopes
 ------
 
-Some endpoints require a scope other than the default ``Scope.PUBLIC``. For instance, the :meth:`~ossapi.ossapiv2.Ossapi.friends` endpoint requires the ``Scope.FRIENDS_READ`` scope. To access this endpoint, specify the relevant scope when you instantiate :class:`~ossapi.ossapiv2.Ossapi`:
+Some endpoints require a scope other than the default ``Scope.PUBLIC``. For instance, the :meth:`~ossapi.ossapiv2.Ossapi.friends` endpoint requires the ``Scope.FRIENDS_READ`` scope. To be able to access this endpoint, specify the relevant scope when you instantiate :class:`~ossapi.ossapiv2.Ossapi`:
 
 .. code-block:: python
 
