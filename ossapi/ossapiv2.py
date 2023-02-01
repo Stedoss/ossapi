@@ -218,7 +218,7 @@ class Scope(Enum):
     PUBLIC = "public"
 
 
-class OssapiV2:
+class Ossapi:
     """
     A wrapper around osu api v2.
 
