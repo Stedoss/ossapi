@@ -28,7 +28,7 @@ If you need support or would like to contribute, feel free to ask in the `#ossap
   * [Spotlights](#endpoints-spotlights)
   * [Users](#endpoints-users)
   * [Wiki](#endpoints-wiki)
-* [Api v1 Usage](#api-v1-usage)
+* [API v1 Usage](#api-v1-usage)
 
 
 ## Installation
