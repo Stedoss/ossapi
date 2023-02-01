@@ -983,8 +983,8 @@ class OssapiV2:
 
     @request(Scope.PUBLIC, category="beatmapsets")
     def beatmapset_discussion_posts(self,
-        *,
         beatmapset_discussion_id: Optional[int] = None,
+        *,
         limit: Optional[int] = None,
         page: Optional[int] = None,
         sort: Optional[BeatmapDiscussionPostSortT] = None,
