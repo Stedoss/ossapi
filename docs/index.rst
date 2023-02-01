@@ -28,6 +28,13 @@ Links
 
 .. toctree::
     :maxdepth: 3
+    :caption: Quickstart
+
+    creating-a-client
+    grants
+
+.. toctree::
+    :maxdepth: 3
     :caption: Endpoints
 
     endpoints
