@@ -240,7 +240,7 @@ class Ossapi:
         What scopes to request when authenticating.
     grant: Grant or str
         Which oauth grant (aka flow) to use when authenticating with the api.
-        Currently the api offers the client credentials (pass "client" for this
+        The osu api offers the client credentials (pass "client" for this
         parameter) and authorization code (pass "authorization" for this
         parameter) grants.
         |br|
