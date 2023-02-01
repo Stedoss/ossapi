@@ -41,6 +41,7 @@ Some endpoints require a scope other than the default ``Scope.PUBLIC``. For inst
     callback_url = None
     scopes = [Scope.PUBLIC, Scope.FRIENDS_READ]
     api = Ossapi(client_id, client_secret, callback_url, scopes=scopes)
+    print(api.friends())
 
 .. note::
     Scopes are only relevant for the authorization code grant, because the scope for client credentials is always ``Scope.PUBLIC``. Client credentials will not be able to access any endpoint which requires a scope other than ``Scope.PUBLIC``.
