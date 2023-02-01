@@ -222,3 +222,11 @@ with open(p / "appendix.rst", "a") as f:
     f.write(".. module:: ossapi.replay\n\n")
     f.write(".. autoclass:: Replay\n")
     f.write("   :members:\n\n")
+
+
+with open(p / "appendix.rst", "a") as f:
+    f.write("\n\n")
+    f.write("Ossapi\n")
+    f.write("======\n\n")
+    f.write(".. module:: ossapi.ossapiv2\n\n")
+    f.write(".. autoclass:: Ossapi\n")
