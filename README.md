@@ -18,7 +18,7 @@ pip install -U ossapi
 
 To get started, read the docs: https://circleguard.github.io/ossapi/.
 
-If you need support or would like to contribute, feel free to join the circleguard discord: <https://discord.gg/e84qxkQ>.
+If you need support or would like to contribute, feel free to ask in `#ossapi` in circleguard discord: <https://discord.gg/e84qxkQ>.
 
 ## Quickstart
 
