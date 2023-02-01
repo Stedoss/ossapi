@@ -4,6 +4,8 @@
 
 ossapi is a python wrapper for the osu! api. ossapi supports both [api v2](https://osu.ppy.sh/docs/index.html) and [api v1](https://github.com/ppy/osu-api/wiki) and has every endpoint in both versions implemented.
 
+If you need support or would like to contribute, feel free to ask in the `#ossapi` channel of the [circleguard discord](https://discord.gg/e84qxkQ).
+
 * [Installation](#installation)
 * [Quickstart](#quickstart)
 * [Endpoints](#endpoints)
@@ -44,8 +46,6 @@ pip install -U ossapi
 ```
 
 To get started, read the docs: https://circleguard.github.io/ossapi/.
-
-If you need support or would like to contribute, feel free to ask in `#ossapi` in the circleguard discord: <https://discord.gg/e84qxkQ>.
 
 ## Quickstart
 
