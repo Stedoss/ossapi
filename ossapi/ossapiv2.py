@@ -220,7 +220,7 @@ class Scope(Enum):
 
 class Ossapi:
     """
-    A wrapper around osu api v2.
+    A wrapper around osu! api v2. The main entry point for ossapi.
 
     Parameters
     ----------

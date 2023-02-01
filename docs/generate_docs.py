@@ -199,7 +199,7 @@ class Generator:
             self.add_header(string.capwords(category))
 
             for name, value in endpoint_values:
-                self.result += f".. autofunction:: ossapi.ossapiv2.OssapiV2.{name}"
+                self.result += f".. autofunction:: ossapi.ossapiv2.Ossapi.{name}"
                 self.result += "\n\n"
 
 
@@ -212,7 +212,7 @@ generator.process_module(ossapi.models, "Models")
 generator.write_to_path(p / "appendix.rst")
 
 generator = Generator()
-generator.process_endpoints(ossapi.OssapiV2)
+generator.process_endpoints(ossapi.Ossapi)
 generator.write_to_path(p / "endpoints.rst")
 
 with open(p / "appendix.rst", "a") as f:
