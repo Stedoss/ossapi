@@ -252,7 +252,7 @@ class TestForum(TestCaseDevServer):
         # 2d430a2/config/osu.php#L107.
 
         # create and edit a topic
-        response = api_dev.forum_create_topic(UNIT_TEST_MESSAGE, 85,
+        response = api_dev.forum_create_topic(85, UNIT_TEST_MESSAGE,
             UNIT_TEST_MESSAGE)
         topic_id = response.topic.id
         api_dev.forum_edit_topic(topic_id,
