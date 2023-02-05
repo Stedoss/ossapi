@@ -1784,7 +1784,7 @@ class Ossapi:
         Parameters
         ----------
         mode
-            Get data dabout the specified mode. Defaults to the user's default
+            Get data about the specified mode. Defaults to the user's default
             mode.
 
         Notes
