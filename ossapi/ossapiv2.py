@@ -17,6 +17,7 @@ from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import (BackendApplicationClient, TokenExpiredError,
     AccessDeniedError)
 from oauthlib.oauth2.rfc6749.errors import InsufficientScopeError
+from oauthlib.oauth2.rfc6749.tokens import OAuth2Token
 import osrparse
 from typing_utils import issubtype, get_type_hints, get_origin, get_args
 
@@ -289,6 +290,8 @@ class Ossapi:
         strict: bool = False,
         token_directory: Optional[str] = None,
         token_key: Optional[str] = None,
+        access_token: Optional[str] = None,
+        refresh_token: Optional[str] = None
     ):
         if not grant:
             grant = (Grant.AUTHORIZATION_CODE if redirect_uri else
@@ -324,7 +327,19 @@ class Ossapi:
             raise ValueError("`redirect_uri` must be passed if the "
                 "authorization code grant is used.")
 
-        self.session = self.authenticate()
+        token = None
+        if access_token is not None:
+            # allow refresh_token to be null for the case of client credentials
+            # grant from access token, which does not have an associated refresh
+            # token.
+            params = {
+                "token_type": "Bearer",
+                "access_token": access_token,
+                "refresh_token": refresh_token
+            }
+            token = OAuth2Token(params)
+
+        self.session = self.authenticate(token=token)
 
     @staticmethod
     def gen_token_key(grant, client_id, client_secret, scopes):
@@ -363,15 +378,16 @@ class Ossapi:
         token_file = token_directory / f"{key}.pickle"
         token_file.unlink()
 
-    def authenticate(self):
+    def authenticate(self, token=None):
         """
         Returns a valid OAuth2Session, either from a saved token file associated
         with this OssapiV2's parameters, or from a fresh authentication if no
         such file exists.
         """
-        if self.token_file.exists():
-            with open(self.token_file, "rb") as f:
-                token = pickle.load(f)
+        if self.token_file.exists() or token is not None:
+            if token is None:
+                with open(self.token_file, "rb") as f:
+                    token = pickle.load(f)
 
             if self.grant is Grant.CLIENT_CREDENTIALS:
                 return OAuth2Session(self.client_id, token=token)
