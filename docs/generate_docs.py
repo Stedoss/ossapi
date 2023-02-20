@@ -225,17 +225,18 @@ generator.result += ("|br| |br| All functions in this file are methods of the "
 generator.process_endpoints(ossapi.Ossapi)
 generator.write_to_path(p / "endpoints.rst")
 
-with open(p / "appendix.rst", "a") as f:
-    f.write("\n\n")
-    f.write("Ossapi\n")
-    f.write("======\n\n")
-    f.write(".. module:: ossapi.ossapiv2\n\n")
-    f.write(".. autoclass:: Ossapi\n")
+def write_class(file, class_name, *, members=True):
+    with open(p / "appendix.rst", "a") as f:
+        f.write("\n\n")
+        f.write(f"{class_name}\n")
+        f.write(f"{'=' * len(class_name)}\n\n")
+        f.write(f".. module:: ossapi.{file}\n\n")
+        f.write(f".. autoclass:: {class_name}\n")
+        if members:
+            f.write("   :members:")
+            f.write("\n   :undoc-members:")
 
-with open(p / "appendix.rst", "a") as f:
-    f.write("\n\n")
-    f.write("Replay\n")
-    f.write("======\n\n")
-    f.write(".. module:: ossapi.replay\n\n")
-    f.write(".. autoclass:: Replay\n")
-    f.write("   :members:\n\n")
+write_class("ossapiv2", "Ossapi", members=False)
+write_class("ossapiv2", "Scope")
+write_class("ossapiv2", "Grant")
+write_class("replay", "Replay")
