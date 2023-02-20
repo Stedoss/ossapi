@@ -13,8 +13,8 @@ from typing_utils import get_type_hints, get_args, get_origin
 from ossapi.utils import (EnumModel, Model, BaseModel, IntFlagModel,
     Datetime, is_base_model_type, is_model_type, Field)
 from ossapi.models import _Event
-from ossapi.mod import Mod
 from ossapi.ossapiv2 import ModT
+from ossapi import Scope, Mod
 import ossapi
 
 
@@ -200,6 +200,14 @@ class Generator:
 
             for name, value in endpoint_values:
                 self.result += f".. autofunction:: ossapi.ossapiv2.Ossapi.{name}"
+
+                scope = getattr(value, "__ossapi_scope__")
+                # endpoints implicitly require public scope, don't document it
+                if scope is not None and scope is not Scope.PUBLIC:
+                    self.result += ("\n\n .. note::\n    Requires the "
+                        f":data:`Scope.{scope.name} "
+                        f"<ossapi.ossapiv2.Scope.{scope.name}>` scope.")
+
                 self.result += "\n\n"
 
 

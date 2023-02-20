@@ -201,7 +201,10 @@ def request(scope, *, requires_user=False, category):
 
             return function(*args, **kwargs)
 
+        # for docs generation
         wrapper.__ossapi_category__ = category
+        wrapper.__ossapi_scope__ = scope
+
         return wrapper
     return decorator
 
