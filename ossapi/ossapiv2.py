@@ -210,10 +210,16 @@ def request(scope, *, requires_user=False, category):
 
 
 class Grant(Enum):
+    """
+    The grant types used by the api.
+    """
     CLIENT_CREDENTIALS = "client"
     AUTHORIZATION_CODE = "authorization"
 
 class Scope(Enum):
+    """
+    The OAuth scopes used by the api.
+    """
     CHAT_WRITE = "chat.write"
     DELEGATE = "delegate"
     FORUM_WRITE = "forum.write"
