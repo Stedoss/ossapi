@@ -320,6 +320,7 @@ class Beatmapset(BeatmapsetCompact):
     submitted_date: Optional[Datetime]
     tags: str
     current_nominations: Optional[List[Nomination]]
+    deleted_at: Optional[Datetime]
 
     def expand(self) -> Beatmapset:
         return self
