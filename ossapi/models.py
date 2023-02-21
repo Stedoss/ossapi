@@ -1103,6 +1103,10 @@ class UserStatistics(Model):
     variants: Optional[Any]
     global_rank_exp: Optional[float]
     pp_exp: float
+    count_100: int
+    count_300: int
+    count_50: int
+    count_miss: int
 
 class UserStatisticsRulesets(Model):
     # undocumented
