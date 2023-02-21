@@ -300,7 +300,7 @@ class Scope(Enum):
 class OssapiAsync:
     """
     Async equivalent of :class:`~ossapi.ossapiv2.Ossapi`. Main (async) entry
-    point into the osu! api v2.
+    point into osu! api v2.
 
     Parameters
     ----------
