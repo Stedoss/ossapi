@@ -68,6 +68,7 @@ api = Ossapi(client_id, client_secret)
 api = Ossapi(client_id, client_secret, callback_url)
 
 # see docs for full list of endpoints
+print(api.user("tybug2").username)
 print(api.user("tybug2", mode="osu").username)
 print(api.beatmap(221777).id)
 ```
