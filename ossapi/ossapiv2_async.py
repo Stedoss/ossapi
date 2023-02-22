@@ -209,7 +209,10 @@ def request(scope, *, requires_user=False, category):
             if requires_user and self.grant is Grant.CLIENT_CREDENTIALS:
                 raise AccessDeniedError("To access this endpoint you must be "
                     "authorized using the authorization code grant. You are "
-                    "currently authorized with the client credentials grant")
+                    "currently authorized with the client credentials grant."
+                    "\n\n"
+                    "For more details, see "
+                    "https://circleguard.github.io/ossapi/grants.html.")
 
             # we may need to edit this later so convert from tuple
             args = list(args)
