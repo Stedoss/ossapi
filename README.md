@@ -57,8 +57,6 @@ To get started, read the docs: https://circleguard.github.io/ossapi/.
 ```python
 from ossapi import Ossapi
 # create a new client at https://osu.ppy.sh/home/account/edit#oauth
-client_id = None
-client_secret = None
 api = Ossapi(client_id, client_secret)
 
 # see docs for full list of endpoints
