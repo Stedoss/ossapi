@@ -67,8 +67,9 @@ api = Ossapi(client_id, client_secret)
 # ...or authorization grant authentication
 api = Ossapi(client_id, client_secret, callback_url)
 
-# go wild with endpoint calls! See docs for all endpoints
-print(api.user("tybug2"))
+# see docs for full list of endpoints
+print(api.user("tybug2", mode="osu").username)
+print(api.beatmap(221777).id)
 ```
 
 ## Async
