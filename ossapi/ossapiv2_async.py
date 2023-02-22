@@ -1980,7 +1980,7 @@ class OssapiAsync:
         variant: Optional[str] = None
     ) -> Rankings:
         """
-        Get current rankings for the specified game mode. Can specify ``type_``
+        Get current rankings for the specified game mode. Can specify ``type``
         to get different types of rankings (performance, score, country, etc).
 
         Parameters
