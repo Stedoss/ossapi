@@ -56,6 +56,7 @@ To get started, read the docs: https://circleguard.github.io/ossapi/.
 
 ```python
 from ossapi import Ossapi
+
 # create a new client at https://osu.ppy.sh/home/account/edit#oauth
 api = Ossapi(client_id, client_secret)
 
@@ -73,8 +74,6 @@ ossapi provides an async variant, `OssapiAsync`, which has an identical interfac
 import asyncio
 from ossapi import Ossapi
 
-client_id = None
-client_secret = None
 api = Ossapi(client_id, client_secret)
 
 async def main():
