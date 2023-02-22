@@ -86,8 +86,7 @@ api = Ossapi(client_id, client_secret)
 async def main():
     await api.user("tybug2")
 
-loop = asyncio.get_event_loop()
-loop.run_until_complete(main())
+asyncio.run(main())
 ```
 
 [Read more about OssapiAsync on the docs.](https://circleguard.github.io/ossapi/async.html)
