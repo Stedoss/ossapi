@@ -59,12 +59,12 @@ from ossapi import Ossapi
 # create a new client at https://osu.ppy.sh/home/account/edit#oauth
 client_id = None
 client_secret = None
-callback_url = None # choose a port on localhost, eg http://localhost:727/
+# choose a port on localhost, eg http://localhost:727/
+callback_url = None
 
-# client credentials authentication...
+# client credentials authentication
 api = Ossapi(client_id, client_secret)
-
-# ...or authorization grant authentication
+# or authorization grant authentication
 api = Ossapi(client_id, client_secret, callback_url)
 
 # see docs for full list of endpoints
