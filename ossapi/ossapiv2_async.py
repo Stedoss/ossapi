@@ -59,11 +59,6 @@ from ossapi.replay import Replay
 
 
 class Oauth2SessionAsync(OAuth2Session):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        from aiohttp import ClientSession
-        self.session = ClientSession()
-
     # this method is shamelessly copied from `OAuth2Session.request`, modified
     # to call `self.session.request` instead of `super().request`.
     # Any OAuth2Session code which calls `request` will remain sync, but we have
@@ -111,9 +106,14 @@ class Oauth2SessionAsync(OAuth2Session):
                 else:
                     raise
 
-        return await self.session.request(
-            method, url, headers=headers, data=data, **kwargs
-        )
+        # No, we should not be using a session for every request. Yes, we are
+        # not achieving 100% performance by doing this. The benefit is that we
+        # don't require `async with OssapiAsync(...) as api:` syntax in order to
+        # use ossapi.
+        async with aiohttp.ClientSession() as session:
+            return await session.request(
+                method, url, headers=headers, data=data, **kwargs
+            )
 
 # our `request` function below relies on the ordering of these types. The
 # base type must come first, with any auxiliary types that the base type accepts
