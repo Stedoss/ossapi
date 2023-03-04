@@ -1798,7 +1798,7 @@ class Ossapi:
     @request(Scope.IDENTIFY, category="me")
     def get_me(self,
         mode: Optional[GameModeT] = None
-    ):
+    ) -> User:
         """
         Get data about the authenticated user.
 
