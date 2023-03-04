@@ -1745,7 +1745,7 @@ class Ossapi:
         query
             Search query.
         mode
-            Filter results by type (forum, wiki, player, etc.).
+            Filter results by type (wiki or player).
         page
             Pagination for results.
 
