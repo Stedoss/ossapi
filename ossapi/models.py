@@ -176,7 +176,7 @@ class User(UserCompact):
     website: Optional[str]
     scores_pinned_count: int
     nominated_beatmapset_count: int
-    rank_highest: RankHighest
+    rank_highest: Optional[RankHighest]
 
     def expand(self) -> User:
         # we're already expanded, no need to waste an api call
