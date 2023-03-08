@@ -2,6 +2,7 @@ import logging
 # we need to explicitly set a handler for the logging module to be happy
 handler = logging.StreamHandler()
 logging.getLogger("ossapi").addHandler(handler)
+from importlib import metadata
 
 from ossapi.ossapi import (OssapiV1, ReplayUnavailableException,
     InvalidKeyException, APIException)
@@ -28,13 +29,13 @@ from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     RoomCategory, RoomSearchType, MatchEventType)
 from ossapi.mod import Mod
 from ossapi.replay import Replay
-from ossapi.version import __version__
 from ossapi.encoder import ModelEncoder, serialize_model
 from ossapi.ossapiv2_async import OssapiAsync
 
 from oauthlib.oauth2 import AccessDeniedError, TokenExpiredError
 from oauthlib.oauth2.rfc6749.errors import InsufficientScopeError
 
+__version__ = metadata.version("ossapi")
 
 __all__ = [
     # OssapiV1
