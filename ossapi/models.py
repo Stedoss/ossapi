@@ -1188,7 +1188,8 @@ class Matches(Model):
 class MatchGame(Model):
     id: int
     start_time: Datetime
-    end_time: Datetime
+    # null for in-progress matches.
+    end_time: Optional[Datetime]
     mode: GameMode
     mode_int: int
     scoring_type: ScoringType
