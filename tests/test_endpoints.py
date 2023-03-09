@@ -206,6 +206,9 @@ class TestMatch(TestCase):
         # https://osu.ppy.sh/community/matches/97947404, tournament match
         api.match(97947404)
 
+class TestComments(TestCase):
+    def test_deserialize(self):
+        api.comments()
 
 # ======================
 # api_full test cases
