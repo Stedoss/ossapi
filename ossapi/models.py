@@ -1054,6 +1054,8 @@ class ChatMessage(Model):
     sender: UserCompact
     sender_id: int
     timestamp: Datetime
+    # TODO enumify, example value: "plain"
+    type: str
 
 class CreatePMResponse(Model):
     message: ChatMessage
