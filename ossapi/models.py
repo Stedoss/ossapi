@@ -392,17 +392,17 @@ class BeatmapScores(Model):
 
 
 class CommentableMeta(Model):
-    # this class is currently not following the documentation in order to work
-    # around https://github.com/ppy/osu-web/issues/7317. Will be updated when
-    # that issue is resolved (one way or the other).
+    # title is the only attribute returned for deleted commentables.
     id: Optional[int]
     title: str
     type: Optional[str]
     url: Optional[str]
-    # both undocumented
     owner_id: Optional[int]
     owner_title: Optional[str]
-    current_user_attributes: Any
+    current_user_attributes: Optional[CommentableMetaCurrentUserAttributes]
+
+class CommentableMetaCurrentUserAttributes(Model):
+    can_new_comment_reason: Optional[str]
 
 class Comment(Model):
     # null for deleted commentables, eg on /comments/3.
