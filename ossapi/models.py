@@ -421,7 +421,8 @@ class Comment(Model):
     pinned: bool
     replies_count: int
     updated_at: Datetime
-    user_id: int
+    # null for some commentables, eg on /comments/3.
+    user_id: Optional[int]
     votes_count: int
 
     def user(self) -> User:
