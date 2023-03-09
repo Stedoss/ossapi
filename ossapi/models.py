@@ -321,6 +321,7 @@ class Beatmapset(BeatmapsetCompact):
     tags: str
     current_nominations: Optional[List[Nomination]]
     deleted_at: Optional[Datetime]
+    pack_tags: List[str]
 
     def expand(self) -> Beatmapset:
         return self
