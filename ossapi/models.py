@@ -405,8 +405,10 @@ class CommentableMeta(Model):
     current_user_attributes: Any
 
 class Comment(Model):
-    commentable_id: int
-    commentable_type: str
+    # null for deleted commentables, eg on /comments/3.
+    commentable_id: Optional[int]
+    # null for deleted commentables, eg on /comments/3.
+    commentable_type: Optional[str]
     created_at: Datetime
     deleted_at: Optional[Datetime]
     edited_at: Optional[Datetime]
