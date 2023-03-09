@@ -84,7 +84,12 @@ class TestSearch(TestCase):
 
 class TestComment(TestCase):
     def test_deserialize(self):
-        api.comment(comment_id=1)
+        # normal comments
+        api.comment(1)
+        api.comment(1123123)
+
+        # comment on a deleted object
+        api.comment(3)
 
 class TestDownloadScore(TestCase):
     def test_deserialize(self):
