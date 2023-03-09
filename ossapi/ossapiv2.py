@@ -1530,8 +1530,8 @@ class Ossapi:
         sort: Optional[CommentSortT] = None
     ) -> CommentBundle:
         """
-        Get comments and their replies (up to 2 levels deep). If you only want
-        to retrieve a single comment, see :meth:`comment`.
+        Get recent comments and their replies (up to 2 levels deep). If you only
+        want to retrieve a single comment, see :meth:`comment`.
 
         Parameters
         ----------
