@@ -1187,6 +1187,7 @@ class Matches(Model):
     matches: List[Match]
     cursor: CursorT
     params: Any
+    cursor_string: str
 
 class MatchGame(Model):
     id: int
