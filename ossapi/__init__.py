@@ -35,7 +35,7 @@ from ossapi.ossapiv2_async import OssapiAsync
 from oauthlib.oauth2 import AccessDeniedError, TokenExpiredError
 from oauthlib.oauth2.rfc6749.errors import InsufficientScopeError
 
-__version__ = metadata.version("ossapi")
+__version__ = metadata.version(__package__)
 
 __all__ = [
     # OssapiV1
