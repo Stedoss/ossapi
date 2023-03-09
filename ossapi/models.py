@@ -1201,6 +1201,7 @@ class MatchGame(Model):
     team_type: TeamType
     mods: List[Mod]
     beatmap: BeatmapCompact
+    beatmap_id: int
     scores: List[Score]
 
 class MatchEventDetail(Model):
