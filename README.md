@@ -1,3 +1,5 @@
+_**ossapi (api)**_ ● _[osrparse](https://github.com/kszlim/osu-replay-parser) (.osr)_ ● _[slider](https://github.com/llllllllll/slider) (.osu)_
+
 [![PyPI version](https://badge.fury.io/py/ossapi.svg)](https://pypi.org/project/ossapi/)
 
 # ossapi ([documentation](https://circleguard.github.io/ossapi/))
