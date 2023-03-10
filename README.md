@@ -1,6 +1,5 @@
 _ossapi (api)_ • _[osrparse (.osr)](https://github.com/kszlim/osu-replay-parser)_ • _[slider (.osu)](https://github.com/llllllllll/slider)_
 
-
 # ossapi ([documentation](https://circleguard.github.io/ossapi/)) [![PyPI version](https://badge.fury.io/py/ossapi.svg)](https://pypi.org/project/ossapi/)
 
 ossapi is a python wrapper for the osu! api which has complete coverage of both [api v2](https://osu.ppy.sh/docs/index.html) and [api v1](https://github.com/ppy/osu-api/wiki). ossapi provides both sync (`Ossapi`) and async (`OssapiAsync`) versions for api v2.
