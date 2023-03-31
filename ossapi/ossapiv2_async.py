@@ -70,6 +70,8 @@ class Oauth2SessionAsync(OAuth2Session):
         self,
         method,
         url,
+        *,
+        session,
         data=None,
         headers=None,
         withhold_token=False,
@@ -572,11 +574,21 @@ class OssapiAsync:
             pickle.dump(token, f)
 
     async def _request(self, type_, method, url, params={}, data={}):
+        from aiohttp import ClientSession
+
         params = self._format_params(params)
         # also format data for post requests
         data = self._format_params(data)
+
+        # No, we should not be using a session for every request. Yes, we are
+        # not achieving 100% performance by doing this. The benefit is that we
+        # don't require `async with OssapiAsync(...) as api:` syntax in order to
+        # use ossapi.
+        aiohttp_session = ClientSession()
+
         try:
-            r = await self.session.request_async(method, f"{self.BASE_URL}{url}",
+            r = await self.session.request_async(method,
+                f"{self.BASE_URL}{url}", session=aiohttp_session,
                 params=params, data=data)
         except TokenExpiredError:
             # provide "auto refreshing" for client credentials grant. The client
@@ -590,13 +602,18 @@ class OssapiAsync:
             self.session = self._new_client_grant(self.client_id,
                 self.client_secret)
             # redo the request now that we have a valid token
-            r = await self.session.request_async(method, f"{self.BASE_URL}{url}",
+            r = await self.session.request_async(method,
+                f"{self.BASE_URL}{url}", session=aiohttp_session,
                 params=params, data=data)
 
         self.log.info(f"made {method} request to {r.real_url}, data {data}")
         json_ = await r.json()
         self.log.debug(f"received json: \n{json.dumps(json_, indent=4)}")
         self._check_response(json_, r.url)
+
+        # aiohttp sessions have to live as long as any responses returned via
+        # the session. Wait to close it until we're done with the response `r`.
+        await aiohttp_session.close()
 
         return self._instantiate_type(type_, json_)
 
