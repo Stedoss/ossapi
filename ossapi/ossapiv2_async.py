@@ -606,7 +606,10 @@ class OssapiAsync:
         # here instead of a string.
         url = str(r.real_url)
         self.log.info(f"made {method} request to {url}, data {data}")
-        json_ = await r.json()
+        # aiohttp throws on unexpected encoding (non-json mimetype). Match
+        # requests behavior by automatically detecting encoding.
+        # See https://github.com/circleguard/ossapi/issues/60.
+        json_ = await r.json(encoding=None)
         # aiohttp sessions have to live as long as any responses returned via
         # the session. Wait to close it until we're done with the response `r`.
         # Make sure we close this before we call _check_response, or any errors
