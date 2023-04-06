@@ -601,14 +601,21 @@ class OssapiAsync:
                 f"{self.BASE_URL}{url}", session=aiohttp_session,
                 params=params, data=data)
 
-        self.log.info(f"made {method} request to {r.real_url}, data {data}")
+        # aiohttp annoyingly differentiates between url (no url fragments, for
+        # some reason) and real_url (actual url). They also use a URL object
+        # here instead of a string.
+        url = str(r.real_url)
+        self.log.info(f"made {method} request to {url}, data {data}")
         json_ = await r.json()
-        self.log.debug(f"received json: \n{json.dumps(json_, indent=4)}")
-        self._check_response(json_, r.url)
-
         # aiohttp sessions have to live as long as any responses returned via
         # the session. Wait to close it until we're done with the response `r`.
+        # Make sure we close this before we call _check_response, or any errors
+        # there will result in the session not being closed. We should probably
+        # move this to a try/finally block at some point for safety.
         await aiohttp_session.close()
+
+        self.log.debug(f"received json: \n{json.dumps(json_, indent=4)}")
+        self._check_response(json_, url)
 
         return self._instantiate_type(type_, json_)
 
