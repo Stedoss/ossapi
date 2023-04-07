@@ -1075,7 +1075,8 @@ class OssapiAsync:
         <https://osu.ppy.sh/docs/index.html#get-beatmaps>`__ endpoint.
         """
         params = {"ids": beatmap_ids}
-        return await self._get(Beatmaps, "/beatmaps", params).beatmaps
+        beatmaps = await self._get(Beatmaps, "/beatmaps", params)
+        return beatmaps.beatmaps
 
     @request(Scope.PUBLIC, category="beatmaps")
     async def beatmap_attributes(self,
@@ -2425,7 +2426,8 @@ class OssapiAsync:
         <https://osu.ppy.sh/docs/index.html#get-users>`__ endpoint.
         """
         params = {"ids": user_ids}
-        return await self._get(Users, "/users", params).users
+        users = await self._get(Users, "/users", params)
+        return users.users
 
     # /wiki
     # -----
