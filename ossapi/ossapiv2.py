@@ -950,7 +950,7 @@ class Ossapi:
         Notes
         -----
         Combines the
-        `Get Beatmap <https://osu.ppy.sh/docs/index.html#get-beatmapL>`_ and
+        `Get Beatmap <https://osu.ppy.sh/docs/index.html#get-beatmap>`_ and
         `Lookup Beatmap <https://osu.ppy.sh/docs/index.html#lookup-beatmap>`_
         endpoints.
         """
