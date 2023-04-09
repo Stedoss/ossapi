@@ -2197,6 +2197,7 @@ class OssapiAsync:
         # Should be x-osu-replay for valid response.
         try:
             json_ = await r.json()
+            await aiohttp_session.close()
             self._check_response(json_, url)
         except ContentTypeError:
             pass
