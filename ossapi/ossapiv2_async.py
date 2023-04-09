@@ -2180,24 +2180,34 @@ class OssapiAsync:
         <https://osu.ppy.sh/docs/index.html#scoresmodescoredownload>`__
         endpoint.
         """
+        from aiohttp import ClientSession, ContentTypeError
+
         url = f"{self.BASE_URL}/scores/{mode.value}/{score_id}/download"
-        r = await self.session.request_async("GET", url)
+
+        aiohttp_session = ClientSession()
+        r = await self.session.request_async("GET", url,
+            session=aiohttp_session)
 
         # if the response above succeeded, it will return a raw string
         # instead of json. If it didn't succeed, it will return json with an
         # error.
-        # So always try parsing as json to check if there's an error. If parsin
+        # So always try parsing as json to check if there's an error. If parsing
         # fails, just assume the request succeeded and move on.
+        # TODO we probably want to be checking headers here instead.
+        # Should be x-osu-replay for valid response.
         try:
-            json_ = r.json()
+            json_ = await r.json()
             self._check_response(json_, url)
-        except json.JSONDecodeError:
+        except ContentTypeError:
             pass
 
-        if raw:
-            return r.content
+        content = await r.read()
+        await aiohttp_session.close()
 
-        replay = osrparse.Replay.from_string(r.content)
+        if raw:
+            return content
+
+        replay = osrparse.Replay.from_string(content)
         return Replay(replay, self)
 
 
