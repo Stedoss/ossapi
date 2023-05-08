@@ -903,7 +903,8 @@ class Ossapi:
         *,
         mode: Optional[GameModeT] = None,
         mods: Optional[ModT] = None,
-        type: Optional[RankingTypeT] = None
+        type: Optional[RankingTypeT] = None,
+        limit: Optional[int] = None
     ) -> BeatmapScores:
         """
         Get the top scores of a beatmap.
@@ -918,13 +919,16 @@ class Ossapi:
             Get the top scores set with exactly these mods, if passed.
         type
             How to order the scores. Defaults to ordering by score.
+        limit
+            How many results to return. Defaults to 50. Must be between 1 and
+            100.
 
         Notes
         -----
         Implements the `Get Beatmap Scores
         <https://osu.ppy.sh/docs/index.html#get-beatmap-scores>`__ endpoint.
         """
-        params = {"mode": mode, "mods": mods, "type": type}
+        params = {"mode": mode, "mods": mods, "type": type, "limit": limit}
         return self._get(BeatmapScores, f"/beatmaps/{beatmap_id}/scores",
             params)
 
