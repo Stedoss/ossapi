@@ -2094,7 +2094,7 @@ class Ossapi:
         # if the response above succeeded, it will return a raw string
         # instead of json. If it didn't succeed, it will return json with an
         # error.
-        # So always try parsing as json to check if there's an error. If parsin
+        # So always try parsing as json to check if there's an error. If parsing
         # fails, just assume the request succeeded and move on.
         try:
             json_ = r.json()
