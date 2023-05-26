@@ -538,6 +538,13 @@ class Ossapi:
             raise ValueError(f"api returned an error of `{json_['error']}` for "
                 f"a request to {unquote(url)}")
 
+        # Shouldn't happen in normal usage. Might occur if a client gets revoked
+        # and we still have a local token.pickel saved for it. But I haven't
+        # tested.
+        if json_ == {"authentication": "basic"}:
+            raise ValueError(f"Invalid authentication. json: {json_}, url: "
+                f"{url}")
+
     def _get(self, type_, url, params={}):
         return self._request(type_, "GET", url, params=params)
 
