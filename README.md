@@ -90,7 +90,7 @@ You can retrieve lazer-specific data (scores, leaderboards, etc) with ossapi:
 ```python
 from ossapi import Ossapi
 
-api = Ossapi(client_id, client_secret, domain="lazer")
+api_lazer = Ossapi(client_id, client_secret, domain="lazer")
 
 # best score on the lazer server (lazer + osu scores combined)
 scores = api_lazer.user_scores(12092800, "best")
