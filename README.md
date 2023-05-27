@@ -173,7 +173,7 @@ All endpoints for api v2.
 
 ## API v1 Usage
 
-You can get your api v1 key at <https://osu.ppy.sh/p/api/>. Note that due to a [redirection bug](https://github.com/ppy/osu-web/issues/2867), you may need to log in and wait 30 seconds before being able to access the api page through the above link.
+You can get your api v1 key at <https://osu.ppy.sh/home/account/edit#legacy-api>.
 
 Basic usage:
 
