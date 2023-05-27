@@ -1,6 +1,6 @@
 # ossapi ([documentation](https://circleguard.github.io/ossapi/)) [![PyPI version](https://badge.fury.io/py/ossapi.svg)](https://pypi.org/project/ossapi/)
 
-ossapi is the definitive python wrapper for the osu! api. ossapi has complete coverage of [api v2](https://osu.ppy.sh/docs/index.html) and [api v1](https://github.com/ppy/osu-api/wiki), and provides both a sync (`Ossapi`) and async (`OssapiAsync`) version for api v2.
+ossapi is the definitive python wrapper for the osu! api. ossapi has complete coverage of [api v2](https://osu.ppy.sh/docs/index.html) and [api v1](https://github.com/ppy/osu-api/wiki), and provides both sync (`Ossapi`) and async (`OssapiAsync`) versions for api v2.
 
 If you need support or would like to contribute, feel free to ask in the `#ossapi` channel of the [circleguard discord](https://discord.gg/e84qxkQ).
 
