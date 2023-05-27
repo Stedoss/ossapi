@@ -7,6 +7,7 @@ If you need support or would like to contribute, feel free to ask in the `#ossap
 * [Installation](#installation)
 * [Quickstart](#quickstart)
 * [Async](#async)
+* [Lazer](#lazer)
 * [Endpoints](#endpoints)
   * [Beatmaps](#endpoints-beatmaps)
   * [Beatmapsets](#endpoints-beatmapsets)
@@ -81,6 +82,22 @@ asyncio.run(main())
 ```
 
 [Read more about OssapiAsync on the docs.](https://circleguard.github.io/ossapi/async.html)
+
+## Lazer
+
+You can retrieve lazer-specific data (scores, leaderboards, etc) with ossapi:
+
+```python
+from ossapi import Ossapi
+
+api = Ossapi(client_id, client_secret, domain="lazer")
+
+# best score on the lazer server (lazer + osu scores combined)
+scores = api_lazer.user_scores(12092800, "best")
+print(scores[0].pp)
+```
+
+[Read more about domains on the docs.](https://circleguard.github.io/ossapi/domains.html)
 
 ## Endpoints
 
