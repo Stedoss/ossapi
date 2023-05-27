@@ -16,7 +16,7 @@ from ossapi.enums import (UserAccountHistory, ProfileBanner, UserBadge, Country,
     BeatmapsetEventType, UserRelationType, UserLevel, UserGradeCounts,
     GithubUser, ChangelogSearch, ForumTopicType, ForumPostBody, ForumTopicSort,
     ChannelType, ReviewsConfig, NewsSearch, Nomination, RankHighest, RoomType,
-    RoomCategory, MatchEventType, ScoringType, TeamType)
+    RoomCategory, MatchEventType, ScoringType, TeamType, Variant)
 from ossapi.utils import Datetime, Model, BaseModel, Field
 
 T = TypeVar("T")
@@ -1089,6 +1089,12 @@ class UserRelation(Model):
     def target(self) -> Union[User, UserCompact]:
         return self._fk_user(self.target_id, existing=self.target)
 
+class StatisticsVariant(Model):
+    mode: GameMode
+    variant: Variant
+    country_rank: Optional[int]
+    global_rank: Optional[int]
+    pp: float
 
 class UserStatistics(Model):
     level: UserLevel
@@ -1107,7 +1113,7 @@ class UserStatistics(Model):
     global_rank: Optional[int]
     rank: Optional[Any]
     user: Optional[UserCompact]
-    variants: Optional[Any]
+    variants: Optional[List[StatisticsVariant]]
     global_rank_exp: Optional[float]
     pp_exp: float
     count_100: int

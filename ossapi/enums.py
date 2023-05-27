@@ -246,6 +246,10 @@ class TeamType(EnumModel):
     TEAM_VS = "team-vs"
     TAG_TEAM_VS = "tag-team-vs"
 
+class Variant(EnumModel):
+    # can't start a python identifier with an integer
+    KEY_4 = "4k"
+    KEY_7 = "7k"
 
 
 # ===============
