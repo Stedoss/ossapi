@@ -6,7 +6,7 @@ from importlib import metadata
 
 from ossapi.ossapi import (OssapiV1, ReplayUnavailableException,
     InvalidKeyException, APIException)
-from ossapi.ossapiv2 import Ossapi, Grant, Scope
+from ossapi.ossapiv2 import Ossapi, Grant, Scope, Domain
 from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore,
     ForumTopicAndPosts, Search, CommentBundle, Cursor, Score,
     BeatmapsetSearchResult, ModdingHistoryEventsBundle, User, Rankings,
@@ -42,7 +42,7 @@ __all__ = [
     "OssapiV1", "ReplayUnavailableException", "InvalidKeyException",
     "APIException",
     # OssapiV2 core
-    "Ossapi", "OssapiAsync", "Grant", "Scope",
+    "Ossapi", "OssapiAsync", "Grant", "Scope", "Domain",
     # OssapiV2 models
     "Beatmap", "BeatmapCompact", "BeatmapUserScore", "ForumTopicAndPosts",
     "Search", "CommentBundle", "Cursor", "Score", "BeatmapsetSearchResult",
