@@ -296,6 +296,19 @@ class Scope(Enum):
     IDENTIFY = "identify"
     PUBLIC = "public"
 
+class Domain(Enum):
+    """
+    Different possible api domains. These correspond to different deployments of
+    the osu server: osu.ppy.sh, lazer.ppy.sh, and dev.ppy.sh respectively.
+
+    The default domain, and the one the vast majority of users want, is
+    :data:`Domain.OSU <ossapi.ossapiv2.Domain.OSU>`, and corresponds to the
+    main website. To retrieve information from the lazer website or the dev
+    website, use the corresponding domain.
+    """
+    OSU = "osu"
+    LAZER = "lazer"
+    DEV = "dev"
 
 class OssapiAsync:
     """
@@ -363,10 +376,22 @@ class OssapiAsync:
         :class:`~ossapi.ossapiv2.Ossapi` after manually authenticating with the
         osu! api. Optional if using :data:`Grant.CLIENT_CREDENTIALS
         <ossapi.ossapiv2.Grant.CLIENT_CREDENTIALS>`.
+    domain: Domain or str
+        The domain to retrieve information from. This defaults to
+        :data:`Domain.OSU <ossapi.ossapiv2.Domain.OSU>`, which corresponds to
+        osu.ppy.sh, the main website.
+        |br|
+        To retrieve information from lazer.ppy.sh - for instance, the
+        leaderboards on lazer, or a user's best score on lazer - specify
+        :data:`Domain.LAZER <ossapi.ossapiv2.Domain.LAZER>`. To retureve
+        information from dev.ppy.sh, specify
+        :data:`Domain.DEV <ossapi.ossapiv2.Domain.DEV>`.
+        |br|
+        See :doc:`Domains <domains>` for more about domains.
     """
-    TOKEN_URL = "https://osu.ppy.sh/oauth/token"
-    AUTH_CODE_URL = "https://osu.ppy.sh/oauth/authorize"
-    BASE_URL = "https://osu.ppy.sh/api/v2"
+    TOKEN_URL = "https://{domain}.ppy.sh/oauth/token"
+    AUTH_CODE_URL = "https://{domain}.ppy.sh/oauth/authorize"
+    BASE_URL = "https://{domain}.ppy.sh/api/v2"
 
     def __init__(self,
         client_id: int,
@@ -379,12 +404,19 @@ class OssapiAsync:
         token_directory: Optional[str] = None,
         token_key: Optional[str] = None,
         access_token: Optional[str] = None,
-        refresh_token: Optional[str] = None
+        refresh_token: Optional[str] = None,
+        domain: Union[str, Domain] = Domain.OSU
     ):
         if not grant:
             grant = (Grant.AUTHORIZATION_CODE if redirect_uri else
                 Grant.CLIENT_CREDENTIALS)
         grant = Grant(grant)
+
+        domain = Domain(domain)
+
+        self.token_url = self.TOKEN_URL.format(domain=domain.value)
+        self.auth_code_url = self.AUTH_CODE_URL.format(domain=domain.value)
+        self.base_url = self.BASE_URL.format(domain=domain.value)
 
         self.grant = grant
         self.client_id = client_id
@@ -392,10 +424,11 @@ class OssapiAsync:
         self.redirect_uri = redirect_uri
         self.scopes = [Scope(scope) for scope in scopes]
         self.strict = strict
+        self.domain = domain
 
         self.log = logging.getLogger(__name__)
         self.token_key = token_key or self.gen_token_key(self.grant,
-            self.client_id, self.client_secret, self.scopes)
+            self.client_id, self.client_secret, self.scopes, self.domain.value)
 
         # support saving tokens when being run from pyinstaller
         if hasattr(sys, '_MEIPASS') and not token_directory:
@@ -430,7 +463,9 @@ class OssapiAsync:
         self.session = self.authenticate(token=token)
 
     @staticmethod
-    def gen_token_key(grant, client_id, client_secret, scopes):
+    def gen_token_key(grant, client_id, client_secret, scopes,
+        domain=Domain.OSU
+    ):
         """
         The unique key / hash for the given set of parameters. This is intended
         to provide a way to allow multiple OssapiV2's to live at the same time,
@@ -442,12 +477,24 @@ class OssapiAsync:
         """
         grant = Grant(grant)
         scopes = [Scope(scope) for scope in scopes]
+        domain = Domain(domain)
+
         m = hashlib.sha256()
         m.update(grant.value.encode("utf-8"))
         m.update(str(client_id).encode("utf-8"))
         m.update(client_secret.encode("utf-8"))
+
         for scope in scopes:
             m.update(scope.value.encode("utf-8"))
+
+        # for backwards compatability, only hash the domain when it's
+        # non-default. This ensures keys from before and after domains were
+        # introduced coincide.
+        # This intentionally treats Domain.OSU and Domain.LAZER as the same key,
+        # as those domains share account and oauth credentials.
+        if domain is Domain.DEV:
+            m.update(domain.value.encode("utf-8"))
+
         return m.hexdigest()
 
     @staticmethod
@@ -487,7 +534,7 @@ class OssapiAsync:
                 }
                 return Oauth2SessionAsync(self.client_id, token=token,
                     redirect_uri=self.redirect_uri,
-                    auto_refresh_url=self.TOKEN_URL,
+                    auto_refresh_url=self.token_url,
                     auto_refresh_kwargs=auto_refresh_kwargs,
                     token_updater=self._save_token,
                     scope=[scope.value for scope in self.scopes])
@@ -505,7 +552,7 @@ class OssapiAsync:
         self.log.info("initializing client credentials grant")
         client = BackendApplicationClient(client_id=client_id, scope=["public"])
         session = Oauth2SessionAsync(client=client)
-        token = session.fetch_token(token_url=self.TOKEN_URL,
+        token = session.fetch_token(token_url=self.token_url,
             client_id=client_id, client_secret=client_secret)
 
         self._save_token(token)
@@ -523,13 +570,13 @@ class OssapiAsync:
             "client_secret": client_secret
         }
         session = Oauth2SessionAsync(client_id, redirect_uri=redirect_uri,
-            auto_refresh_url=self.TOKEN_URL,
+            auto_refresh_url=self.token_url,
             auto_refresh_kwargs=auto_refresh_kwargs,
             token_updater=self._save_token,
             scope=[scope.value for scope in scopes])
 
         authorization_url, _state = (
-            session.authorization_url(self.AUTH_CODE_URL)
+            session.authorization_url(self.auth_code_url)
         )
         webbrowser.open(authorization_url)
 
@@ -554,7 +601,7 @@ class OssapiAsync:
         serversocket.close()
 
         code = data.split("code=")[1].split("&state=")[0]
-        token = session.fetch_token(self.TOKEN_URL, client_id=client_id,
+        token = session.fetch_token(self.token_url, client_id=client_id,
             client_secret=client_secret, code=code)
         self._save_token(token)
 
@@ -583,7 +630,7 @@ class OssapiAsync:
 
         try:
             r = await self.session.request_async(method,
-                f"{self.BASE_URL}{url}", session=aiohttp_session,
+                f"{self.base_url}{url}", session=aiohttp_session,
                 params=params, data=data)
         except TokenExpiredError:
             # provide "auto refreshing" for client credentials grant. The client
@@ -598,7 +645,7 @@ class OssapiAsync:
                 self.client_secret)
             # redo the request now that we have a valid token
             r = await self.session.request_async(method,
-                f"{self.BASE_URL}{url}", session=aiohttp_session,
+                f"{self.base_url}{url}", session=aiohttp_session,
                 params=params, data=data)
 
         # aiohttp annoyingly differentiates between url (no url fragments, for
@@ -1988,7 +2035,7 @@ class OssapiAsync:
         Implements the `Revoke Current Token
         <https://osu.ppy.sh/docs/index.html#revoke-current-token>`__ endpoint.
         """
-        self.session.delete(f"{self.BASE_URL}/oauth/tokens/current")
+        self.session.delete(f"{self.base_url}/oauth/tokens/current")
         self.remove_token(self.token_key, self.token_directory)
 
 
@@ -2186,7 +2233,14 @@ class OssapiAsync:
         """
         from aiohttp import ClientSession, ContentTypeError
 
-        url = f"{self.BASE_URL}/scores/{mode.value}/{score_id}/download"
+        if self.domain is Domain.LAZER:
+            raise ValueError("Downloading scores using the lazer domain is not "
+                "currently supported, as lazer itself does not currently "
+                "support replay downloads. This may change in the future. To "
+                "download replays, use the osu domain (ie, a normal Ossapi "
+                "instance.)")
+
+        url = f"{self.base_url}/scores/{mode.value}/{score_id}/download"
 
         aiohttp_session = ClientSession()
         r = await self.session.request_async("GET", url,
