@@ -154,9 +154,6 @@ class UserCompact(Model):
     def expand(self) -> User:
         return self._fk_user(self.id)
 
-    def refresh(self) -> User:
-        return self._fk_user(self.id)
-
 class User(UserCompact):
     comments_count: int
     cover_url: str
@@ -854,8 +851,8 @@ class BeatmapDifficultyAttributes(Model):
     stamina_difficulty: Optional[float]
     rhythm_difficulty: Optional[float]
     colour_difficulty: Optional[float]
-    approach_rate: Optional[float]
-    great_hit_window: Optional[float]
+    approach_raty: Optional[float]
+    great_hit_windoy: Optional[float]
 
     # ctb attributes
     approach_rate: Optional[float]
