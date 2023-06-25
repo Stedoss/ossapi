@@ -851,8 +851,8 @@ class BeatmapDifficultyAttributes(Model):
     stamina_difficulty: Optional[float]
     rhythm_difficulty: Optional[float]
     colour_difficulty: Optional[float]
-    approach_raty: Optional[float]
-    great_hit_windoy: Optional[float]
+    approach_rate: Optional[float]
+    great_hit_window: Optional[float]
 
     # ctb attributes
     approach_rate: Optional[float]
