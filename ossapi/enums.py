@@ -383,8 +383,8 @@ class BeatmapsetSearchLanguage(EnumModel):
     ENGLISH = 2
     JAPANESE = 3
     CHINESE = 4
-    KOREAN = 6
     INSTRUMENTAL = 5
+    KOREAN = 6
     FRENCH = 7
     GERMAN = 8
     SWEDISH = 9
