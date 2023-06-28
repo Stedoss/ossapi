@@ -731,6 +731,7 @@ class Build(Model):
     version: Optional[str]
     changelog_entries: Optional[List[ChangelogEntry]]
     versions: Optional[Versions]
+    youtube_id: Optional[str]
 
 class Versions(Model):
     next: Optional[Build]
