@@ -1037,6 +1037,7 @@ class ChatChannel(Model):
     name: str
     type: ChannelType
     uuid: Optional[str]
+    message_length_limit: int
 
     # optional fields
     # ---------------
