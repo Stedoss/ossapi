@@ -60,7 +60,7 @@ from ossapi import Ossapi
 api = Ossapi(client_id, client_secret)
 
 # see docs for full list of endpoints
-print(api.user("tybug2").username)
+print(api.user("tybug").username)
 print(api.user(12092800, mode="osu").username)
 print(api.beatmap(221777).id)
 ```
@@ -76,7 +76,7 @@ from ossapi import Ossapi
 api = Ossapi(client_id, client_secret)
 
 async def main():
-    await api.user("tybug2")
+    await api.user("tybug")
 
 asyncio.run(main())
 ```

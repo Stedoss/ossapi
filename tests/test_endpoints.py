@@ -109,10 +109,10 @@ class TestUser(TestCase):
 
     def test_key(self):
         # make sure it automatically falls back to username if not specified
-        api.user("tybug2")
-        api.user("tybug2", key="username")
+        api.user("tybug")
+        api.user("tybug", key="username")
 
-        self.assertRaises(Exception, lambda: api.user("tybug2", key="id"))
+        self.assertRaises(Exception, lambda: api.user("tybug", key="id"))
 
 class TestMe(TestCase):
     def test_insufficient_scope(self):
@@ -256,11 +256,11 @@ class TestLazerUser(TestCase):
         # make sure the lazer domain returns something different than the osu
         # domain. ie, we're actually hitting a different db.
 
-        statistics = api.user("tybug2").statistics
+        statistics = api.user("tybug").statistics
         pp_osu = statistics.pp
         pp_exp_osu = statistics.pp_exp
 
-        statistics = api_lazer.user("tybug2").statistics
+        statistics = api_lazer.user("tybug").statistics
         pp_lazer = statistics.pp
         pp_exp_lazer = statistics.pp_exp
 
