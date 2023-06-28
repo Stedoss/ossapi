@@ -217,6 +217,7 @@ class RoomCategory(EnumModel):
     # 430a2/resources/js/interfaces/room-json.ts#L7
     NORMAL = "normal"
     SPOTLIGHT = "spotlight"
+    FEATURED_ARTIST = "featured_artist"
 
 class MatchEventType(EnumModel):
     # https://github.dev/ppy/osu-web/blob/3d1586392102b05f2a3b264905c4dbb7b2
