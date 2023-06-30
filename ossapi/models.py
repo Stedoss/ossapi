@@ -433,18 +433,18 @@ class Comment(Model):
 class CommentBundle(Model):
     commentable_meta: List[CommentableMeta]
     comments: List[Comment]
+    cursor: CursorT
     has_more: bool
     has_more_id: Optional[int]
     included_comments: List[Comment]
     pinned_comments: Optional[List[Comment]]
+    # TODO this should be type CommentSort
     sort: str
     top_level_count: Optional[int]
     total: Optional[int]
     user_follow: bool
     user_votes: List[int]
     users: List[UserCompact]
-    # undocumented
-    cursor: CursorT
 
 class ForumPost(Model):
     created_at: Datetime
