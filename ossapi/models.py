@@ -608,6 +608,8 @@ class BeatmapsetDiscussionVote(Model):
     beatmapset_discussion_id: int
     created_at: Datetime
     updated_at: Datetime
+    # TODO is this field ever actually returned? not documented and can't find
+    # a repro case.
     cursor_string: Optional[str]
 
     def user(self):
