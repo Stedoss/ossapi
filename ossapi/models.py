@@ -291,6 +291,7 @@ class BeatmapsetCompact(Model):
     has_favourited: Optional[bool]
     language: Optional[Any]
     nominations: Optional[Any]
+    pack_tags: Optional[List[str]]
     ratings: Optional[Any]
     recent_favourites: Optional[Any]
     related_users: Optional[Any]
@@ -321,7 +322,6 @@ class Beatmapset(BeatmapsetCompact):
     tags: str
     current_nominations: Optional[List[Nomination]]
     deleted_at: Optional[Datetime]
-    pack_tags: List[str]
 
     def expand(self) -> Beatmapset:
         return self
