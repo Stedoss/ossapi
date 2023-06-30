@@ -264,17 +264,17 @@ class BeatmapsetCompact(Model):
     creator: str
     favourite_count: int
     id: int
+    nsfw: bool
+    offset: int
     play_count: int
     preview_url: str
     source: str
     status: RankStatus
+    spotlight: bool
     title: str
     title_unicode: str
     user_id: int
     video: bool
-    nsfw: bool
-    offset: int
-    spotlight: bool
     # documented as being in `Beatmapset` only, but returned by
     # `api.beatmapset_events` which uses a `BeatmapsetCompact`.
     hype: Optional[Hype]
@@ -295,9 +295,8 @@ class BeatmapsetCompact(Model):
     ratings: Optional[Any]
     recent_favourites: Optional[Any]
     related_users: Optional[Any]
-    _user: Optional[UserCompact] = Field(name="user")
-    # undocumented
     track_id: Optional[int]
+    _user: Optional[UserCompact] = Field(name="user")
 
     def expand(self) -> Beatmapset:
         return self._fk_beatmapset(self.id)
