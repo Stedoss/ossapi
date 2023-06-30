@@ -309,6 +309,8 @@ class Beatmapset(BeatmapsetCompact):
     availability: Availability
     bpm: float
     can_be_hyped: bool
+    current_nominations: Optional[List[Nomination]]
+    deleted_at: Optional[Datetime]
     discussion_enabled: bool
     discussion_locked: bool
     is_scoreable: bool
@@ -320,8 +322,6 @@ class Beatmapset(BeatmapsetCompact):
     storyboard: bool
     submitted_date: Optional[Datetime]
     tags: str
-    current_nominations: Optional[List[Nomination]]
-    deleted_at: Optional[Datetime]
 
     def expand(self) -> Beatmapset:
         return self
