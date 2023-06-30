@@ -303,6 +303,7 @@ class ChannelType(EnumModel):
     TEMPORARY = "TEMPORARY"
     PM = "PM"
     GROUP = "GROUP"
+    ANNOUNCE = "ANNOUNCE"
 
 class CommentableType(EnumModel):
     NEWS_POST = "news_post"
