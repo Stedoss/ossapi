@@ -578,13 +578,9 @@ class BeatmapsetDiscussion(Model):
     can_be_resolved: bool
     can_grant_kudosu: bool
     created_at: Datetime
-    # documented as non-optional, api.beatmapset_events() might give a null
-    # response for this? but very rarely. need to find a repro case
     current_user_attributes: Any
     updated_at: Datetime
     deleted_at: Optional[Datetime]
-    # similarly as for current_user_attributes, in the past this has been null
-    # but can't find a repro case
     last_post_at: Datetime
     kudosu_denied: bool
     starting_post: Optional[BeatmapsetDiscussionPost]
