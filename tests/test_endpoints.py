@@ -138,7 +138,12 @@ class TestChangelogLookup(TestCase):
 
 class TestForumTopic(TestCase):
     def test_deserialize(self):
+        # normal topic
+        # https://osu.ppy.sh/community/forums/topics/141240?n=1
         api.forum_topic(141240)
+        # topic with a poll
+        # https://osu.ppy.sh/community/forums/topics/1781998?n=1
+        api.forum_topic(1781998)
 
 class TestBeatmapsetDiscussionVotes(TestCase):
     def test_deserialize(self):
