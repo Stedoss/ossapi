@@ -1096,29 +1096,30 @@ class StatisticsVariant(Model):
     pp: float
 
 class UserStatistics(Model):
-    level: UserLevel
-    pp: float
-    ranked_score: int
-    hit_accuracy: float
-    play_count: int
-    play_time: int
-    total_score: int
-    total_hits: int
-    maximum_combo: int
-    replays_watched_by_others: int
-    is_ranked: bool
-    grade_counts: UserGradeCounts
-    country_rank: Optional[int]
-    global_rank: Optional[int]
-    rank: Optional[Any]
-    user: Optional[UserCompact]
-    variants: Optional[List[StatisticsVariant]]
-    global_rank_exp: Optional[float]
-    pp_exp: float
     count_100: int
     count_300: int
     count_50: int
     count_miss: int
+    country_rank: Optional[int]
+    grade_counts: UserGradeCounts
+    hit_accuracy: float
+    is_ranked: bool
+    level: UserLevel
+    maximum_combo: int
+    play_count: int
+    play_time: int
+    pp: float
+    pp_exp: float
+    global_rank: Optional[int]
+    global_rank_exp: Optional[float]
+    # deprecated, replaced by global_rank and country_rank
+    rank: Optional[Any]
+    ranked_score: int
+    replays_watched_by_others: int
+    total_hits: int
+    total_score: int
+    user: Optional[UserCompact]
+    variants: Optional[List[StatisticsVariant]]
 
 class UserStatisticsRulesets(Model):
     # undocumented
