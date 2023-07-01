@@ -131,7 +131,11 @@ class UserCompact(Model):
     mapping_follower_count: Optional[int]
     monthly_playcounts: Optional[List[UserMonthlyPlaycount]]
     page: Optional[UserPage]
+    pending_beatmapset_count: Optional[int]
     previous_usernames: Optional[List[str]]
+    # deprecated, replaced by rank_history
+    rankHistory: Optional[RankHistory]
+    rank_history: Optional[RankHistory]
     # deprecated, replaced by ranked_beatmapset_count
     ranked_and_approved_beatmapset_count: Optional[int]
     ranked_beatmapset_count: Optional[int]
@@ -144,13 +148,10 @@ class UserCompact(Model):
     support_level: Optional[int]
     # deprecated, replaced by pending_beatmapset_count
     unranked_beatmapset_count: Optional[int]
-    pending_beatmapset_count: Optional[int]
     unread_pm_count: Optional[int]
     user_achievements: Optional[List[UserAchievement]]
     user_preferences: Optional[UserProfileCustomization]
-    rank_history: Optional[RankHistory]
-    # deprecated, replaced by rank_history
-    rankHistory: Optional[RankHistory]
+
 
     def expand(self) -> User:
         return self._fk_user(self.id)
