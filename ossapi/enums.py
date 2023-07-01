@@ -615,6 +615,14 @@ class ForumPostBody(Model):
     html: str
     raw: str
 
+class ForumPollText(Model):
+    bbcode: str
+    html: str
+
+class ForumPollTitle(Model):
+    bbcode: str
+    html: str
+
 class ReviewsConfig(Model):
     max_blocks: int
 

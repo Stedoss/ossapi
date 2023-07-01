@@ -16,7 +16,8 @@ from ossapi.enums import (UserAccountHistory, ProfileBanner, UserBadge, Country,
     BeatmapsetEventType, UserRelationType, UserLevel, UserGradeCounts,
     GithubUser, ChangelogSearch, ForumTopicType, ForumPostBody, ForumTopicSort,
     ChannelType, ReviewsConfig, NewsSearch, Nomination, RankHighest, RoomType,
-    RoomCategory, MatchEventType, ScoringType, TeamType, Variant)
+    RoomCategory, MatchEventType, ScoringType, TeamType, Variant, ForumPollText,
+    ForumPollTitle)
 from ossapi.utils import Datetime, Model, BaseModel, Field
 
 T = TypeVar("T")
@@ -476,10 +477,26 @@ class ForumTopic(Model):
     type: ForumTopicType
     updated_at: Datetime
     user_id: int
-    poll: Any
+    poll: Optional[ForumPollModel]
 
     def user(self) -> User:
         return self._fk_user(self.user_id)
+
+class ForumPollModel(Model):
+    allow_vote_change: bool
+    ended_at: Optional[Datetime]
+    hide_incomplete_results: bool
+    last_vote_at: Optional[Datetime]
+    max_votes: int
+    options: List[ForumPollOption]
+    started_at: Datetime
+    title: ForumPollTitle
+    total_vote_count: int
+
+class ForumPollOption(Model):
+    id: int
+    text: ForumPollText
+    vote_count: Optional[int]
 
 class ForumTopicAndPosts(Model):
     cursor: CursorT
