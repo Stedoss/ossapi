@@ -109,13 +109,11 @@ class UserCompact(Model):
     cover: Optional[Cover]
     default_group: Optional[str]
     favourite_beatmapset_count: Optional[int]
-    # undocumented
     follow_user_mapping: Optional[List[int]]
     follower_count: Optional[int]
     friends: Optional[List[UserRelation]]
     graveyard_beatmapset_count: Optional[int]
     groups: Optional[List[UserGroup]]
-    # undocumented
     guest_beatmapset_count: Optional[int]
     is_admin: Optional[bool]
     is_bng: Optional[bool]
@@ -1048,7 +1046,6 @@ class ChatChannel(Model):
     channel_id: int
     description: Optional[str]
     icon: Optional[str]
-    # documented as non-optional (to see that it can be null, pm tillerino)
     moderated: Optional[bool]
     name: str
     type: ChannelType
