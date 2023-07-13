@@ -285,6 +285,7 @@ class BeatmapsetCompact(Model):
     # ---------------
     beatmaps: Optional[List[Beatmap]]
     converts: Optional[Any]
+    current_nominations: Optional[List[Nomination]]
     current_user_attributes: Optional[Any]
     description: Optional[Any]
     discussions: Optional[Any]
@@ -310,7 +311,6 @@ class Beatmapset(BeatmapsetCompact):
     availability: Availability
     bpm: float
     can_be_hyped: bool
-    current_nominations: Optional[List[Nomination]]
     deleted_at: Optional[Datetime]
     discussion_enabled: bool
     discussion_locked: bool
