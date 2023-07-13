@@ -88,10 +88,8 @@ class UserAccountHistoryType(EnumModel):
     SILENCE = "silence"
 
 class MessageType(EnumModel):
-    DISQUALIFY = "disqualify"
     HYPE = "hype"
     MAPPER_NOTE = "mapper_note"
-    NOMINATION_RESET = "nomination_reset"
     PRAISE = "praise"
     PROBLEM = "problem"
     REVIEW = "review"
