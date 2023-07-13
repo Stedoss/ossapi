@@ -1054,7 +1054,6 @@ class ChatChannel(Model):
 
     # optional fields
     # ---------------
-    first_message_id: Optional[int]
     last_message_id: Optional[int]
     last_read_id: Optional[int]
     recent_messages: Optional[List[ChatMessage]]
