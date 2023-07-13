@@ -87,7 +87,6 @@ class UserCompact(Model):
     # ---------------
     avatar_url: str
     country_code: str
-    default_group: str
     id: int
     is_active: bool
     is_bot: bool
@@ -108,6 +107,7 @@ class UserCompact(Model):
     blocks: Optional[UserRelation]
     country: Optional[Country]
     cover: Optional[Cover]
+    default_group: Optional[str]
     favourite_beatmapset_count: Optional[int]
     # undocumented
     follow_user_mapping: Optional[List[int]]
