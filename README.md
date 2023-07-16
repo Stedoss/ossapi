@@ -14,6 +14,7 @@ If you need support or would like to contribute, feel free to ask in the `#ossap
   * [Changelog](#endpoints-changelog)
   * [Chat](#endpoints-chat)
   * [Comments](#endpoints-comments)
+  * [Events](#endpoints-events)
   * [Forums](#endpoints-forums)
   * [Friends](#endpoints-friends)
   * [Home](#endpoints-home)
@@ -127,6 +128,8 @@ All endpoints for api v2.
 * Comments<a name="endpoints-comments"></a>
   * [`api.comment`](https://circleguard.github.io/ossapi/endpoints.html#ossapi.ossapiv2.Ossapi.comment)
   * [`api.comments`](https://circleguard.github.io/ossapi/endpoints.html#ossapi.ossapiv2.Ossapi.comments)
+* Events<a name="endpoints-events"></a>
+  * [`api.events`](https://circleguard.github.io/ossapi/endpoints.html#ossapi.ossapiv2.Ossapi.events)
 * Forums<a name="endpoints-forums"></a>
   * [`api.forum_create_topic`](https://circleguard.github.io/ossapi/endpoints.html#ossapi.ossapiv2.Ossapi.forum_create_topic)
   * [`api.forum_edit_post`](https://circleguard.github.io/ossapi/endpoints.html#ossapi.ossapiv2.Ossapi.forum_edit_post)
@@ -145,7 +148,7 @@ All endpoints for api v2.
 * News<a name="endpoints-news"></a>
   * [`api.news_listing`](https://circleguard.github.io/ossapi/endpoints.html#ossapi.ossapiv2.Ossapi.news_listing)
   * [`api.news_post`](https://circleguard.github.io/ossapi/endpoints.html#ossapi.ossapiv2.Ossapi.news_post)
-* Oauth<a name="endpoints-oauth"></a>
+* OAuth<a name="endpoints-oauth"></a>
   * [`api.revoke_token`](https://circleguard.github.io/ossapi/endpoints.html#ossapi.ossapiv2.Ossapi.revoke_token)
 * Rankings<a name="endpoints-rankings"></a>
   * [`api.ranking`](https://circleguard.github.io/ossapi/endpoints.html#ossapi.ossapiv2.Ossapi.ranking)
