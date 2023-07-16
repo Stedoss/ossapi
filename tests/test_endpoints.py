@@ -2,7 +2,8 @@ from datetime import datetime
 from unittest import TestCase
 
 from ossapi import (RankingType, BeatmapsetEventType, AccessDeniedError,
-    InsufficientScopeError, Mod, GameMode, ForumPoll, RoomSearchType)
+    InsufficientScopeError, Mod, GameMode, ForumPoll, RoomSearchType,
+    EventsSort)
 
 from tests import (
     TestCaseAuthorizationCode, TestCaseDevServer, UNIT_TEST_MESSAGE,
@@ -220,6 +221,12 @@ class TestMatch(TestCase):
 class TestComments(TestCase):
     def test_deserialize(self):
         api.comments()
+
+class TestEvents(TestCase):
+    def test_deserialize(self):
+        events = api.events()
+        api.events(cursor_string=events.cursor_string)
+        api.events(sort=EventsSort.NEW)
 
 
 # ======================

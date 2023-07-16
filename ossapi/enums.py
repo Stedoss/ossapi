@@ -429,6 +429,9 @@ class RoomSearchType(EnumModel):
     PARTICIPATED = "participated"
     ENDED = "ended"
 
+class EventsSort(EnumModel):
+    NEW = "id_desc"
+    OLD = "id_asc"
 
 
 # =================

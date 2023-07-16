@@ -875,6 +875,9 @@ class BeatmapDifficultyAttributes(Model):
     great_hit_window: Optional[float]
     score_multiplier: Optional[float]
 
+class Events(Model):
+    cursor_string: str
+    events: List[Event]
 
 
 # ================

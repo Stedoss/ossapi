@@ -42,7 +42,7 @@ from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore,
     UserCompact, NewsListing, NewsPost, SeasonalBackgrounds, BeatmapsetCompact,
     BeatmapUserScores, DifficultyAttributes, Users, Beatmaps,
     CreateForumTopicResponse, ForumPoll, ForumPost, ForumTopic, Room,
-    RoomLeaderboard, Matches, Match, MatchResponse, ChatChannel)
+    RoomLeaderboard, Matches, Match, MatchResponse, ChatChannel, Events)
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
     BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
@@ -51,7 +51,7 @@ from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     BeatmapsetSearchCategory, BeatmapsetSearchMode,
     BeatmapsetSearchExplicitContent, BeatmapsetSearchGenre,
     BeatmapsetSearchLanguage, NewsPostKey, BeatmapsetSearchSort, RoomSearchType,
-    ChangelogMessageFormat)
+    ChangelogMessageFormat, EventsSort)
 from ossapi.utils import (is_compatible_type, is_primitive_type, is_optional,
     is_base_model_type, is_model_type, is_high_model_type, Field)
 from ossapi.mod import Mod
@@ -146,6 +146,7 @@ BeatmapsetSearchLanguageT = Union[BeatmapsetSearchLanguage, str]
 NewsPostKeyT = Union[NewsPostKey, str]
 BeatmapsetSearchSortT = Union[BeatmapsetSearchSort, str]
 RoomSearchTypeT = Union[RoomSearchType, str]
+EventsSortT = Union[EventsSort, str]
 
 BeatmapIdT = Union[int, BeatmapCompact]
 UserIdT = Union[int, UserCompact]
@@ -1722,6 +1723,34 @@ class OssapiAsync:
         <https://osu.ppy.sh/docs/index.html#get-a-comment>`__ endpoint.
         """
         return await self._get(CommentBundle, f"/comments/{comment_id}")
+
+
+    # /events
+    # -------
+
+    @request(Scope.PUBLIC, category="events")
+    async def events(self,
+        *,
+        sort: Optional[EventsSortT] = None,
+        cursor_string: Optional[str] = None
+    ) -> Events:
+        """
+        Get most recent events, in order of creation time.
+
+        Parameters
+        ----------
+        sort
+            Sort events by oldest or newest.
+        cursor_string
+            Cursor for pagination.
+
+        Notes
+        -----
+        Implements the `Get Events
+        <https://osu.ppy.sh/docs/index.html#get-events>`__ endpoint.
+        """
+        params = {"cursor_string": cursor_string, "sort": sort}
+        return await self._get(Events, "/events", params)
 
 
     # /forums
