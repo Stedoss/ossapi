@@ -807,7 +807,11 @@ class Ossapi:
             signature_type = get_origin(type_)
             type_hints = get_type_hints(signature_type)
 
+        # field override name to existing attribute name
         field_names = {}
+        # existing attribute name to field deserialize type
+        field_deserialize_types = {}
+        # process Field attributes.
         for name in type_hints:
             # any inherited attributes will be present in the annotations
             # (type_hints) but not actually an attribute of the type. Just skip
@@ -821,8 +825,12 @@ class Ossapi:
             value = getattr(type_, name)
             if not isinstance(value, Field):
                 continue
-            if value.name:
+
+            if value.name is not None:
                 field_names[value.name] = name
+            if value.deserialize_type is not None:
+                field_deserialize_types[name] = value.deserialize_type
+
 
         # make a copy so we can modify while iterating
         for key in list(kwargs):
@@ -876,6 +884,9 @@ class Ossapi:
         except TypeError as e:
             raise TypeError(f"type error while instantiating class {type_}: "
                 f"{str(e)}") from e
+
+        for name, deserialize_type in field_deserialize_types.items():
+            val.__annotations__[name] = deserialize_type
 
         return val
 

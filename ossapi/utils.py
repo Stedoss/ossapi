@@ -32,9 +32,19 @@ def is_base_model_type(type_):
 
 
 class Field:
-    def __init__(self, *, name=None):
+    def __init__(self, *, name=None, deserialize_type=None):
         self.name = name
 
+        # We use annotations for two distinct purposes: deserialization, and
+        # type hints. If the deserialize type does not match the runtime type,
+        # these two annotations are in conflict.
+        #
+        # For instance, events should deserialize as _Event, but have a runtime
+        # type of Event.
+        #
+        # This field allows setting the runtime type via annotations and the
+        # deserialize type via passing this field.
+        self.deserialize_type = deserialize_type
 
 class _Model:
     """
