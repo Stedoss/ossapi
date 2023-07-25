@@ -571,7 +571,7 @@ class BeatmapsetDiscussionPost(Model):
     updated_at: Datetime
     deleted_at: Optional[Datetime]
 
-    def user(self) -> user:
+    def user(self) -> User:
         return self._fk_user(self.user_id)
 
     def last_editor(self) -> Optional[User]:
