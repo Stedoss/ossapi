@@ -282,6 +282,7 @@ class UserBeatmapType(EnumModel):
     RANKED = "ranked"
     PENDING = "pending"
     GUEST = "guest"
+    NOMINATED = "nominated"
 
 class BeatmapDiscussionPostSort(EnumModel):
     NEW = "id_desc"
