@@ -802,7 +802,7 @@ class Ossapi:
         try:
             type_hints = get_type_hints(type_)
         except TypeError:
-            assert type(type_) is _GenericAlias # pylint: disable=unidiomatic-typecheck
+            assert type(type_) is _GenericAlias
 
             signature_type = get_origin(type_)
             type_hints = get_type_hints(signature_type)
