@@ -56,7 +56,7 @@ from ossapi.replay import Replay
 # details).
 GameModeT = Union[GameMode, str]
 ScoreTypeT = Union[ScoreType, str]
-ModT = Union[Mod, str, int, list]
+ModT = Union[Mod, str, int, list["ModT"]]
 RankingFilterT = Union[RankingFilter, str]
 RankingTypeT = Union[RankingType, str]
 UserBeatmapTypeT = Union[UserBeatmapType, str]
