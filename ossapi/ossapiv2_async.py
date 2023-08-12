@@ -122,7 +122,7 @@ class Oauth2SessionAsync(OAuth2Session):
 # details).
 GameModeT = Union[GameMode, str]
 ScoreTypeT = Union[ScoreType, str]
-ModT = Union[Mod, str, int, Union[list[Mod], list[str], list[int]]]
+ModT = Union[Mod, str, int, list[Union[Mod, str, int]]]
 RankingFilterT = Union[RankingFilter, str]
 RankingTypeT = Union[RankingType, str]
 UserBeatmapTypeT = Union[UserBeatmapType, str]
