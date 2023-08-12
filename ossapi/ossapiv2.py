@@ -259,10 +259,9 @@ class Ossapi:
         The redirect uri for the client. Must be passed if using the
         authorization code grant. This must exactly match the redirect uri on
         the client's settings page. Additionally, in order for ossapi to receive
-        authentication from this redirect uri, it must be a port on localhost.
-        So "http://localhost:3914/", "http://localhost:727/", etc are all valid
-        redirect uris. You can change your client's redirect uri from its
-        settings page.
+        authentication from this redirect uri, it must be a port on localhost,
+        e.g. "http://localhost:3914/". You can change your client's redirect uri
+        from its settings page.
     scopes: List[str]
         What scopes to request when authenticating.
     grant: Grant or str
