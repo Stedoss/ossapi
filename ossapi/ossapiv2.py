@@ -56,7 +56,9 @@ from ossapi.replay import Replay
 # details).
 GameModeT = Union[GameMode, str]
 ScoreTypeT = Union[ScoreType, str]
-ModT = Union[Mod, str, int, list["ModT"]]
+# XXX this cannot be recursively typed without breaking our runtime type hint
+# inspection.
+ModT = Union[Mod, str, int, Union[list[Mod], list[str], list[int]]]
 RankingFilterT = Union[RankingFilter, str]
 RankingTypeT = Union[RankingType, str]
 UserBeatmapTypeT = Union[UserBeatmapType, str]
