@@ -15,7 +15,7 @@ import sys
 
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import (BackendApplicationClient, TokenExpiredError,
-    AccessDeniedError)
+    AccessDeniedError, OAuth2Error)
 from oauthlib.oauth2.rfc6749.errors import InsufficientScopeError
 from oauthlib.oauth2.rfc6749.tokens import OAuth2Token
 import osrparse
@@ -213,6 +213,20 @@ def request(scope, *, requires_user=False, category):
     return decorator
 
 
+class ReauthenticationRequired(Exception):
+    """
+    Indicates that either the user has revoked this application from their
+    account, or osu-web itself has invalidated the refresh token associated with
+    this application.
+
+    This exception is only raised when a manual access_token is passed to
+    Ossapi, to bypass Ossapi's default authentication methods. The expectation
+    is that in these cases, the consumer has their own way of authenticating
+    with the user. That method should be used here to handle the
+    reauthentication.
+    """
+    pass
+
 class Grant(Enum):
     """
     The grant types used by the api.
@@ -381,6 +395,8 @@ class Ossapi:
             raise ValueError("`redirect_uri` must be passed if the "
                 "authorization code grant is used.")
 
+        # whether the consumer passed a token to ossapi to bypass authentication
+        self.access_token_passed = False
         token = None
         if access_token is not None:
             # allow refresh_token to be null for the case of client credentials
@@ -392,6 +408,7 @@ class Ossapi:
                 "refresh_token": refresh_token
             }
             token = OAuth2Token(params)
+            self.access_token_passed = True
 
         self.session = self.authenticate(token=token)
 
@@ -452,6 +469,8 @@ class Ossapi:
         with this OssapiV2's parameters, or from a fresh authentication if no
         such file exists.
         """
+
+        # try saved token file first
         if self.token_file.exists() or token is not None:
             if token is None:
                 with open(self.token_file, "rb") as f:
@@ -472,6 +491,10 @@ class Ossapi:
                     token_updater=self._save_token,
                     scope=[scope.value for scope in self.scopes])
 
+        # otherwise, authorize from scratch
+        return self._new_grant()
+
+    def _new_grant(self):
         if self.grant is Grant.CLIENT_CREDENTIALS:
             return self._new_client_grant(self.client_id, self.client_secret)
 
@@ -552,9 +575,30 @@ class Ossapi:
         params = self._format_params(params)
         # also format data for post requests
         data = self._format_params(data)
-        try:
-            r = self.session.request(method, f"{self.base_url}{url}",
+
+        def make_request():
+            return self.session.request(method, f"{self.base_url}{url}",
                 params=params, data=data)
+
+        def reauthenticate_and_retry():
+            # don't automatically re-authenticate if the user passed an access
+            # token. They should handle re-authentication with the user
+            # manually (since they may have a bespoke system, like a website).
+            if self.access_token_passed:
+                self.log.info("refresh token is invalid. raising for consumer "
+                    "to handle since access token was passed originally.")
+                raise ReauthenticationRequired()
+
+            self.log.info("refresh token invalid, re-authenticating (grant: "
+                f"{self.grant})")
+            # don't use .authenticate, that falls back to cached tokens. go
+            # straight to authenticating from scratch.
+            self.session = self._new_grant()
+            # redo the request now that we have a valid session
+            return make_request()
+
+        try:
+            r = make_request()
         except TokenExpiredError:
             # provide "auto refreshing" for client credentials grant. The client
             # grant doesn't actually provide a refresh token, so we can't hook
@@ -567,11 +611,23 @@ class Ossapi:
             self.session = self._new_client_grant(self.client_id,
                 self.client_secret)
             # redo the request now that we have a valid token
-            r = self.session.request(method, f"{self.base_url}{url}",
-                params=params, data=data)
+            r = make_request()
+        except OAuth2Error as e:
+            if e.description != "The refresh token is invalid.":
+                raise
+
+            r = reauthenticate_and_retry()
 
         self.log.info(f"made {method} request to {r.request.url}, data {data}")
         json_ = r.json()
+
+        # occurs if a client gets revoked and the token hasn't officially
+        # expired yet (so it doesn't error earlier up in the chain with
+        # Oauth2Error).
+        if json_ == {"authentication": "basic"}:
+            r = reauthenticate_and_retry()
+            json_ = r.json()
+
         self.log.debug(f"received json: \n{json.dumps(json_, indent=4)}")
         self._check_response(json_, r.url)
 
@@ -584,13 +640,6 @@ class Ossapi:
         if len(json_) == 1 and "error" in json_:
             raise ValueError(f"api returned an error of `{json_['error']}` for "
                 f"a request to {unquote(url)}")
-
-        # Shouldn't happen in normal usage. Might occur if a client gets revoked
-        # and we still have a local token.pickel saved for it. But I haven't
-        # tested.
-        if json_ == {"authentication": "basic"}:
-            raise ValueError(f"Invalid authentication. json: {json_}, url: "
-                f"{url}")
 
     def _get(self, type_, url, params={}):
         return self._request(type_, "GET", url, params=params)
