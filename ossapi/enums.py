@@ -477,9 +477,11 @@ class ProfileBanner(Model):
 
 class UserAccountHistory(Model):
     description: Optional[str]
-    type: UserAccountHistoryType
-    timestamp: Datetime
+    id: int
     length: int
+    permanent: bool
+    timestamp: Datetime
+    type: UserAccountHistoryType
 
 
 class UserBadge(Model):
