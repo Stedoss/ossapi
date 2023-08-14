@@ -72,9 +72,9 @@ ossapi provides an async variant, `OssapiAsync`, which has an identical interfac
 
 ```python
 import asyncio
-from ossapi import Ossapi
+from ossapi import OssapiAsync
 
-api = Ossapi(client_id, client_secret)
+api = OssapiAsync(client_id, client_secret)
 
 async def main():
     await api.user("tybug")
