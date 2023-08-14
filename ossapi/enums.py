@@ -86,6 +86,7 @@ class UserAccountHistoryType(EnumModel):
     NOTE = "note"
     RESTRICTION = "restriction"
     SILENCE = "silence"
+    TOURNAMENT_BAN = "tournament_ban"
 
 class MessageType(EnumModel):
     HYPE = "hype"
