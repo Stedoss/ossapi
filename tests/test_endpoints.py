@@ -107,6 +107,8 @@ class TestSearchBeatmaps(TestCase):
 class TestUser(TestCase):
     def test_deserialize(self):
         api.user(12092800)
+        # user with an account_history (tournament ban)
+        api.user(9997093)
 
     def test_key(self):
         # make sure it automatically falls back to username if not specified
