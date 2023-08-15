@@ -26,7 +26,7 @@ import sys
 from requests_oauthlib import OAuth2Session
 from requests_oauthlib.oauth2_session import TokenUpdated
 from oauthlib.oauth2 import (BackendApplicationClient, TokenExpiredError,
-    AccessDeniedError, InsecureTransportError, is_secure_transport)
+    AccessDeniedError, InsecureTransportError, is_secure_transport, OAuth2Error)
 from oauthlib.oauth2.rfc6749.errors import InsufficientScopeError
 from oauthlib.oauth2.rfc6749.tokens import OAuth2Token
 import osrparse
@@ -279,6 +279,19 @@ def request(scope, *, requires_user=False, category):
     return decorator
 
 
+class ReauthenticationRequired(Exception):
+    """
+    Indicates that either the user has revoked this application from their
+    account, or osu-web itself has invalidated the refresh token associated with
+    this application.
+    This exception is only raised when a manual access_token is passed to
+    Ossapi, to bypass Ossapi's default authentication methods. The expectation
+    is that in these cases, the consumer has their own way of authenticating
+    with the user. That method should be used here to handle the
+    reauthentication.
+    """
+    pass
+
 class Grant(Enum):
     """
     The grant types used by the api.
@@ -448,6 +461,8 @@ class OssapiAsync:
             raise ValueError("`redirect_uri` must be passed if the "
                 "authorization code grant is used.")
 
+        # whether the consumer passed a token to ossapi to bypass authentication
+        self.access_token_passed = False
         token = None
         if access_token is not None:
             # allow refresh_token to be null for the case of client credentials
@@ -459,6 +474,7 @@ class OssapiAsync:
                 "refresh_token": refresh_token
             }
             token = OAuth2Token(params)
+            self.access_token_passed = True
 
         self.session = self.authenticate(token=token)
 
@@ -519,6 +535,8 @@ class OssapiAsync:
         with this OssapiV2's parameters, or from a fresh authentication if no
         such file exists.
         """
+
+        # try saved token file first
         if self.token_file.exists() or token is not None:
             if token is None:
                 with open(self.token_file, "rb") as f:
@@ -539,6 +557,10 @@ class OssapiAsync:
                     token_updater=self._save_token,
                     scope=[scope.value for scope in self.scopes])
 
+        # otherwise, authorize from scratch
+        return self._new_grant()
+
+    def _new_grant(self):
         if self.grant is Grant.CLIENT_CREDENTIALS:
             return self._new_client_grant(self.client_id, self.client_secret)
 
@@ -628,10 +650,30 @@ class OssapiAsync:
         # use ossapi.
         aiohttp_session = ClientSession()
 
-        try:
-            r = await self.session.request_async(method,
+        async def make_request():
+            return await self.session.request_async(method,
                 f"{self.base_url}{url}", session=aiohttp_session,
                 params=params, data=data)
+
+        async def reauthenticate_and_retry():
+            # don't automatically re-authenticate if the user passed an access
+            # token. They should handle re-authentication with the user
+            # manually (since they may have a bespoke system, like a website).
+            if self.access_token_passed:
+                self.log.info("refresh token is invalid. raising for consumer "
+                    "to handle since access token was passed originally.")
+                raise ReauthenticationRequired()
+
+            self.log.info("refresh token invalid, re-authenticating (grant: "
+                f"{self.grant})")
+            # don't use .authenticate, that falls back to cached tokens. go
+            # straight to authenticating from scratch.
+            self.session = self._new_grant()
+            # redo the request now that we have a valid session
+            return await make_request()
+
+        try:
+            r = await make_request()
         except TokenExpiredError:
             # provide "auto refreshing" for client credentials grant. The client
             # grant doesn't actually provide a refresh token, so we can't hook
@@ -644,19 +686,32 @@ class OssapiAsync:
             self.session = self._new_client_grant(self.client_id,
                 self.client_secret)
             # redo the request now that we have a valid token
-            r = await self.session.request_async(method,
-                f"{self.base_url}{url}", session=aiohttp_session,
-                params=params, data=data)
+            r = await make_request()
+        except OAuth2Error as e:
+            if e.description != "The refresh token is invalid.":
+                raise
+
+            r = await reauthenticate_and_retry()
 
         # aiohttp annoyingly differentiates between url (no url fragments, for
         # some reason) and real_url (actual url). They also use a URL object
         # here instead of a string.
-        url = str(r.real_url)
-        self.log.info(f"made {method} request to {url}, data {data}")
+        # XXX don't overwrite url passed in function, used in
+        # authenticate_and_retry
+        url_ = str(r.real_url)
+        self.log.info(f"made {method} request to {url_}, data {data}")
+
         # aiohttp throws on unexpected encoding (non-json mimetype). Match
         # requests behavior by automatically detecting encoding.
         # See https://github.com/circleguard/ossapi/issues/60.
         json_ = await r.json(encoding=None)
+        # occurs if a client gets revoked and the token hasn't officially
+        # expired yet (so it doesn't error earlier up in the chain with
+        # Oauth2Error).
+        if json_ == {"authentication": "basic"}:
+            r = await reauthenticate_and_retry()
+            json_ = await r.json(encoding=None)
+
         # aiohttp sessions have to live as long as any responses returned via
         # the session. Wait to close it until we're done with the response `r`.
         # Make sure we close this before we call _check_response, or any errors
@@ -665,7 +720,7 @@ class OssapiAsync:
         await aiohttp_session.close()
 
         self.log.debug(f"received json: \n{json.dumps(json_, indent=4)}")
-        self._check_response(json_, url)
+        self._check_response(json_, url_)
 
         return self._instantiate_type(type_, json_)
 
