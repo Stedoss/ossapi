@@ -154,9 +154,6 @@ class UserCompact(Model):
     def expand(self) -> User:
         return self._fk_user(self.id)
 
-    def refresh(self) -> User:
-        return self._fk_user(self.id)
-
 class User(UserCompact):
     comments_count: int
     cover_url: str
@@ -1139,7 +1136,7 @@ class UserStatistics(Model):
     total_hits: int
     total_score: int
     user: Optional[UserCompact]
-    variants: Optional[List[StatisticsVariant]] #!
+    variants: Optional[List[StatisticsVariant]]
 
 class UserStatisticsRulesets(Model):
     # undocumented
