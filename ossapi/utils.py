@@ -240,7 +240,7 @@ def convert_primitive_type(value, type_):
     # interpreted as an int by our json parser even though ``pp`` is a float.
     # Convert back to the correct typing here.
     # This is important as some consumers may rely on float-specific methods
-    # (`#is_inteber`)
+    # (`#is_integer`)
     if type_ is float and isinstance(value, int):
         return float(value)
     return value
