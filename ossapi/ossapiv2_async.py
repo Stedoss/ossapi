@@ -52,8 +52,8 @@ from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     BeatmapsetSearchExplicitContent, BeatmapsetSearchGenre,
     BeatmapsetSearchLanguage, NewsPostKey, BeatmapsetSearchSort, RoomSearchType,
     ChangelogMessageFormat, EventsSort)
-from ossapi.utils import (is_compatible_type, is_primitive_type, is_optional,
-    is_base_model_type, is_model_type, is_high_model_type, Field)
+from ossapi.utils import (is_primitive_type, is_optional, is_base_model_type,
+    is_model_type, is_high_model_type, Field, convert_primitive_type)
 from ossapi.mod import Mod
 from ossapi.replay import Replay
 
@@ -869,13 +869,15 @@ class OssapiAsync:
             # strict mode.
             if not self.strict and value is None:
                 return
-            if not is_compatible_type(value, type_):
+            if not isinstance(value, type_):
                 raise TypeError(f"expected type {type_} for value {value}, got "
                     f"type {type(value)}"
                     f" (for attribute: {attr_name})" if attr_name else "")
 
         if is_primitive_type(type_):
+            value = convert_primitive_type(value, type_)
             _check_primitive_type()
+            return value
 
         if is_base_model_type(type_):
             self.log.debug(f"instantiating base type {type_}")

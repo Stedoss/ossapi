@@ -235,11 +235,12 @@ def is_primitive_type(type_):
         return False
     return type_ in [int, float, str, bool]
 
-def is_compatible_type(value, type_):
-    # make an exception for an integer being instantiated as a float. In
-    # the json we receive, eg ``pp`` can have a value of ``15833``, which is
-    # interpreted as an int by our json parser even though ``pp`` is a
-    # float.
+def convert_primitive_type(value, type_):
+    # In the json we receive, eg ``pp`` can have a value of ``15833``, which is
+    # interpreted as an int by our json parser even though ``pp`` is a float.
+    # Convert back to the correct typing here.
+    # This is important as some consumers may rely on float-specific methods
+    # (`#is_inteber`)
     if type_ is float and isinstance(value, int):
-        return True
-    return isinstance(value, type_)
+        return float(value)
+    return value
