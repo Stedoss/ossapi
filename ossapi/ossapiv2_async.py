@@ -304,6 +304,8 @@ class Scope(Enum):
     The OAuth scopes used by the api.
     """
     CHAT_WRITE = "chat.write"
+    CHAT_WRITE_MANAGE = "chat.write_manage"
+    CHAT_READ = "chat.read"
     DELEGATE = "delegate"
     FORUM_WRITE = "forum.write"
     FRIENDS_READ = "friends.read"
@@ -1673,7 +1675,7 @@ class OssapiAsync:
 
     # this method requires a user in the announce group, so I've never tested
     # it.
-    @request(Scope.CHAT_WRITE, category="chat")
+    @request(Scope.CHAT_WRITE_MANAGE, category="chat")
     async def send_announcement(self,
         channel_name: str,
         channel_description: str,
