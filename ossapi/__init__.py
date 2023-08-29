@@ -27,7 +27,7 @@ from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     BeatmapsetSearchCategory, BeatmapsetSearchMode,
     BeatmapsetSearchExplicitContent, BeatmapsetSearchLanguage,
     BeatmapsetSearchGenre, NewsPostKey, BeatmapsetSearchSort, RoomType,
-    RoomCategory, RoomSearchType, MatchEventType, Variant, EventsSort)
+    RoomCategory, RoomSearchMode, MatchEventType, Variant, EventsSort)
 from ossapi.mod import Mod
 from ossapi.replay import Replay
 from ossapi.encoder import ModelEncoder, serialize_model
@@ -66,7 +66,7 @@ __all__ = [
     "BeatmapsetSearchCategory", "BeatmapsetSearchMode",
     "BeatmapsetSearchExplicitContent", "BeatmapsetSearchLanguage",
     "BeatmapsetSearchGenre", "NewsPostKey", "BeatmapsetSearchSort", "RoomType",
-    "RoomCategory", "RoomSearchType", "MatchEventType", "ScoringType",
+    "RoomCategory", "RoomSearchMode", "MatchEventType", "ScoringType",
     "TeamType", "Variant", "EventsSort",
     # OssapiV2 exceptions
     "AccessDeniedError", "TokenExpiredError", "InsufficientScopeError",

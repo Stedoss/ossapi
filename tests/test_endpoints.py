@@ -2,7 +2,7 @@ from datetime import datetime
 from unittest import TestCase
 
 from ossapi import (RankingType, BeatmapsetEventType, AccessDeniedError,
-    InsufficientScopeError, Mod, GameMode, ForumPoll, RoomSearchType,
+    InsufficientScopeError, Mod, GameMode, ForumPoll, RoomSearchMode,
     EventsSort)
 
 from tests import (
@@ -256,10 +256,7 @@ class TestRoomLeaderboard(TestCaseAuthorizationCode):
 class TestRooms(TestCaseAuthorizationCode):
     def test_deserialize(self):
         api_full.rooms()
-        # not really sure what OWNED means here, owned by the resource owner?
-        # but when I test it against myself I don't think it returns my hosted
-        # rooms...
-        api_full.rooms(RoomSearchType.OWNED)
+        api_full.rooms(mode=RoomSearchMode.OWNED)
 
 
 # ====================

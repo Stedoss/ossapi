@@ -50,7 +50,7 @@ from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     BeatmapsetDiscussionVoteSort, BeatmapsetStatus, MessageType,
     BeatmapsetSearchCategory, BeatmapsetSearchMode,
     BeatmapsetSearchExplicitContent, BeatmapsetSearchGenre,
-    BeatmapsetSearchLanguage, NewsPostKey, BeatmapsetSearchSort, RoomSearchType,
+    BeatmapsetSearchLanguage, NewsPostKey, BeatmapsetSearchSort, RoomSearchMode,
     ChangelogMessageFormat, EventsSort)
 from ossapi.utils import (is_primitive_type, is_optional, is_base_model_type,
     is_model_type, is_high_model_type, Field, convert_primitive_type)
@@ -145,7 +145,7 @@ BeatmapsetSearchGenreT = Union[BeatmapsetSearchGenre, int]
 BeatmapsetSearchLanguageT = Union[BeatmapsetSearchLanguage, str]
 NewsPostKeyT = Union[NewsPostKey, str]
 BeatmapsetSearchSortT = Union[BeatmapsetSearchSort, str]
-RoomSearchTypeT = Union[RoomSearchType, str]
+RoomSearchModeT = Union[RoomSearchMode, str]
 EventsSortT = Union[EventsSort, str]
 
 BeatmapIdT = Union[int, BeatmapCompact]
@@ -2248,21 +2248,40 @@ class OssapiAsync:
         return await self._get(RoomLeaderboard, f"/rooms/{room_id}/leaderboard")
 
     @request(Scope.PUBLIC, requires_user=True, category="rooms")
-    async def rooms(self, type: Optional[RoomSearchTypeT] = None) -> List[Room]:
+    async def rooms(self,
+        *,
+        limit: Optional[int] = None,
+        mode: Optional[RoomSearchModeT] = None,
+        season_id: Optional[int] = None,
+        # TODO enumify
+        sort: Optional[str] = None,
+        # TODO enumify
+        type_group: Optional[str] = None
+    ) -> List[Room]:
         """
         Get the list of current rooms.
 
         Parameters
         ----------
-        type
-            Filter by room type. Default to all rooms.
+        limit
+            Maximum number of results.
+        mode
+            Mode to filter rooms by. Defaults to all rooms.
+        season_id
+            Season id to return rooms from.
+        sort
+            Sort order. One of "ended" or "created".
+        type_group
+            "playlists" (default) or "realtime".
 
         Notes
         -----
         Implements the `Get Rooms
         <https://osu.ppy.sh/docs/index.html#roomsmode>`__ endpoint.
         """
-        return await self._get(List[Room], f"/rooms/{type.value if type else ''}")
+        params = {"limit": limit, "mode": mode, "season_id": season_id,
+            "sort": sort, "type_group": type_group}
+        return await self._get(List[Room], "/rooms", params=params)
 
 
     # /scores

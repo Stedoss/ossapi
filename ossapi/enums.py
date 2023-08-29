@@ -426,12 +426,12 @@ class NewsPostKey(EnumModel):
     ID = "id"
 
 # `RoomType` is already taken as a model name (and more appropriate elsewhere)
-class RoomSearchType(EnumModel):
-    # https://github.com/ppy/osu-web/blob/3d1586392102b05f2a3b264905c4dbb7b2d4
-    # 30a2/routes/web.php#L462
-    OWNED = "owned"
-    PARTICIPATED = "participated"
+class RoomSearchMode(EnumModel):
+    ACTIVE = "active"
+    ALL = "all"
     ENDED = "ended"
+    PARTICIPATED = "participated"
+    OWNED = "owned"
 
 class EventsSort(EnumModel):
     NEW = "id_desc"
