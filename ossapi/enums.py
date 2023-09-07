@@ -489,6 +489,7 @@ class UserBadge(Model):
     awarded_at: Datetime
     description: str
     image_url: str
+    image_2x_url: str = Field(name="image@2x_url")
     url: str
 
 class GroupDescription(Model):
