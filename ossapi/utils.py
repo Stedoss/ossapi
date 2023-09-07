@@ -1,9 +1,9 @@
 from enum import Enum, IntFlag
 from datetime import datetime, timezone
-from typing import Any
+from typing import Any, Union
 from dataclasses import dataclass
 
-from typing_utils import issubtype
+from typing_utils import issubtype, get_origin, get_args
 
 def is_high_model_type(type_):
     """
@@ -228,6 +228,31 @@ def is_optional(type_):
     ``Union[Any, str]`` is a valid type not equal to ``Any`` (in python), but
     representing the same set of types.
     """
+
+    # issubtype is expensive as it requires normalizing the types. It's possible
+    # we could improve performance there, but there is low hanging fruit for
+    # is_optional in particular: the vast majority of calls are on very simple
+    # types, such as primitive types (int, str, etc), model types (UserCompact),
+    # or the simplest form of optional type (Optional[int]). For these cases,
+    # we can do much better with faster checks.
+    #
+    # It's rare that complicated types such as Union[Union[int, None], str] come
+    # up which  require normalization. However, we'll keep the issubtype check
+    # as the "ground truth" fallback for when the optimizations fail.
+    #
+    # This method is used in tight deserialization loops, so it's important to
+    # keep it inexpensive.
+
+    # optimization for common case of primitive types
+    if type_ in [int, float, str, bool]:
+        return False
+
+    # optimization for common case of simple optional - Optional[int] ie
+    # Union[int, NoneType].
+    if get_origin(type_) is Union:
+        if get_args(type_)[1] is type(None):
+            return True
+
     return issubtype(type(None), type_) and not issubtype(Any, type_)
 
 def is_primitive_type(type_):
