@@ -475,6 +475,7 @@ class ProfileBanner(Model):
     id: int
     tournament_id: int
     image: str
+    image_2x: str = Field(name="image@2x")
 
 class UserAccountHistory(Model):
     description: Optional[str]
