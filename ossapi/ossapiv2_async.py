@@ -444,6 +444,7 @@ class OssapiAsync:
         self.log = logging.getLogger(__name__)
         self.token_key = token_key or self.gen_token_key(self.grant,
             self.client_id, self.client_secret, self.scopes, self.domain.value)
+        self._type_hints_cache = {}
 
         # support saving tokens when being run from pyinstaller
         if hasattr(sys, '_MEIPASS') and not token_directory:
@@ -642,6 +643,14 @@ class OssapiAsync:
     async def _request(self, type_, method, url, params={}, data={}):
         from aiohttp import ClientSession
 
+        # I don't *think* type hints should change over the lifetime of a
+        # program, but clear them every request out of an abundance of caution.
+        # This costs us almost nothing and may avoid bugs when eg a consumer
+        # changes type hints of a custom model dynamically at some point.
+        # They should certainly not be doing so in the middle of a request,
+        # however.
+        self._clear_type_hints_cache()
+
         params = self._format_params(params)
         # also format data for post requests
         data = self._format_params(data)
@@ -818,7 +827,7 @@ class OssapiAsync:
         # why we pass `type(obj)` instead of just `obj`, which would only
         # return annotations for attributes defined in `obj` and not its
         # inherited attributes.
-        annotations = get_type_hints(type(obj))
+        annotations = self._get_type_hints(type(obj))
         override_annotations = obj.override_types()
         annotations = {**annotations, **override_annotations}
         self.log.debug(f"resolving annotations for type {type(obj)}")
@@ -946,12 +955,12 @@ class OssapiAsync:
         # hints from a `_GenericAlias` if we see one, as standard methods
         # won't work.
         try:
-            type_hints = get_type_hints(type_)
+            type_hints = self._get_type_hints(type_)
         except TypeError:
             assert type(type_) is _GenericAlias
 
             signature_type = get_origin(type_)
-            type_hints = get_type_hints(signature_type)
+            type_hints = self._get_type_hints(signature_type)
 
         field_names = {}
         for name in type_hints:
@@ -1024,6 +1033,19 @@ class OssapiAsync:
                 f"{str(e)}") from e
 
         return val
+
+    def _get_type_hints(self, obj):
+        # type hints are expensive to compute. Our models should never change
+        # their type hints, so cache them.
+        if obj in self._type_hints_cache:
+            return self._type_hints_cache[obj]
+
+        type_hints = get_type_hints(obj)
+        self._type_hints_cache[obj] = type_hints
+        return type_hints
+
+    def _clear_type_hints_cache(self):
+        self._type_hints_cache = {}
 
 
     # =========
