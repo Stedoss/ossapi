@@ -27,7 +27,15 @@ from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     BeatmapsetSearchCategory, BeatmapsetSearchMode,
     BeatmapsetSearchExplicitContent, BeatmapsetSearchLanguage,
     BeatmapsetSearchGenre, NewsPostKey, BeatmapsetSearchSort, RoomType,
-    RoomCategory, RoomSearchMode, MatchEventType, Variant, EventsSort)
+    RoomCategory, RoomSearchMode, MatchEventType, Variant, EventsSort,
+    Statistics, Availability, Hype, Nominations, Nomination, Kudosu,
+    KudosuGiver, KudosuPost, KudosuVote, EventUser, EventBeatmap,
+    EventBeatmapset, EventAchivement, GithubUser, ChangelogSearch, NewsSearch,
+    ForumPostBody, ForumPollText, ForumPollTitle, ReviewsConfig, RankHighest,
+    UserMonthlyPlaycount, UserPage, UserLevel, UserGradeCounts,
+    UserReplaysWatchedCount, UserProfileCustomization, RankHistory, Weight,
+    Covers, UserGroup, GroupDescription, UserBadge, UserAccountHistory,
+    ProfileBanner, Cover, Country, Ranking, Failtimes)
 from ossapi.mod import Mod
 from ossapi.replay import Replay
 from ossapi.encoder import ModelEncoder, serialize_model
@@ -67,7 +75,16 @@ __all__ = [
     "BeatmapsetSearchExplicitContent", "BeatmapsetSearchLanguage",
     "BeatmapsetSearchGenre", "NewsPostKey", "BeatmapsetSearchSort", "RoomType",
     "RoomCategory", "RoomSearchMode", "MatchEventType", "ScoringType",
-    "TeamType", "Variant", "EventsSort",
+    "TeamType", "Variant", "EventsSort", "NewsSearch", "RankHighest", "Weight",
+    "Statistics", "Availability", "Hype", "Nominations", "Nomination", "Kudosu",
+    "KudosuGiver", "KudosuPost", "KudosuVote", "EventUser", "EventBeatmap",
+    "EventBeatmapset", "EventAchivement", "GithubUser", "ChangelogSearch",
+    "ForumPostBody", "ForumPollText", "ForumPollTitle", "ReviewsConfig",
+    "UserMonthlyPlaycount", "UserPage", "UserLevel", "UserGradeCounts",
+    "UserReplaysWatchedCount", "UserProfileCustomization", "RankHistory",
+    "Covers", "UserGroup", "GroupDescription", "UserBadge",
+    "UserAccountHistory", "ProfileBanner", "Cover", "Country", "Ranking",
+    "Failtimes",
     # OssapiV2 exceptions
     "AccessDeniedError", "TokenExpiredError", "InsufficientScopeError",
     # misc
