@@ -1225,7 +1225,9 @@ class MatchGame(Model):
     scoring_type: ScoringType
     team_type: TeamType
     mods: List[Mod]
-    beatmap: BeatmapCompact
+    # null for deleted beatmaps.
+    # TODO doesn't match docs
+    beatmap: Optional[BeatmapCompact]
     beatmap_id: int
     scores: List[Score]
 
