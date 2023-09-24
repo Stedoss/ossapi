@@ -219,6 +219,8 @@ class TestMatch(TestCase):
     def test_deserialize(self):
         # https://osu.ppy.sh/community/matches/97947404, tournament match
         api.match(97947404)
+        # https://osu.ppy.sh/community/matches/103721175, deleted beatmap
+        api.match(103721175)
 
 class TestComments(TestCase):
     def test_deserialize(self):
