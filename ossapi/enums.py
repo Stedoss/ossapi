@@ -598,6 +598,7 @@ class EventAchivement(Model):
 
 class GithubUser(Model):
     display_name: str
+    github_username: Optional[str]
     github_url: Optional[str]
     id: Optional[int]
     osu_username: Optional[str]
