@@ -1948,7 +1948,13 @@ class Ossapi:
         return self._get(Matches, "/matches")
 
     @request(Scope.PUBLIC, category="matches")
-    def match(self, match_id: MatchIdT) -> MatchResponse:
+    def match(self,
+        match_id: MatchIdT,
+        *,
+        after: Optional[int] = None,
+        before: Optional[int] = None,
+        limit: Optional[int] = None
+    ) -> MatchResponse:
         """
         Get a match (eg https://osu.ppy.sh/community/matches/97947404).
 
@@ -1962,7 +1968,8 @@ class Ossapi:
         Implements the `Get Match
         <https://osu.ppy.sh/docs/index.html#matchesmatch>`__ endpoint.
         """
-        return self._get(MatchResponse, f"/matches/{match_id}")
+        params = {"after": after, "before": before, "limit": limit}
+        return self._get(MatchResponse, f"/matches/{match_id}", params=params)
 
 
     # /me
