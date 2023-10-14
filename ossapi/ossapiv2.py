@@ -1013,7 +1013,7 @@ class Ossapi:
         user_id: UserIdT,
         *,
         mode: Optional[GameModeT] = None
-    ) -> List[BeatmapUserScore]:
+    ) -> List[Score]:
         """
         Get all of a user's scores on a beatmap. If you only want the top user
         score, see :meth:`beatmap_user_score`.
