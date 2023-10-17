@@ -945,7 +945,7 @@ class Ossapi:
             val = type_(**kwargs_)
         except TypeError as e:
             raise TypeError(f"type error while instantiating class {type_}: "
-                f"{str(e)}") from e
+                f"{e}") from e
 
         for name, deserialize_type in field_deserialize_types.items():
             val.__annotations__[name] = deserialize_type
