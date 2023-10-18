@@ -67,6 +67,7 @@ class TestBeatmapsetEvents(TestCase):
 class TestRanking(TestCase):
     def test_deserialize(self):
         api.ranking("osu", RankingType.PERFORMANCE, country="US")
+        api.ranking("osu", type="country")
 
 class TestUserScores(TestCase):
     def test_deserialize(self):
