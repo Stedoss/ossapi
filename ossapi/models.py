@@ -555,7 +555,7 @@ class Beatmaps(Model):
 class Rankings(Model):
     beatmapsets: Optional[List[Beatmapset]]
     cursor: CursorT
-    ranking: List[Union[UserStatistics, CountryStatistics]]
+    ranking: Union[List[UserStatistics], List[CountryStatistics]]
     spotlight: Optional[Spotlight]
     total: int
 
