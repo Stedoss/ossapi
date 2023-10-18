@@ -555,7 +555,7 @@ class Beatmaps(Model):
 class Rankings(Model):
     beatmapsets: Optional[List[Beatmapset]]
     cursor: CursorT
-    ranking: List[UserStatistics]
+    ranking: List[Union[UserStatistics, CountryStatistics]]
     spotlight: Optional[Spotlight]
     total: int
 
@@ -1072,6 +1072,19 @@ class ChatMessage(Model):
     timestamp: Datetime
     # TODO enumify, example value: "plain"
     type: str
+
+class CountryStatistics(Model):
+    country: Country
+    country_code: str
+    created_at: Optional[Datetime]
+    display: int
+    id: int
+    mode: GameMode
+    performance: int
+    play_count: int
+    ranked_score: int
+    updated_at: Optional[Datetime]
+    user_count: int
 
 class CreatePMResponse(Model):
     message: ChatMessage
