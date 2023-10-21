@@ -881,7 +881,6 @@ class Ossapi:
     def _instantiate(self, type_, kwargs):
         self.log.debug(f"instantiating type {type_}")
 
-        print("before", kwargs)
         kwargs = type_.preprocess_data(kwargs)
         override_type = type_.override_class(kwargs)
 
@@ -961,7 +960,6 @@ class Ossapi:
         parameters = list(inspect.signature(signature_type.__init__).parameters)
         kwargs_ = {}
 
-        print("after", kwargs)
         for k, v in kwargs.items():
             if k in parameters:
                 kwargs_[k] = v
