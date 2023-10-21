@@ -21,6 +21,7 @@ from oauthlib.oauth2.rfc6749.tokens import OAuth2Token
 import osrparse
 from typing_utils import issubtype, get_type_hints, get_origin, get_args
 
+import ossapi
 from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore,
     ForumTopicAndPosts, Search, CommentBundle, Cursor, Score,
     BeatmapsetSearchResult, ModdingHistoryEventsBundle, User, Rankings,
@@ -263,6 +264,13 @@ class Domain(Enum):
     LAZER = "lazer"
     DEV = "dev"
 
+class Oauth2SessionOssapi(OAuth2Session):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        headers = {"User-Agent": f"ossapi (v{ossapi.__version__})"}
+        self.headers.update(headers)
+
 class Ossapi:
     """
     A wrapper around osu! api v2. The main entry point for ossapi.
@@ -482,14 +490,14 @@ class Ossapi:
                     token = pickle.load(f)
 
             if self.grant is Grant.CLIENT_CREDENTIALS:
-                return OAuth2Session(self.client_id, token=token)
+                return Oauth2SessionOssapi(self.client_id, token=token)
 
             if self.grant is Grant.AUTHORIZATION_CODE:
                 auto_refresh_kwargs = {
                     "client_id": self.client_id,
                     "client_secret": self.client_secret
                 }
-                return OAuth2Session(self.client_id, token=token,
+                return Oauth2SessionOssapi(self.client_id, token=token,
                     redirect_uri=self.redirect_uri,
                     auto_refresh_url=self.token_url,
                     auto_refresh_kwargs=auto_refresh_kwargs,
@@ -512,7 +520,7 @@ class Ossapi:
         """
         self.log.info("initializing client credentials grant")
         client = BackendApplicationClient(client_id=client_id, scope=["public"])
-        session = OAuth2Session(client=client)
+        session = Oauth2SessionOssapi(client=client)
         token = session.fetch_token(token_url=self.token_url,
             client_id=client_id, client_secret=client_secret)
 
