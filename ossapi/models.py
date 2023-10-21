@@ -545,8 +545,8 @@ class Users(Model):
 class Beatmaps(Model):
     beatmaps: List[Beatmap]
 
-# return-value wrapper for https://osu.ppy.sh/docs/index.html#get-beatmaps.
 class BeatmapPacks(Model):
+    cursor: CursorT
     beatmap_packs: List[BeatmapPack]
 
 class Rankings(Model):

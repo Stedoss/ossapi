@@ -1069,7 +1069,7 @@ class OssapiAsync:
     async def beatmap_packs(self,
         type: Optional[BeatmapPackTypeT] = None,
         cursor_string: Optional[str] = None
-    ) -> List[BeatmapPack]:
+    ) -> BeatmapPacks:
         """
         Get a list of beatmap packs. If you want to retrieve a specific pack,
         see :meth:`beatmap_pack`.
@@ -1086,8 +1086,7 @@ class OssapiAsync:
         endpoint.
         """
         params = {"type": type, "cursor_string": cursor_string}
-        r = await self._get(BeatmapPacks, "/beatmaps/packs", params)
-        return r.beatmap_packs
+        return await self._get(BeatmapPacks, "/beatmaps/packs", params)
 
     @request(Scope.PUBLIC, category="beatmap packs")
     async def beatmap_pack(self,

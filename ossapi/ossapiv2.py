@@ -1013,7 +1013,7 @@ class Ossapi:
     def beatmap_packs(self,
         type: Optional[BeatmapPackTypeT] = None,
         cursor_string: Optional[str] = None
-    ) -> List[BeatmapPack]:
+    ) -> BeatmapPacks:
         """
         Get a list of beatmap packs. If you want to retrieve a specific pack,
         see :meth:`beatmap_pack`.
@@ -1030,8 +1030,7 @@ class Ossapi:
         endpoint.
         """
         params = {"type": type, "cursor_string": cursor_string}
-        r = self._get(BeatmapPacks, "/beatmaps/packs", params)
-        return r.beatmap_packs
+        return self._get(BeatmapPacks, "/beatmaps/packs", params)
 
     @request(Scope.PUBLIC, category="beatmap packs")
     def beatmap_pack(self,
