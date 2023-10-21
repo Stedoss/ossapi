@@ -17,7 +17,7 @@ from ossapi.enums import (UserAccountHistory, ProfileBanner, UserBadge, Country,
     GithubUser, ChangelogSearch, ForumTopicType, ForumPostBody, ForumTopicSort,
     ChannelType, ReviewsConfig, NewsSearch, Nomination, RankHighest, RoomType,
     RoomCategory, MatchEventType, ScoringType, TeamType, Variant, ForumPollText,
-    ForumPollTitle)
+    ForumPollTitle, BeatmapPackUserCompletionData)
 from ossapi.utils import Datetime, Model, BaseModel, Field
 
 T = TypeVar("T")
@@ -545,6 +545,10 @@ class Users(Model):
 class Beatmaps(Model):
     beatmaps: List[Beatmap]
 
+# return-value wrapper for https://osu.ppy.sh/docs/index.html#get-beatmaps.
+class BeatmapPacks(Model):
+    beatmap_packs: List[BeatmapPack]
+
 class Rankings(Model):
     beatmapsets: Optional[List[Beatmapset]]
     cursor: CursorT
@@ -872,6 +876,19 @@ class Events(Model):
     cursor_string: str
     events: List[Event] = Field(deserialize_type=List[_Event])
 
+class BeatmapPack(Model):
+    author: str
+    date: Datetime
+    name: str
+    no_diff_reduction: bool
+    # marked as nonnull on docs
+    ruleset_id: Optional[int]
+    tag: str
+    url: str
+
+    # optional attributes
+    beatmapsets: Optional[List[Beatmapset]]
+    user_completion_data: Optional[BeatmapPackUserCompletionData]
 
 # ================
 # Parameter Models

@@ -43,7 +43,8 @@ from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore,
     UserCompact, NewsListing, NewsPost, SeasonalBackgrounds, BeatmapsetCompact,
     BeatmapUserScores, DifficultyAttributes, Users, Beatmaps,
     CreateForumTopicResponse, ForumPoll, ForumPost, ForumTopic, Room,
-    RoomLeaderboard, Matches, Match, MatchResponse, ChatChannel, Events)
+    RoomLeaderboard, Matches, Match, MatchResponse, ChatChannel, Events,
+    BeatmapPack, BeatmapPacks)
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
     BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
@@ -52,7 +53,7 @@ from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     BeatmapsetSearchCategory, BeatmapsetSearchMode,
     BeatmapsetSearchExplicitContent, BeatmapsetSearchGenre,
     BeatmapsetSearchLanguage, NewsPostKey, BeatmapsetSearchSort, RoomSearchMode,
-    ChangelogMessageFormat, EventsSort)
+    ChangelogMessageFormat, EventsSort, BeatmapPackType)
 from ossapi.utils import (is_primitive_type, is_optional, is_base_model_type,
     is_model_type, is_high_model_type, Field, convert_primitive_type)
 from ossapi.mod import Mod
@@ -154,6 +155,7 @@ NewsPostKeyT = Union[NewsPostKey, str]
 BeatmapsetSearchSortT = Union[BeatmapsetSearchSort, str]
 RoomSearchModeT = Union[RoomSearchMode, str]
 EventsSortT = Union[EventsSort, str]
+BeatmapPackTypeT = Union[BeatmapPackType, str]
 
 BeatmapIdT = Union[int, BeatmapCompact]
 UserIdT = Union[int, UserCompact]
@@ -1058,6 +1060,50 @@ class OssapiAsync:
     # =========
     # Endpoints
     # =========
+
+
+    # /beatmaps/packs
+    # ---------------
+
+    @request(Scope.PUBLIC, category="beatmap packs")
+    async def beatmap_packs(self,
+        type: Optional[BeatmapPackTypeT] = None,
+        cursor_string: Optional[str] = None
+    ) -> List[BeatmapPack]:
+        """
+        Get a list of beatmap packs. If you want to retrieve a specific pack,
+        see :meth:`beatmap_pack`.
+
+        Parameters
+        ----------
+        cursor_string
+            Cursor for pagination.
+
+        Notes
+        -----
+        Implements the `Beatmap Packs
+        <https://osu.ppy.sh/docs/index.html#get-beatmap-packs>`__
+        endpoint.
+        """
+        params = {"type": type, "cursor_string": cursor_string}
+        r = await self._get(BeatmapPacks, "/beatmaps/packs", params)
+        return r.beatmap_packs
+
+    @request(Scope.PUBLIC, category="beatmap packs")
+    async def beatmap_pack(self,
+        pack: str
+    ) -> BeatmapPack:
+        """
+        Get a beatmap pack. If you want to retrieve a list of beatmap packs, see
+        see :meth:`beatmap_packs`.
+
+        Notes
+        -----
+        Implements the `Beatmap Pack
+        <https://osu.ppy.sh/docs/index.html#get-beatmap-pack>`__
+        endpoint.
+        """
+        return await self._get(BeatmapPack, f"/beatmaps/packs/{pack}")
 
 
     # /beatmaps

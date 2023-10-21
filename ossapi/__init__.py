@@ -18,7 +18,7 @@ from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore,
     RoomPlaylistItemMod, RoomLeaderboardScore, RoomLeaderboardUserScore,
     RoomLeaderboard, Match, Matches, MatchResponse, ScoreMatchInfo, MatchGame,
     MatchEventDetail, MatchEvent, ScoringType, TeamType, StatisticsVariant,
-    Events)
+    Events, BeatmapPack)
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
     BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
@@ -35,7 +35,8 @@ from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserMonthlyPlaycount, UserPage, UserLevel, UserGradeCounts,
     UserReplaysWatchedCount, UserProfileCustomization, RankHistory, Weight,
     Covers, UserGroup, GroupDescription, UserBadge, UserAccountHistory,
-    ProfileBanner, Cover, Country, Ranking, Failtimes)
+    ProfileBanner, Cover, Country, Ranking, Failtimes, BeatmapPackType,
+    BeatmapPackUserCompletionData)
 from ossapi.mod import Mod
 from ossapi.replay import Replay
 from ossapi.encoder import ModelEncoder, serialize_model
@@ -64,7 +65,7 @@ __all__ = [
     "Room", "RoomPlaylistItem", "RoomPlaylistItemMod", "RoomLeaderboardScore",
     "RoomLeaderboardUserScore", "RoomLeaderboard", "Match", "Matches",
     "MatchResponse", "ScoreMatchInfo", "MatchGame", "MatchEventDetail",
-    "MatchEvent", "StatisticsVariant", "Events",
+    "MatchEvent", "StatisticsVariant", "Events", "BeatmapPack",
     # OssapiV2 enums
     "GameMode", "ScoreType", "RankingFilter", "RankingType",
     "UserBeatmapType", "BeatmapDiscussionPostSort", "UserLookupKey",
@@ -84,7 +85,7 @@ __all__ = [
     "UserReplaysWatchedCount", "UserProfileCustomization", "RankHistory",
     "Covers", "UserGroup", "GroupDescription", "UserBadge",
     "UserAccountHistory", "ProfileBanner", "Cover", "Country", "Ranking",
-    "Failtimes",
+    "Failtimes", "BeatmapPackType", "BeatmapPackUserCompletionData",
     # OssapiV2 exceptions
     "AccessDeniedError", "TokenExpiredError", "InsufficientScopeError",
     # misc

@@ -437,6 +437,15 @@ class EventsSort(EnumModel):
     NEW = "id_desc"
     OLD = "id_asc"
 
+class BeatmapPackType(EnumModel):
+    STANDARD = "standard"
+    FEATURED = "featured"
+    TOURNAMENT = "tournament"
+    LOVED = "loved"
+    CHART = "chart"
+    THEME = "theme"
+    ARTIST = "artist"
+
 
 # =================
 # Documented Models
@@ -639,6 +648,10 @@ class ReviewsConfig(Model):
 class RankHighest(Model):
     rank: int
     updated_at: Datetime
+
+class BeatmapPackUserCompletionData(Model):
+    beatmapset_ids: List[int]
+    completed: bool
 
 
 # ===================

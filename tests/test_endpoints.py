@@ -235,6 +235,16 @@ class TestEvents(TestCase):
         api.events(cursor_string=events.cursor_string)
         api.events(sort=EventsSort.NEW)
 
+class TestBeatmapPacks(TestCase):
+    def test_deserialize(self):
+        api.beatmap_packs()
+        api.beatmap_packs("artist")
+
+class TestBeatmapPack(TestCase):
+    def test_deserialize(self):
+        api.beatmap_pack("S100")
+        api.beatmap_pack("A1")
+
 
 # ======================
 # api_full test cases
