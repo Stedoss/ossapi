@@ -547,6 +547,7 @@ class Beatmaps(Model):
 
 class BeatmapPacks(Model):
     cursor: CursorT
+    cursor_string: str
     beatmap_packs: List[BeatmapPack]
 
 class Rankings(Model):
