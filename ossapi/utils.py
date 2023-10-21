@@ -144,6 +144,16 @@ class Model(_Model, metaclass=ModelMeta):
         func = lambda: self._api.beatmapset(beatmapset_id)
         return self._foreign_key(beatmapset_id, func, existing)
 
+    def __str__(self):
+        # don't print internal values
+        blacklisted_keys = ["_api"]
+        items = [
+            f"{k}={v!r}" for k, v in self.__dict__.items()
+            if k not in blacklisted_keys
+        ]
+        return "{}({})".format(type(self).__name__, ", ".join(items))
+    __repr__ = __str__
+
 class BaseModel(_Model):
     """
     A model which promises to take care of its own members and cleanup, after we
