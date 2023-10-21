@@ -1030,7 +1030,7 @@ class OssapiAsync:
             val = type_(**kwargs_)
         except TypeError as e:
             raise TypeError(f"type error while instantiating class {type_}: "
-                f"{str(e)}") from e
+                f"{e}") from e
 
         return val
 
