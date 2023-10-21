@@ -21,6 +21,7 @@ from oauthlib.oauth2.rfc6749.tokens import OAuth2Token
 import osrparse
 from typing_utils import issubtype, get_type_hints, get_origin, get_args
 
+import ossapi
 from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore,
     ForumTopicAndPosts, Search, CommentBundle, Cursor, Score,
     BeatmapsetSearchResult, ModdingHistoryEventsBundle, User, Rankings,
@@ -263,6 +264,13 @@ class Domain(Enum):
     LAZER = "lazer"
     DEV = "dev"
 
+class Oauth2SessionOssapi(OAuth2Session):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        headers = {"User-Agent": f"ossapi (v{ossapi.__version__})"}
+        self.headers.update(headers)
+
 class Ossapi:
     """
     A wrapper around osu! api v2. The main entry point for ossapi.
@@ -482,14 +490,14 @@ class Ossapi:
                     token = pickle.load(f)
 
             if self.grant is Grant.CLIENT_CREDENTIALS:
-                return OAuth2Session(self.client_id, token=token)
+                return Oauth2SessionOssapi(self.client_id, token=token)
 
             if self.grant is Grant.AUTHORIZATION_CODE:
                 auto_refresh_kwargs = {
                     "client_id": self.client_id,
                     "client_secret": self.client_secret
                 }
-                return OAuth2Session(self.client_id, token=token,
+                return Oauth2SessionOssapi(self.client_id, token=token,
                     redirect_uri=self.redirect_uri,
                     auto_refresh_url=self.token_url,
                     auto_refresh_kwargs=auto_refresh_kwargs,
@@ -512,7 +520,7 @@ class Ossapi:
         """
         self.log.info("initializing client credentials grant")
         client = BackendApplicationClient(client_id=client_id, scope=["public"])
-        session = OAuth2Session(client=client)
+        session = Oauth2SessionOssapi(client=client)
         token = session.fetch_token(token_url=self.token_url,
             client_id=client_id, client_secret=client_secret)
 
@@ -755,7 +763,7 @@ class Ossapi:
             self.log.debug(f"resolving attribute {attr}")
 
             value = self._instantiate_type(type_, value, obj, attr_name=attr)
-            if not value:
+            if value is None:
                 continue
             setattr(obj, attr, value)
         self.log.debug(f"resolved annotations for type {type(obj)}")
@@ -830,6 +838,31 @@ class Ossapi:
                 if is_high_model_type(type_):
                     entry = self._resolve_annotations(entry)
                 new_value.append(entry)
+            return new_value
+
+        if origin is Union:
+            # try each type in the union sequentially, taking the first which
+            # successfully deserializes the json.
+            new_value = None
+            # purely for debugging. errors for each arg are shown when we can't
+            # deserialize any of them.
+            fail_reasons = []
+            for arg in args:
+                try:
+                    import copy
+                    v = copy.deepcopy(value)
+                    # _instantiate_type implicitly mutates the passed value.
+                    # this is probably something we should change - but for now,
+                    # fix it here, as we may reuse `value`.
+                    new_value = self._instantiate_type(arg, v, obj,
+                        attr_name)
+                except Exception as e:
+                    fail_reasons.append(str(e))
+                    continue
+
+            if new_value is None:
+                raise ValueError(f"Failed to satisfy union: no type in {args} "
+                    f"satisfied {attr_name} (fail reasons: {fail_reasons})")
             return new_value
 
         # either we ourself are a model type (eg `Search`), or we are

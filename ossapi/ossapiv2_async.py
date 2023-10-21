@@ -32,6 +32,7 @@ from oauthlib.oauth2.rfc6749.tokens import OAuth2Token
 import osrparse
 from typing_utils import issubtype, get_type_hints, get_origin, get_args
 
+import ossapi
 from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore,
     ForumTopicAndPosts, Search, CommentBundle, Cursor, Score,
     BeatmapsetSearchResult, ModdingHistoryEventsBundle, User, Rankings,
@@ -59,6 +60,12 @@ from ossapi.replay import Replay
 
 
 class Oauth2SessionAsync(OAuth2Session):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        headers = {"User-Agent": f"ossapi (v{ossapi.__version__})"}
+        self.headers.update(headers)
+
     # this method is shamelessly copied from `OAuth2Session.request`, modified
     # to call `self.session.request` instead of `super().request`.
     # Any OAuth2Session code which calls `request` will remain sync, but we have
@@ -1030,7 +1037,7 @@ class OssapiAsync:
             val = type_(**kwargs_)
         except TypeError as e:
             raise TypeError(f"type error while instantiating class {type_}: "
-                f"{str(e)}") from e
+                f"{e}") from e
 
         return val
 
