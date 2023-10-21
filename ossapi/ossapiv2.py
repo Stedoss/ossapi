@@ -841,19 +841,28 @@ class Ossapi:
             return new_value
 
         if origin is Union:
-            new_value = None
             # try each type in the union sequentially, taking the first which
             # successfully deserializes the json.
+            new_value = None
+            # purely for debugging. errors for each arg are shown when we can't
+            # deserialize any of them.
+            fail_reasons = []
             for arg in args:
                 try:
-                    new_value = self._instantiate_type(arg, value, obj,
+                    import copy
+                    v = copy.deepcopy(value)
+                    # _instantiate_type implicitly mutates the passed value.
+                    # this is probably something we should change - but for now,
+                    # fix it here, as we may reuse `value`.
+                    new_value = self._instantiate_type(arg, v, obj,
                         attr_name)
-                except Exception:
+                except Exception as e:
+                    fail_reasons.append(str(e))
                     continue
 
             if new_value is None:
                 raise ValueError(f"Failed to satisfy union: no type in {args} "
-                    f"satisfied {attr_name} (value {value})")
+                    f"satisfied {attr_name} (fail reasons: {fail_reasons})")
             return new_value
 
         # either we ourself are a model type (eg `Search`), or we are
@@ -872,6 +881,7 @@ class Ossapi:
     def _instantiate(self, type_, kwargs):
         self.log.debug(f"instantiating type {type_}")
 
+        print("before", kwargs)
         kwargs = type_.preprocess_data(kwargs)
         override_type = type_.override_class(kwargs)
 
@@ -951,6 +961,7 @@ class Ossapi:
         parameters = list(inspect.signature(signature_type.__init__).parameters)
         kwargs_ = {}
 
+        print("after", kwargs)
         for k, v in kwargs.items():
             if k in parameters:
                 kwargs_[k] = v
