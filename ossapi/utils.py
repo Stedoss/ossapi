@@ -114,7 +114,12 @@ class ModelMeta(type):
                 continue
             setattr(model, name, None)
 
-        return dataclass(model)
+        # @dataclass will automatically define a str/repr if it can't find one
+        # we defined ourselves. We *do* define one on Model, but I guess because
+        # we're doing weird stuff with metaclasses it can't find it sometimes?
+        # not sure. but we can fix it by telling @dataclass to never generate
+        # a repr for us.
+        return dataclass(model, repr=False)
 
 class Model(_Model, metaclass=ModelMeta):
     """
