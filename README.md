@@ -104,6 +104,9 @@ print(scores[0].pp)
 
 All endpoints for api v2.
 
+* Beatmap Packs<a name="endpoints-beatmap-packs"></a>
+  * [`api.beatmap_pack`](https://circleguard.github.io/ossapi/endpoints.html#ossapi.ossapiv2.Ossapi.beatmap_pack)
+  * [`api.beatmap_packs`](https://circleguard.github.io/ossapi/endpoints.html#ossapi.ossapiv2.Ossapi.beatmap_packs)
 * Beatmaps<a name="endpoints-beatmaps"></a>
   * [`api.beatmap`](https://circleguard.github.io/ossapi/endpoints.html#ossapi.ossapiv2.Ossapi.beatmap)
   * [`api.beatmap_attributes`](https://circleguard.github.io/ossapi/endpoints.html#ossapi.ossapiv2.Ossapi.beatmap_attributes)
