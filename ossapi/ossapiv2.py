@@ -840,6 +840,22 @@ class Ossapi:
                 new_value.append(entry)
             return new_value
 
+        if origin is Union:
+            new_value = None
+            # try each type in the union sequentially, taking the first which
+            # successfully deserializes the json.
+            for arg in args:
+                try:
+                    new_value = self._instantiate_type(arg, value, obj,
+                        attr_name)
+                except Exception:
+                    continue
+
+            if new_value is None:
+                raise ValueError(f"Failed to satisfy union: no type in {args} "
+                    f"satisfied {attr_name} (value {value})")
+            return new_value
+
         # either we ourself are a model type (eg `Search`), or we are
         # a special indexed type (eg `type_ == SearchResult[UserCompact]`,
         # `origin == UserCompact`). In either case we want to instantiate
