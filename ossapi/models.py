@@ -1074,17 +1074,12 @@ class ChatMessage(Model):
     type: str
 
 class CountryStatistics(Model):
-    country: Country
-    country_code: str
-    created_at: Optional[Datetime]
-    display: int
-    id: int
-    mode: GameMode
-    performance: int
+    code: str
+    active_users: int
     play_count: int
     ranked_score: int
-    updated_at: Optional[Datetime]
-    user_count: int
+    performance: int
+    country: Country
 
 class CreatePMResponse(Model):
     message: ChatMessage
