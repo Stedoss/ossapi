@@ -763,7 +763,7 @@ class Ossapi:
             self.log.debug(f"resolving attribute {attr}")
 
             value = self._instantiate_type(type_, value, obj, attr_name=attr)
-            if not value:
+            if value is None:
                 continue
             setattr(obj, attr, value)
         self.log.debug(f"resolved annotations for type {type(obj)}")
