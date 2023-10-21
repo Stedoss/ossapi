@@ -267,7 +267,7 @@ class RankingFilter(EnumModel):
     FRIENDS = "friends"
 
 class RankingType(EnumModel):
-    CHARTS = "spotlight"
+    CHARTS = "charts"
     COUNTRY = "country"
     PERFORMANCE = "performance"
     SCORE = "score"
