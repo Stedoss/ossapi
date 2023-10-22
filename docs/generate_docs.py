@@ -39,7 +39,7 @@ def is_model(Class):
 def is_base_type(type_):
     return is_model(type_) or type_ in BASE_TYPES
 
-def type_to_string(type_,):
+def type_to_string(type_):
     if type_ is type(None):
         return "None"
 
@@ -201,7 +201,7 @@ class Generator:
             for name, value in endpoint_values:
                 self.result += f".. autofunction:: ossapi.ossapiv2.Ossapi.{name}"
 
-                scope = getattr(value, "__ossapi_scope__")
+                scope = value.__ossapi_scope__
                 # endpoints implicitly require public scope, don't document it
                 if scope is not None and scope is not Scope.PUBLIC:
                     self.result += ("\n\n .. note::\n    Requires the "
