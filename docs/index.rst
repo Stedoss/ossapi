@@ -17,8 +17,8 @@ ossapi can be installed from pip:
 Links
 -----
 
-| Github: https://github.com/circleguard/ossapi
-| Documentation: https://circleguard.github.io/ossapi/
+| Github: https://github.com/tybug/ossapi
+| Documentation: https://tybug.github.io/ossapi/
 | Discord: https://discord.gg/VNnkTjm
 
 Pages

@@ -219,7 +219,7 @@ def request(scope, *, requires_user=False, category):
                     "currently authorized with the client credentials grant."
                     "\n\n"
                     "For more details, see "
-                    "https://circleguard.github.io/ossapi/grants.html.")
+                    "https://tybug.github.io/ossapi/grants.html.")
 
             # we may need to edit this later so convert from tuple
             args = list(args)
@@ -723,7 +723,7 @@ class OssapiAsync:
 
         # aiohttp throws on unexpected encoding (non-json mimetype). Match
         # requests behavior by automatically detecting encoding.
-        # See https://github.com/circleguard/ossapi/issues/60.
+        # See https://github.com/tybug/ossapi/issues/60.
         json_ = await r.json(encoding=None)
         # occurs if a client gets revoked and the token hasn't officially
         # expired yet (so it doesn't error earlier up in the chain with
