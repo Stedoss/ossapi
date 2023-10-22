@@ -3,8 +3,6 @@
 *.sln
 *.DS_Store
 .spyproject
-osu-ac/secret.py
-circleguard/secret.py
 .vscode/
 .env
 *.egg-info/
