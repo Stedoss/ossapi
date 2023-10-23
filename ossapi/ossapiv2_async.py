@@ -934,6 +934,31 @@ class OssapiAsync:
                 new_value.append(entry)
             return new_value
 
+        if origin is Union:
+            # try each type in the union sequentially, taking the first which
+            # successfully deserializes the json.
+            new_value = None
+            # purely for debugging. errors for each arg are shown when we can't
+            # deserialize any of them.
+            fail_reasons = []
+            for arg in args:
+                try:
+                    import copy
+                    v = copy.deepcopy(value)
+                    # _instantiate_type implicitly mutates the passed value.
+                    # this is probably something we should change - but for now,
+                    # fix it here, as we may reuse `value`.
+                    new_value = self._instantiate_type(arg, v, obj,
+                        attr_name)
+                except Exception as e:
+                    fail_reasons.append(str(e))
+                    continue
+
+            if new_value is None:
+                raise ValueError(f"Failed to satisfy union: no type in {args} "
+                    f"satisfied {attr_name} (fail reasons: {fail_reasons})")
+            return new_value
+
         # either we ourself are a model type (eg `Search`), or we are
         # a special indexed type (eg `type_ == SearchResult[UserCompact]`,
         # `origin == UserCompact`). In either case we want to instantiate
