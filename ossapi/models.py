@@ -1244,7 +1244,8 @@ class MatchGame(Model):
     scoring_type: ScoringType
     team_type: TeamType
     mods: List[Mod]
-    # null for deleted beatmaps.
+    # null for deleted beatmaps,
+    # e.g. https://osu.ppy.sh/community/matches/103721175.
     # TODO doesn't match docs
     beatmap: Optional[BeatmapCompact]
     beatmap_id: int
