@@ -663,6 +663,14 @@ class Ossapi:
             raise ValueError(f"api returned an error of `{json_['error']}` for "
                 f"a request to {unquote(url)}")
 
+        # some endpoints only require authorization grant for some endpoints.
+        # e.g. normally api.match only requires client credentials grant, but for
+        # private matches like api.match(111632899), it will return this error.
+        if json_ == {"authentication": "basic"}:
+            raise ValueError("Permission denied for a request to "
+                f"{unquote(url)}. This request may require "
+                "Grant.AUTHORIZATION_CODE.")
+
     def _get(self, type_, url, params={}):
         return self._request(type_, "GET", url, params=params)
 
