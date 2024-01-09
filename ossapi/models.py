@@ -728,7 +728,7 @@ class UserSupportAgainEvent(Event):
     user: EventUser
 
 class UserSupportGiftEvent(Event):
-    beatmap: EventBeatmap
+    user: EventUser
 
 class UsernameChangeEvent(Event):
     user: EventUser
