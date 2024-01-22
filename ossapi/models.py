@@ -102,6 +102,7 @@ class UserCompact(Model):
     # ---------------
     account_history: Optional[List[UserAccountHistory]]
     active_tournament_banner: Optional[ProfileBanner]
+    active_tournament_banners: Optional[List[ProfileBanner]]
     badges: Optional[List[UserBadge]]
     beatmap_playcounts_count: Optional[int]
     blocks: Optional[UserRelation]
