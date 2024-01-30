@@ -143,6 +143,7 @@ class UserCompact(Model):
     unread_pm_count: Optional[int]
     user_achievements: Optional[List[UserAchievement]]
     user_preferences: Optional[UserProfileCustomization]
+    session_verified: Optional[bool]
 
 
     def expand(self) -> User:
