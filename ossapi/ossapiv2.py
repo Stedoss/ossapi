@@ -998,6 +998,12 @@ class Ossapi:
         for name, deserialize_type in field_deserialize_types.items():
             val.__annotations__[name] = deserialize_type
 
+        # modifying the type hints of an object dynamically invalidates its
+        # cache. Avoid looking up stale type hints if we had looked up its
+        # previous value before modifying it here.
+        if field_deserialize_types:
+            del self._type_hints_cache[type(val)]
+
         return val
 
     def _get_type_hints(self, obj):
