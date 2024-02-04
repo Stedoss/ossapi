@@ -876,6 +876,7 @@ class BeatmapDifficultyAttributes(Model):
     score_multiplier: Optional[float]
 
 class Events(Model):
+    cursor: CursorT
     cursor_string: str
     events: List[Event] = Field(deserialize_type=List[_Event])
 
