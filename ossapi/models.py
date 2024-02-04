@@ -1274,3 +1274,89 @@ class MatchResponse(Model):
     first_event_id: int
     latest_event_id: int
     current_game_id: Optional[int]
+
+
+# ==================
+# Provisional Models
+# ==================
+
+class _NonLegacyBeatmapScores(Model):
+    scores: List[_NonLegacyScore]
+    userScore: Optional[BeatmapUserScore]
+
+class _NonLegacyMod(BaseModel):
+    # returned in a new format. e.g.:
+    # "mods": [
+    #      {
+    #          "acronym": "HR"
+    #      },
+    #      {
+    #          "acronym": "HD"
+    #      },
+    #      {
+    #          "acronym": "CL"
+    #      }
+    #  ],
+    def __init__(self, value):
+        self.value = value
+
+class _NonLegacyStatistics(Model):
+    # these values simply aren't present if they are 0. oversight?
+    miss: Optional[int]
+    meh: Optional[int]
+    ok: Optional[int]
+    good: Optional[int]
+    great: Optional[int]
+
+    # TODO: are these weird values returned by the api anywhere?
+    # e.g. legacy_combo_increase in particular.
+    perfect: Optional[int]
+    small_tick_miss: Optional[int]
+    small_tick_hit: Optional[int]
+    large_tick_miss: Optional[int]
+    large_tick_hit: Optional[int]
+    small_bonus: Optional[int]
+    large_bonus: Optional[int]
+    ignore_miss: Optional[int]
+    ignore_hit: Optional[int]
+    combo_break: Optional[int]
+    slider_tail_hit: Optional[int]
+    legacy_combo_increase: Optional[int]
+
+class _NonLegacyScore(Model):
+    id: Optional[int]
+    best_id: Optional[int]
+    user_id: int
+    accuracy: float
+    max_combo: int
+    statistics: _NonLegacyStatistics
+    pp: Optional[float]
+    rank: Grade
+
+    passed: bool
+    current_user_attributes: Any
+    replay: bool
+    maximum_statistics: Any # TODO property typing
+    mods: _NonLegacyMod
+    ruleset_id: int
+    started_at: Optional[Datetime]
+    ended_at: Datetime
+    ranked: bool
+    preserve: bool
+    beatmap_id: int
+    build_id: Optional[int]
+    has_replay: bool
+    is_perfect_combo: bool
+    total_score: int
+
+    legacy_perfect: bool
+    legacy_score_id: int
+    legacy_total_score: int
+
+    beatmapset: Optional[BeatmapsetCompact]
+    rank_country: Optional[int]
+    rank_global: Optional[int]
+    weight: Optional[Weight]
+    _user: Optional[UserCompact] = Field(name="user")
+    match: Optional[ScoreMatchInfo]
+    type: str

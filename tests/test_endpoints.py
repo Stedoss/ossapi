@@ -304,9 +304,9 @@ class TestLazerUser(TestCase):
         self.assertEqual(pp_lazer, pp_exp_osu)
 
 
-# =====================
+# ==================
 # api_dev test cases
-# =====================
+# ==================
 
 class TestForum(TestCaseDevServer):
     def test_forum(self):
@@ -354,3 +354,13 @@ class TestForum(TestCaseDevServer):
             forum_id=85,
             poll=poll
         )
+
+
+# ==========================
+# provisional api test cases
+# ==========================
+
+class TestBeatmapScoresNonLegacy(TestCase):
+    def test_deserialize(self):
+        api._beatmap_scores_non_legacy(221777)
+        api._beatmap_scores_non_legacy(221777, legacy_only=True)

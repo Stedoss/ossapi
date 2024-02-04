@@ -33,7 +33,7 @@ from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore,
     BeatmapUserScores, DifficultyAttributes, Users, Beatmaps,
     CreateForumTopicResponse, ForumPoll, ForumPost, ForumTopic, Room,
     RoomLeaderboard, Matches, Match, MatchResponse, ChatChannel, Events,
-    BeatmapPack, BeatmapPacks)
+    BeatmapPack, BeatmapPacks, _NonLegacyBeatmapScores)
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
     BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
@@ -1167,6 +1167,28 @@ class Ossapi:
         """
         params = {"mode": mode, "mods": mods, "type": type, "limit": limit}
         return self._get(BeatmapScores, f"/beatmaps/{beatmap_id}/scores",
+            params)
+
+    def _beatmap_scores_non_legacy(self,
+        beatmap_id: BeatmapIdT,
+        *,
+        mode: Optional[GameModeT] = None,
+        mods: Optional[ModT] = None,
+        type: Optional[RankingTypeT] = None,
+        limit: Optional[int] = None,
+        legacy_only: Optional[bool] = None
+    ) -> _NonLegacyBeatmapScores:
+        """
+        This is a provisional method. It may change or disappear in the future.
+        Feel free to use it, but don't expect ossapi to maintain backwards
+        compatability here.
+
+        I'll decide what to do about these provisional methods once the lazer
+        migration settles down.
+        """
+        params = {"mode": mode, "mods": mods, "type": type, "limit": limit,
+            "legacy_only": legacy_only}
+        return self._get(_NonLegacyBeatmapScores, f"/beatmaps/{beatmap_id}/solo-scores",
             params)
 
     @request(Scope.PUBLIC, category="beatmaps")
