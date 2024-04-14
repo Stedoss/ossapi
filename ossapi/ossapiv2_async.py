@@ -324,15 +324,13 @@ class Scope(Enum):
 class Domain(Enum):
     """
     Different possible api domains. These correspond to different deployments of
-    the osu server: osu.ppy.sh, lazer.ppy.sh, and dev.ppy.sh respectively.
+    the osu server, such as osu.ppy.sh or dev.ppy.sh.
 
     The default domain, and the one the vast majority of users want, is
     :data:`Domain.OSU <ossapi.ossapiv2.Domain.OSU>`, and corresponds to the
-    main website. To retrieve information from the lazer website or the dev
-    website, use the corresponding domain.
+    main website.
     """
     OSU = "osu"
-    LAZER = "lazer"
     DEV = "dev"
 
 class OssapiAsync:
@@ -405,10 +403,7 @@ class OssapiAsync:
         :data:`Domain.OSU <ossapi.ossapiv2.Domain.OSU>`, which corresponds to
         osu.ppy.sh, the main website.
         |br|
-        To retrieve information from lazer.ppy.sh - for instance, the
-        leaderboards on lazer, or a user's best score on lazer - specify
-        :data:`Domain.LAZER <ossapi.ossapiv2.Domain.LAZER>`. To retureve
-        information from dev.ppy.sh, specify
+        To retrieve information from dev.ppy.sh, specify
         :data:`Domain.DEV <ossapi.ossapiv2.Domain.DEV>`.
         |br|
         See :doc:`Domains <domains>` for more about domains.
@@ -518,8 +513,6 @@ class OssapiAsync:
         # for backwards compatability, only hash the domain when it's
         # non-default. This ensures keys from before and after domains were
         # introduced coincide.
-        # This intentionally treats Domain.OSU and Domain.LAZER as the same key,
-        # as those domains share account and oauth credentials.
         if domain is Domain.DEV:
             m.update(domain.value.encode("utf-8"))
 
@@ -2442,13 +2435,6 @@ class OssapiAsync:
         endpoint.
         """
         from aiohttp import ClientSession, ContentTypeError
-
-        if self.domain is Domain.LAZER:
-            raise ValueError("Downloading scores using the lazer domain is not "
-                "currently supported, as lazer itself does not currently "
-                "support replay downloads. This may change in the future. To "
-                "download replays, use the osu domain (ie, a normal Ossapi "
-                "instance.)")
 
         url = f"{self.base_url}/scores/{mode.value}/{score_id}/download"
 
