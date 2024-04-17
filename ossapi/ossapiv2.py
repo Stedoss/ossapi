@@ -2368,6 +2368,7 @@ class Ossapi:
         """
         return self._get(Score, f"/scores/{score_id}")
 
+    @request(Scope.PUBLIC, category="scores")
     def score_mode(self, mode: GameModeT, score_id: int) -> Score:
         """
         Get a score, where the score id is specific to the gamemode. This
