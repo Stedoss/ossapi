@@ -2348,11 +2348,33 @@ class Ossapi:
 
     @request(Scope.PUBLIC, category="scores")
     def score(self,
-        mode: GameModeT,
         score_id: int
     ) -> Score:
         """
-        Get a score.
+        Get a score. This corresponds to urls of the form https://osu.ppy.sh/scores/1312718771
+        ("new id format").
+
+        If you have an old id which is per-gamemode, use api.score_mode.
+
+        Parameters
+        ----------
+        score_id
+            The score to get.
+
+        Notes
+        -----
+        Implements the `Get Score
+        <https://osu.ppy.sh/docs/index.html#scoresmodescore>`__ endpoint.
+        """
+        return self._get(Score, f"/scores/{score_id}")
+
+    def score_mode(self, mode: GameModeT, score_id: int) -> Score:
+        """
+        Get a score, where the score id is specific to the gamemode. This
+        corresponds to urls of the form https://osu.ppy.sh/scores/osu/4459998279
+        ("old id format").
+
+        If you have a new id which is global across gamemodes, use api.score.
 
         Parameters
         ----------
