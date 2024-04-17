@@ -164,6 +164,7 @@ All endpoints for api v2.
 * Scores<a name="endpoints-scores"></a>
   * [`api.download_score`](https://tybug.github.io/ossapi/scores.html#ossapi.ossapiv2.Ossapi.download_score)
   * [`api.score`](https://tybug.github.io/ossapi/scores.html#ossapi.ossapiv2.Ossapi.score)
+  * [`api.score_mode`](https://tybug.github.io/ossapi/scores.html#ossapi.ossapiv2.Ossapi.score_mode)
 * Seasonal Backgrounds<a name="endpoints-seasonal-backgrounds"></a>
   * [`api.seasonal_backgrounds`](https://tybug.github.io/ossapi/seasonal%20backgrounds.html#ossapi.ossapiv2.Ossapi.seasonal_backgrounds)
 * Spotlights<a name="endpoints-spotlights"></a>
