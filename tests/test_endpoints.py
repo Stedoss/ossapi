@@ -199,16 +199,30 @@ class TestBeatmaps(TestCase):
 class TestScore(TestCase):
     def test_deserialize(self):
         # downloadable
-        api.score(GameMode.OSU, 2243145877)
+        api.score(429915881)
         # downloadable, my score
-        api.score(GameMode.OSU, 3685255338)
+        api.score(1262758549)
         # not downloadable, my score
-        api.score(GameMode.OSU, 3772000814)
+        api.score(1312718771)
 
         # other gamemodes
-        api.score(GameMode.TAIKO, 176904666)
-        api.score(GameMode.MANIA, 524674142)
-        api.score(GameMode.CATCH, 211167989)
+        api.score(1874611010)
+        api.score(2238254261)
+        api.score(1958862711)
+
+class TestScoreMode(TestCase):
+    def test_deserialize(self):
+        # downloadable
+        api.score_mode(GameMode.OSU, 2243145877)
+        # downloadable, my score
+        api.score_mode(GameMode.OSU, 3685255338)
+        # not downloadable, my score
+        api.score_mode(GameMode.OSU, 3772000814)
+
+        # other gamemodes
+        api.score_mode(GameMode.TAIKO, 176904666)
+        api.score_mode(GameMode.MANIA, 524674142)
+        api.score_mode(GameMode.CATCH, 211167989)
 
 class TestFriends(TestCase):
     def test_access_denied(self):
