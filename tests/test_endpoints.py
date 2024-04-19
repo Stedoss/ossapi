@@ -1,7 +1,7 @@
 from datetime import datetime
 from unittest import TestCase
 
-from ossapi import (RankingType, BeatmapsetEventType, AccessDeniedError,
+from ossapi import (RankingType, BeatmapsetEventType,
     InsufficientScopeError, Mod, GameMode, ForumPoll, RoomSearchMode,
     EventsSort)
 
@@ -100,13 +100,6 @@ class TestComment(TestCase):
 
         # comment on a deleted object
         api.comment(3)
-
-class TestDownloadScore(TestCase):
-    def test_deserialize(self):
-        # api instance is using client credentials which doesn't have access to
-        # downloading replays
-        self.assertRaises(AccessDeniedError,
-            lambda: api.download_score(mode="osu", score_id=2797309065))
 
 class TestSearchBeatmaps(TestCase):
     def test_deserialize(self):
@@ -292,6 +285,13 @@ class TestRooms(TestCaseAuthorizationCode):
         api_full.rooms()
         api_full.rooms(mode=RoomSearchMode.OWNED)
 
+class TestDownloadScore(TestCaseAuthorizationCode):
+    def test_deserialize(self):
+        api_full.download_score(429915881)
+
+class TestDownloadScoreMode(TestCaseAuthorizationCode):
+    def test_deserialize(self):
+        api_full.download_score_mode("osu", score_id=2243145877)
 
 # ==================
 # api_dev test cases
