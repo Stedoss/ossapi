@@ -2106,7 +2106,13 @@ class OssapiAsync:
         return await self._get(Matches, "/matches")
 
     @request(Scope.PUBLIC, category="matches")
-    async def match(self, match_id: MatchIdT) -> MatchResponse:
+    def match(self,
+        match_id: MatchIdT,
+        *,
+        after_id: Optional[int] = None,
+        before_id: Optional[int] = None,
+        limit: Optional[int] = None
+    ) -> MatchResponse:
         """
         Get a match (eg https://osu.ppy.sh/community/matches/97947404).
 
@@ -2120,7 +2126,8 @@ class OssapiAsync:
         Implements the `Get Match
         <https://osu.ppy.sh/docs/index.html#matchesmatch>`__ endpoint.
         """
-        return await self._get(MatchResponse, f"/matches/{match_id}")
+        params = {"after": after_id, "before": before_id, "limit": limit}
+        return self._get(MatchResponse, f"/matches/{match_id}", params=params)
 
 
     # /me
