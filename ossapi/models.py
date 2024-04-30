@@ -446,7 +446,7 @@ class BeatmapUserScores(Model):
 
 class BeatmapScores(Model):
     scores: List[Score]
-    userScore: Optional[BeatmapUserScore]
+    user_score: Optional[BeatmapUserScore] = Field(name="userScore")
 
 
 class CommentableMeta(Model):
@@ -1440,7 +1440,7 @@ class MatchResponse(Model):
 
 class _NonLegacyBeatmapScores(Model):
     scores: List[_NonLegacyScore]
-    userScore: Optional[_NonLegacyBeatmapUserScore]
+    user_score: Optional[_NonLegacyBeatmapUserScore] = Field(name="userScore")
 
 
 class _NonLegacyMod(BaseModel):
