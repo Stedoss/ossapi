@@ -1521,3 +1521,6 @@ class _NonLegacyScore(Model):
     _user: Optional[UserCompact] = Field(name="user")
     match: Optional[ScoreMatchInfo]
     type: str
+
+    def user(self) -> Union[UserCompact, User]:
+        return self._fk_user(self.user_id, existing=self._user)
