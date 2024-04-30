@@ -436,6 +436,9 @@ class BeatmapUserScore(Model):
     position: int
     score: Score
 
+class _NonLegacyBeatmapUserScore(Model):
+    position: int
+    score: _NonLegacyScore
 
 class BeatmapUserScores(Model):
     scores: List[Score]
@@ -1437,7 +1440,7 @@ class MatchResponse(Model):
 
 class _NonLegacyBeatmapScores(Model):
     scores: List[_NonLegacyScore]
-    userScore: Optional[BeatmapUserScore]
+    userScore: Optional[_NonLegacyBeatmapUserScore]
 
 
 class _NonLegacyMod(BaseModel):
