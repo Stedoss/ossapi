@@ -1305,7 +1305,8 @@ class Ossapi:
             "mods": mods,
             "type": type,
             "limit": limit,
-            "legacy_only": legacy_only,
+            # actually an int in the api spec
+            "legacy_only": None if legacy_only is None else int(legacy_only),
         }
         return self._get(
             _NonLegacyBeatmapScores, f"/beatmaps/{beatmap_id}/solo-scores", params
