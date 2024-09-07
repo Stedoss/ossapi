@@ -239,9 +239,9 @@ class TestScore(TestCase):
         api.score(1312718771)
 
         # other gamemodes
-        api.score(1874611010) # taiko
-        api.score(2238254261) # mania
-        api.score(1958862712) # catch
+        api.score(1874611010)  # taiko
+        api.score(2238254261)  # mania
+        api.score(1958862712)  # catch
 
 
 class TestScoreMode(TestCase):
