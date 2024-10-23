@@ -219,6 +219,8 @@ class User(UserCompact):
     playstyle: Optional[PlayStyles]
     post_count: int
     profile_order: List[ProfilePage]
+    profile_hue: Optional[int]
+    daily_challenge_user_stats: DailyChallengeUserStats
     title: Optional[str]
     title_url: Optional[str]
     twitter: Optional[str]
@@ -1436,6 +1438,17 @@ class MatchResponse(Model):
     latest_event_id: int
     current_game_id: Optional[int]
 
+class DailyChallengeUserStats(Model):
+    daily_streak_best: int
+    daily_streak_current: int
+    last_update: Datetime
+    last_weekly_streak: Datetime
+    playcount: int
+    top_10p_placements: int
+    top_50p_placements: int
+    user_id: int
+    weekly_streak_best: int
+    weekly_streak_current: int
 
 # ==================
 # Provisional Models
