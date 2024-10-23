@@ -1293,8 +1293,8 @@ class UserStatistics(Model):
     level: UserLevel
     maximum_combo: int
     play_count: int
-    play_time: int
-    pp: float
+    play_time: Optional[int]
+    pp: Optional[float]
     pp_exp: float
     global_rank: Optional[int]
     global_rank_exp: Optional[float]
