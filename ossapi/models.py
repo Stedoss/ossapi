@@ -642,7 +642,7 @@ class Rankings(Model):
     cursor: CursorT
     ranking: Union[List[UserStatistics], List[CountryStatistics]]
     spotlight: Optional[Spotlight]
-    total: int
+    total: Optional[int]
 
 
 class BeatmapsetDiscussionPost(Model):
