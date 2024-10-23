@@ -1301,6 +1301,7 @@ class UserStatistics(Model):
     # deprecated, replaced by global_rank and country_rank
     rank: Optional[Any]
     ranked_score: int
+    rank_change_since_30_days: Optional[int]
     replays_watched_by_others: int
     total_hits: int
     total_score: int
