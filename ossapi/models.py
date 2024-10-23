@@ -1132,6 +1132,7 @@ class BeatmapsetEventCommentNominate(Model):
 
 
 class BeatmapsetEventCommentWithNominators(BeatmapsetEventCommentNoPost):
+    beatmap_ids: Optional[List[int]]
     nominator_ids: Optional[List[int]]
 
 
