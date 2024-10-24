@@ -239,6 +239,7 @@ class RoomCategory(EnumModel):
     NORMAL = "normal"
     SPOTLIGHT = "spotlight"
     FEATURED_ARTIST = "featured_artist"
+    DAILY_CHALLENGE = "daily_challenge"
 
 
 class MatchEventType(EnumModel):
