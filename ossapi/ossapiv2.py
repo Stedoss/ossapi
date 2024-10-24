@@ -2882,6 +2882,23 @@ class Ossapi:
         return self._get(User, f"/users/{user}/{mode.value if mode else ''}", params)
 
     @request(Scope.PUBLIC, category="users")
+    def users_lookup(self, users: List[Union[UserIdT, str]]):
+        """
+        Batch get users by id or username. If you only want to retrieve a single
+        user, or want to retrieve users by username instead of id, see :meth:`user`.
+
+        If you want to batch retrieve users by id (instead of username), use :meth:`users`,
+        which returns more data than :meth:`users_lookup`.
+
+        Parameters
+        ---------
+        users
+            The user ids or usernames to get.
+        """
+        params = {"ids": users}
+        return self._get(Users, "/users/lookup", params).users
+
+    @request(Scope.PUBLIC, category="users")
     def users(self, user_ids: List[int]) -> List[UserCompact]:
         """
         Batch get users by id. If you only want to retrieve a single user, or
