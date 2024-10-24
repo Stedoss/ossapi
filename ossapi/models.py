@@ -437,7 +437,7 @@ class Score(Model):
     processed: bool
     replay: bool
     maximum_statistics: Any  # TODO property typing
-    mods: _NonLegacyMod
+    mods: List[NonLegacyMod]
     ruleset_id: int
     started_at: Optional[Datetime]
     ended_at: Optional[Datetime]
@@ -1534,23 +1534,6 @@ class DailyChallengeUserStats(Model):
     weekly_streak_current: int
 
 
-# ==================
-# Provisional Models
-# ==================
-
-
-class _NonLegacyMod(BaseModel):
-    # returned in a new format. e.g.:
-    # "mods": [
-    #      {
-    #          "acronym": "HR"
-    #      },
-    #      {
-    #          "acronym": "HD"
-    #      },
-    #      {
-    #          "acronym": "CL"
-    #      }
-    #  ],
-    def __init__(self, value):
-        self.value = value
+class NonLegacyMod(Model):
+    acronym: str
+    settings: Any
