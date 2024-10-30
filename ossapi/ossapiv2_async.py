@@ -714,6 +714,7 @@ class OssapiAsync:
             auto_refresh_kwargs=auto_refresh_kwargs,
             token_updater=self._save_token,
             scope=[scope.value for scope in scopes],
+            api_version=self.api_version,
         )
 
         authorization_url, _state = session.authorization_url(self.auth_code_url)
@@ -903,6 +904,9 @@ class OssapiAsync:
                 del params[key]
             elif isinstance(value, Mod):
                 params[f"{key}[]"] = value.decompose()
+                del params[key]
+            elif value is None:
+                # requests does this for us, but not aiohttp for whatever reason.
                 del params[key]
             else:
                 params[key] = self._format_value(value)
