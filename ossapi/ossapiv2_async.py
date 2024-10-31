@@ -1069,6 +1069,7 @@ class OssapiAsync:
             # deserialize any of them.
             fail_reasons = []
             for arg in args:
+                self.log.debug(f"trying type {arg} for union {type_}")
                 try:
                     import copy
 
@@ -1078,8 +1079,13 @@ class OssapiAsync:
                     # fix it here, as we may reuse `value`.
                     new_value = self._instantiate_type(arg, v, obj, attr_name)
                 except Exception as e:
+                    self.log.debug(
+                        f"failed to satisfy type {arg} when instantiating "
+                        f"union {type_}, trying next type in the union. (reason: {e})"
+                    )
                     fail_reasons.append(str(e))
                     continue
+                break
 
             if new_value is None:
                 raise ValueError(
