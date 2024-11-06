@@ -139,14 +139,13 @@ class Oauth2SessionAsync(OAuth2Session):
     def __init__(self, *args, api_version, **kwargs):
         super().__init__(*args, **kwargs)
 
-        headers = {
+        self._headers = {
             "User-Agent": f"ossapi (v{ossapi.__version__})",
             "x-api-version": str(api_version),
         }
-        self.headers.update(headers)
 
     # this method is shamelessly copied from `OAuth2Session.request`, modified
-    # to call `self.session.request` instead of `super().request`.
+    # to call the passed `session.request` instead of `super().request`.
     # Any OAuth2Session code which calls `request` will remain sync, but we have
     # control over the vast majority of code which interacts with the session
     # object and can switch to calling this async function instead.
@@ -195,6 +194,7 @@ class Oauth2SessionAsync(OAuth2Session):
                 else:
                     raise
 
+        headers = self._headers | headers
         return await session.request(method, url, headers=headers, data=data, **kwargs)
 
 
