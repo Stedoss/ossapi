@@ -985,6 +985,7 @@ class NewsPost(Model):
     author: str
     edit_url: str
     first_image: Optional[str]
+    first_image_2x: Field(name="first_image@2x", type=Optional[str])
     id: int
     published_at: Datetime
     slug: str
