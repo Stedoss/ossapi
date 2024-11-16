@@ -440,7 +440,7 @@ class Score(Model):
     mods: List[NonLegacyMod]
     ruleset_id: int
     started_at: Optional[Datetime]
-    ended_at: Optional[Datetime]
+    ended_at: Datetime
     ranked: bool
     preserve: bool
     beatmap_id: int
