@@ -1145,12 +1145,12 @@ class BeatmapsetEventComment(Model):
 
 class BeatmapsetEventCommentNoPost(Model):
     beatmap_discussion_id: int
-    beatmap_discussion_post_id: None
+    beatmap_discussion_post_id: int
 
 
 class BeatmapsetEventCommentNone(Model):
-    beatmap_discussion_id: None
-    beatmap_discussion_post_id: None
+    beatmap_discussion_id: int
+    beatmap_discussion_post_id: int
 
 
 class BeatmapsetEventCommentChange(Generic[S], BeatmapsetEventCommentNone):
