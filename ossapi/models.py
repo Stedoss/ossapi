@@ -1176,6 +1176,7 @@ class BeatmapsetEventCommentOwnerChange(BeatmapsetEventCommentNone):
     beatmap_version: str
     new_user_id: int
     new_user_username: str
+    new_users: List[int]
 
 
 class BeatmapsetEventCommentNominate(Model):
