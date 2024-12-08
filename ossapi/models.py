@@ -68,6 +68,7 @@ from ossapi.enums import (
     BeatmapPackUserCompletionData,
     RoomPlaylistItemStats,
     RoomDifficultyRange,
+    BeatmapOwner,
 )
 from ossapi.utils import Datetime, Model, BaseModel, Field
 
@@ -292,6 +293,9 @@ class Beatmap(BeatmapCompact):
     # This is optional as a workaround until
     # https://github.com/ppy/osu-web/issues/9784 is resolved.
     owner: Field(name="user", type=Optional[UserCompact])
+    # TODO does the new addition of this owners attribute deprecate the owner
+    # attribute?
+    owners: Optional[List[BeatmapOwner]]
 
     # overridden fields
     # -----------------

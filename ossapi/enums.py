@@ -872,3 +872,8 @@ class RoomPlaylistItemStats(Model):
 class RoomDifficultyRange(Model):
     min: float
     max: float
+
+
+class BeatmapOwner(Model):
+    id: int
+    username: str

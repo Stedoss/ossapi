@@ -56,8 +56,13 @@ class TestBeatmapScores(TestCase):
 class TestBeatmap(TestCase):
     def test_deserialize(self):
         api.beatmap(beatmap_id=221777)
+        # beatmap with multiple owners (.owners)
+        bm = api.beatmap(beatmap_id=4060023)
+        # see https://discord.com/channels/188630481301012481/
+        # 188630616286167041/1315396179655262239
+        assert bm.owner is None
 
-        # beatmap with a diff owner
+        # beatmap with a diff owner (.owner)
         bm = api.beatmap(beatmap_id=1604098)
         # might need to be updated when
         # https://github.com/ppy/osu-web/issues/9784 is addressed.
