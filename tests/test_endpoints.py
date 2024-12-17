@@ -78,6 +78,7 @@ class TestBeatmapsetEvents(TestCase):
     def test_deserialize(self):
         api.beatmapset_events()
         api.beatmapset_events(beatmapset_id=1339615)
+        api.beatmapset_events(beatmapset_id=692322)
 
     def test_all_types(self):
         # beatmapset_events is a really complicated endpoint in terms of return

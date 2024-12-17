@@ -1253,7 +1253,11 @@ class BeatmapsetEvent(Model):
             BeatmapsetEventType.NSFW_TOGGLE: BeatmapsetEventCommentChange[bool],
         }
         type_ = BeatmapsetEventType(data["type"])
-        return {"comment": mapping[type_]}
+        # some events don't seem to have an associate comment, eg
+        #   api.beatmapset_events(beatmapset_id=692322)
+        # I don't know under what circumstances this does or does not happen, so
+        # I am marking all comments as optional.
+        return {"comment": Optional[mapping[type_]]}
 
     def user(self) -> Optional[User]:
         return self._fk_user(self.user_id)
