@@ -898,12 +898,21 @@ class Ossapi:
         # because if we got here that means we were passed a value for this
         # attribute, so we know it's defined and not optional.
         if is_optional(type_):
-            # leaving these assertions in to help me catch errors in my
-            # reasoning until I better understand python's typing.
-            assert len(args) == 2
-            type_ = args[0]
-            origin = get_origin(type_)
-            args = get_args(type_)
+            assert len(args) >= 2
+            # two args is the standard, for Optional[T] = Union[T, None].
+            # but we could also have Union[T, None, V] which passes is_optional
+            # but we want to unwrap differently to preserve the Union[T, V].
+            if len(args) == 2:
+                type_ = args[0]
+                origin = get_origin(type_)
+                args = get_args(type_)
+            else:
+                # should we be changing type_ here? it's not technically correct
+                # anymore, we'd have to remove None from the union. But I don't
+                # know if we rely on type_ instead of args anywhere, and I don't
+                # know how to create a new type instance.
+                origin = get_origin(type_)
+                args = tuple(t for t in get_args(type_) if t is not type(None))
 
         # validate that the values we're receiving are the types we expect them
         # to be

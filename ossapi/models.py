@@ -1229,7 +1229,14 @@ class BeatmapsetEvent(Model):
             BeatmapsetEventType.DISCUSSION_RESTORE: BeatmapsetEventCommentNoPost,
             # same here
             # BeatmapsetEventType.DISCUSSION_UNLOCK: BeatmapsetEventComment,
-            BeatmapsetEventType.DISQUALIFY: BeatmapsetEventCommentWithNominators,
+            # Some events have a comment that is *just a string*.
+            #   api.beatmapset_events(beatmapset_id=724033)
+            # I've only seen this for "type": "disqualify", but who knows where
+            # else it could happen. I've preemptively marked NOMINATION_RESET as
+            # taking a string also.
+            BeatmapsetEventType.DISQUALIFY: Union[
+                BeatmapsetEventCommentWithNominators, str
+            ],
             # same here
             # BeatmapsetEventType.DISQUALIFY_LEGACY: BeatmapsetEventComment
             BeatmapsetEventType.GENRE_EDIT: BeatmapsetEventCommentChange[str],
@@ -1245,7 +1252,9 @@ class BeatmapsetEvent(Model):
             BeatmapsetEventType.NOMINATE: BeatmapsetEventCommentNominate,
             # same here
             # BeatmapsetEventType.NOMINATE_MODES: BeatmapsetEventComment,
-            BeatmapsetEventType.NOMINATION_RESET: BeatmapsetEventCommentWithNominators,
+            BeatmapsetEventType.NOMINATION_RESET: Union[
+                BeatmapsetEventCommentWithNominators, str
+            ],
             BeatmapsetEventType.NOMINATION_RESET_RECEIVED: BeatmapsetEventCommentWithSourceUser,
             BeatmapsetEventType.QUALIFY: type(None),
             BeatmapsetEventType.RANK: type(None),
