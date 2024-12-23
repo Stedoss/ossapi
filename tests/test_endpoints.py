@@ -80,6 +80,7 @@ class TestBeatmapsetEvents(TestCase):
         api.beatmapset_events(beatmapset_id=1339615)
         api.beatmapset_events(beatmapset_id=692322)
         api.beatmapset_events(beatmapset_id=724033)
+        api.beatmapset_events(beatmapset_id=1112418)
 
     def test_all_types(self):
         # beatmapset_events is a really complicated endpoint in terms of return

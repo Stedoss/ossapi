@@ -741,7 +741,11 @@ class BeatmapsetDiscussion(Model):
     current_user_attributes: Any
     updated_at: Datetime
     deleted_at: Optional[Datetime]
-    last_post_at: Datetime
+    # marked as required in the docs, but null in
+    #   api.beatmapset_events(beatmapset_id=1112418)
+    # due to this post
+    # https://osu.ppy.sh/beatmapsets/1112418/discussion/-/generalAll#/1633002
+    last_post_at: Optional[Datetime]
     kudosu_denied: bool
     starting_post: Optional[BeatmapsetDiscussionPost]
     posts: Optional[List[BeatmapsetDiscussionPost]]
