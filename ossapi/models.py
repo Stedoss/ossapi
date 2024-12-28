@@ -1424,7 +1424,7 @@ class _Room1(Model):
     type: RoomType
     user_id: int
     starts_at: Datetime
-    ends_at: Datetime
+    ends_at: Optional[Datetime]
     max_attempts: Optional[int]
     participant_count: int
     channel_id: int
@@ -1444,7 +1444,7 @@ class Room(Model):
     type: RoomType
     user_id: int
     starts_at: Datetime
-    ends_at: Datetime
+    ends_at: Optional[Datetime]
     max_attempts: Optional[int]
     participant_count: int
     channel_id: int
