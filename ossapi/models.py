@@ -971,6 +971,28 @@ class MultiplayerScore(Model):
     position: Optional[int]
     scores_around: Optional[MultiplayerScoresAround]
     user: User
+    solo_score_id: int
+    classic_total_score: int
+    preserve: bool
+    processed: bool
+    ranked: bool
+    maximum_statistics: Statistics
+    total_score_without_mods: int
+    best_id: Optional[int]
+    type: str
+    accuracy: float
+    build_id: int
+    ended_at: Datetime
+    is_perfect_combo: bool
+    replay: bool
+    pp: float
+    started_at: Datetime
+    ruleset_id: int
+    current_user_attributes: Any
+    has_replay: bool
+    legacy_perfect: bool
+    legacy_score_id: int
+    legacy_total_score: int
 
     def beatmap(self):
         return self._fk_beatmap(self.beatmap_id)
