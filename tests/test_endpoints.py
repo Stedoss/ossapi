@@ -319,6 +319,11 @@ class TestBeatmapPack(TestCase):
         api.beatmap_pack("A1")
 
 
+class TestMultiplayerScores(TestCase):
+    def test_deserialize(self):
+        api.multiplayer_scores(1057998, 11773230)
+
+
 # ======================
 # api_full test cases
 # ======================

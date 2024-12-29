@@ -2432,8 +2432,6 @@ class Ossapi:
     # /rooms
     # ------
 
-    # TODO add test for this once I figure out values for room_id and
-    # playlist_id that actually produce a response lol
     @request(Scope.PUBLIC, category="rooms")
     def multiplayer_scores(
         self,
