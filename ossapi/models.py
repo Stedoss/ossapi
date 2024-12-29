@@ -950,7 +950,7 @@ class ChangelogListing(Model):
 
 class MultiplayerScores(Model):
     cursor_string: CursorStringT
-    params: str
+    params: Any
     scores: List[MultiplayerScore]
     total: Optional[int]
     user_score: Optional[MultiplayerScore]
