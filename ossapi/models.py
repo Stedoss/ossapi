@@ -962,7 +962,7 @@ class MultiplayerScore(Model):
     room_id: int
     playlist_item_id: int
     beatmap_id: int
-    rank: int
+    rank: Grade
     total_score: int
     max_combo: int
     mods: List[Mod]
