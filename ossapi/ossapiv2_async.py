@@ -2673,7 +2673,7 @@ class OssapiAsync:
         self, mode: GameModeT, *, cursor_string: Optional[str] = None
     ) -> Scores:
         """
-        Returns all passed scores.
+        Returns most recent 1000 passed scores across all users.
 
         Parameters
         ----------
