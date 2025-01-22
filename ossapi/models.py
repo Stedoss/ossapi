@@ -1103,7 +1103,7 @@ class BeatmapPack(Model):
 class Scores(Model):
     cursor: CursorT
     cursor_string: CursorStringT
-    scores: Field(type=List[Score])
+    scores: List[Score]
 
 
 # ================
