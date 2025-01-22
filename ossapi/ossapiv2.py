@@ -77,6 +77,7 @@ from ossapi.models import (
     Events,
     BeatmapPack,
     BeatmapPacks,
+    Scores,
 )
 from ossapi.enums import (
     GameMode,
@@ -2568,6 +2569,28 @@ class Ossapi:
         <https://osu.ppy.sh/docs/index.html#scoresmodescore>`__ endpoint.
         """
         return self._get(Score, f"/scores/{score_id}")
+
+    @request(Scope.PUBLIC, category="scores")
+    def scores(
+        self, mode: GameModeT, *, cursor_string: Optional[str] = None
+    ) -> Scores:
+        """
+        Returns most recent 1000 passed scores across all users.
+
+        Parameters
+        ----------
+        mode
+            The mode to get scores for.
+        cursor_string
+            Cursor for pagination.
+
+        Notes
+        -----
+        Implements the `Get Scores
+        <https://osu.ppy.sh/docs/index.html#get-scores94>`__ endpoint.
+        """
+        params = {"mode": mode.value, "cursor_string": cursor_string}
+        return self._get(Scores, "/scores", params)
 
     @request(Scope.PUBLIC, category="scores")
     def score_mode(self, mode: GameModeT, score_id: int) -> Score:

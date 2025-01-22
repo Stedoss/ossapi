@@ -324,6 +324,12 @@ class TestMultiplayerScores(TestCase):
         api.multiplayer_scores(1057998, 11773230)
 
 
+class TestScores(TestCase):
+    def test_deserialize(self):
+        scores = api.scores("osu")
+        api.scores("osu", cursor_string=scores.cursor_string)
+
+
 # ======================
 # api_full test cases
 # ======================
