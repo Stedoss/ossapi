@@ -1100,6 +1100,12 @@ class BeatmapPack(Model):
     user_completion_data: Optional[BeatmapPackUserCompletionData]
 
 
+class Scores(Model):
+    cursor: CursorT
+    cursor_string: CursorStringT
+    scores: Field(type=List[Score])
+
+
 # ================
 # Parameter Models
 # ================
