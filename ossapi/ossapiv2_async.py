@@ -90,6 +90,7 @@ from ossapi.models import (
     Events,
     BeatmapPack,
     BeatmapPacks,
+    Scores,
 )
 from ossapi.enums import (
     GameMode,
@@ -2648,7 +2649,7 @@ class OssapiAsync:
     # -------
 
     @request(Scope.PUBLIC, category="scores")
-    def score(self, score_id: int) -> Score:
+    async def score(self, score_id: int) -> Score:
         """
         Get a score. This corresponds to urls of the form https://osu.ppy.sh/scores/1312718771
         ("new id format").
@@ -2665,10 +2666,32 @@ class OssapiAsync:
         Implements the `Get Score
         <https://osu.ppy.sh/docs/index.html#scoresmodescore>`__ endpoint.
         """
-        return self._get(Score, f"/scores/{score_id}")
+        return await self._get(Score, f"/scores/{score_id}")
 
     @request(Scope.PUBLIC, category="scores")
-    def score_mode(self, mode: GameModeT, score_id: int) -> Score:
+    async def scores(
+        self, mode: GameModeT, *, cursor_string: Optional[str] = None
+    ) -> Scores:
+        """
+        Returns all passed scores.
+
+        Parameters
+        ----------
+        mode
+            The mode to get scores for.
+        cursor_string
+            Cursor for pagination.
+
+        Notes
+        -----
+        Implements the `Get Scores
+        <https://osu.ppy.sh/docs/index.html#get-scores94>`__ endpoint.
+        """
+        params = {"mode": mode.value, "cursor_string": cursor_string}
+        return await self._get(Scores, "/scores", params)
+
+    @request(Scope.PUBLIC, category="scores")
+    async def score_mode(self, mode: GameModeT, score_id: int) -> Score:
         """
         Get a score, where the score id is specific to the gamemode. This
         corresponds to urls of the form https://osu.ppy.sh/scores/osu/4459998279
@@ -2688,7 +2711,7 @@ class OssapiAsync:
         Implements the `Get Score
         <https://osu.ppy.sh/docs/index.html#scoresmodescore>`__ endpoint.
         """
-        return self._get(Score, f"/scores/{mode.value}/{score_id}")
+        return await self._get(Score, f"/scores/{mode.value}/{score_id}")
 
     async def _download_score(self, *, url, raw):
         from aiohttp import ClientSession, ContentTypeError
