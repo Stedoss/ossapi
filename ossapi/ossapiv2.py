@@ -2572,7 +2572,7 @@ class Ossapi:
 
     @request(Scope.PUBLIC, category="scores")
     def scores(
-        self, mode: GameModeT, *, cursor_string: Optional[str] = None
+        self, mode: Optional[GameModeT] = None, *, cursor_string: Optional[str] = None
     ) -> Scores:
         """
         Returns most recent 1000 passed scores across all users.
@@ -2589,7 +2589,7 @@ class Ossapi:
         Implements the `Get Scores
         <https://osu.ppy.sh/docs/index.html#get-scores94>`__ endpoint.
         """
-        params = {"mode": mode.value, "cursor_string": cursor_string}
+        params = {"mode": mode, "cursor_string": cursor_string}
         return self._get(Scores, "/scores", params)
 
     @request(Scope.PUBLIC, category="scores")

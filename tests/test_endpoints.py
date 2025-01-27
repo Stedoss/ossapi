@@ -326,6 +326,7 @@ class TestMultiplayerScores(TestCase):
 
 class TestScores(TestCase):
     def test_deserialize(self):
+        api.scores()
         scores = api.scores("osu")
         api.scores("osu", cursor_string=scores.cursor_string)
 
