@@ -440,7 +440,7 @@ class Score(Model):
     classic_total_score: int
     processed: bool
     replay: bool
-    maximum_statistics: Any  # TODO property typing
+    maximum_statistics: Statistics
     mods: List[NonLegacyMod]
     ruleset_id: int
     started_at: Optional[Datetime]
