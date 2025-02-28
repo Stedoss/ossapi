@@ -367,6 +367,7 @@ class TestRooms(TestCaseAuthorizationCode):
 class TestDownloadScore(TestCaseAuthorizationCode):
     def test_deserialize(self):
         api_full.download_score(429915881)
+        api_full.score(429915881).download()
 
 
 class TestDownloadScoreMode(TestCaseAuthorizationCode):

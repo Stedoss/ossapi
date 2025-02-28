@@ -495,7 +495,11 @@ class Score(Model):
         return self._fk_user(self.user_id, existing=self._user)
 
     def download(self):
-        return self._api.download_score(self.mode, self.id)
+        if hasattr(self, "mode"):
+            # _LegacyScore
+            return self._api.download_score_mode(self.mode, self.id)
+
+        return self._api.download_score(self.id)
 
 
 class BeatmapUserScore(Model):

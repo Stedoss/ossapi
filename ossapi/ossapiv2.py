@@ -1102,7 +1102,9 @@ class Ossapi:
                 kwargs_[k] = v
             else:
                 if self.strict:
-                    raise TypeError(f"unexpected parameter `{k}` for type {type_}")
+                    raise TypeError(
+                        f"unexpected parameter `{k}` for type {type_}. value: {v}"
+                    )
                 # this is an INFO log in spirit, but can be spammy with Union
                 # type resolution where the first union case hits nonfatal
                 # errors like this before a fatal error causes it to backtrack.
