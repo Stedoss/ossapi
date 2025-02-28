@@ -69,6 +69,8 @@ from ossapi.enums import (
     RoomPlaylistItemStats,
     RoomDifficultyRange,
     BeatmapOwner,
+    BeatmapTag,
+    Team,
 )
 from ossapi.utils import Datetime, Model, BaseModel, Field
 
@@ -201,6 +203,7 @@ class UserCompact(Model):
     user_achievements: Optional[List[UserAchievement]]
     user_preferences: Optional[UserProfileCustomization]
     session_verified: Optional[bool]
+    team: Optional[Team]
 
     def expand(self) -> User:
         return self._fk_user(self.id)
@@ -379,6 +382,7 @@ class Beatmapset(BeatmapsetCompact):
     storyboard: bool
     submitted_date: Optional[Datetime]
     tags: str
+    related_tags: list[BeatmapTag]
 
     def expand(self) -> Beatmapset:
         return self

@@ -501,6 +501,19 @@ class BeatmapPackType(EnumModel):
 # =================
 
 
+class Team(Model):
+    id: int
+    name: str
+    short_name: str
+    flag_url: Optional[str]
+
+
+class BeatmapTag(Model):
+    description: str
+    id: int
+    name: str
+
+
 class Failtimes(Model):
     exit: Optional[List[int]]
     fail: Optional[List[int]]
