@@ -356,6 +356,8 @@ class TestRoomLeaderboard(TestCaseAuthorizationCode):
     def test_deserialize(self):
         # https://osu.ppy.sh/multiplayer/rooms/232594
         api_full.room_leaderboard(232594)
+        # https://osu.ppy.sh/multiplayer/rooms/1222586 (daily challenge)
+        api_full.room_leaderboard(1222586, page=10)
 
 
 class TestRooms(TestCaseAuthorizationCode):
