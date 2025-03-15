@@ -1520,7 +1520,7 @@ class RoomLeaderboardUserScore(RoomLeaderboardScore):
 
 class RoomLeaderboard(Model):
     leaderboard: List[RoomLeaderboardScore]
-    user_score: RoomLeaderboardUserScore
+    user_score: Optional[RoomLeaderboardUserScore]
 
 
 class Match(Model):
