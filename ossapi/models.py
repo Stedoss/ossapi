@@ -1596,3 +1596,13 @@ class DailyChallengeUserStats(Model):
 class NonLegacyMod(Model):
     acronym: str
     settings: Any
+
+
+class Tag(Model):
+    id: int
+    name: str
+    description: str
+
+
+class Tags(Model):
+    tags: List[Tag]

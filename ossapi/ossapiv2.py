@@ -37,6 +37,8 @@ from ossapi.models import (
     Score,
     BeatmapsetSearchResult,
     ModdingHistoryEventsBundle,
+    Tag,
+    Tags,
     User,
     Rankings,
     BeatmapScores,
@@ -2729,6 +2731,22 @@ class Ossapi:
         """
         spotlights = self._get(Spotlights, "/spotlights")
         return spotlights.spotlights
+
+    # /tags
+    # -----
+
+    @request(Scope.PUBLIC, category="tags")
+    def tags(self) -> List[Tag]:
+        """
+        Get beatmap tags.
+
+        Notes
+        -----
+        Implements the `Get Tags
+        <https://osu.ppy.sh/docs/index.html#get-apiv2tags>`__ endpoint.
+        """
+        tags = self._get(Tags, "/tags")
+        return tags.tags
 
     # /users
     # ------
