@@ -1,7 +1,8 @@
 [project]
 name = "ossapi"
-version = "5.1.3"
-description = "Complete python wrapper for osu! api v2 and v1."
+# see [tool.setuptools.dynamic]
+dynamic = ["version"]
+description = "The definitive python wrapper for the osu! api"
 readme = "README.md"
 keywords = ["osu!", "wrapper", "api", "python"]
 authors = [
@@ -24,3 +25,6 @@ async = ["aiohttp"]
 
 [project.urls]
 "Homepage" = "https://github.com/tybug/ossapi"
+
+[tool.setuptools.dynamic]
+version = {attr = "ossapi.__version__"}
