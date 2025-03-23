@@ -50,6 +50,8 @@ from ossapi.models import (
     Score,
     BeatmapsetSearchResult,
     ModdingHistoryEventsBundle,
+    Tag,
+    Tags,
     User,
     Rankings,
     BeatmapScores,
@@ -2828,6 +2830,22 @@ class OssapiAsync:
         """
         spotlights = await self._get(Spotlights, "/spotlights")
         return spotlights.spotlights
+
+    # /tags
+    # -----
+
+    @request(Scope.PUBLIC, category="tags")
+    async def tags(self) -> List[Tag]:
+        """
+        Get beatmap tags.
+
+        Notes
+        -----
+        Implements the `Get Tags
+        <https://osu.ppy.sh/docs/index.html#get-apiv2tags>`__ endpoint.
+        """
+        tags = await self._get(Tags, "/tags")
+        return tags.tags
 
     # /users
     # ------

@@ -331,6 +331,11 @@ class TestScores(TestCase):
         api.scores("osu", cursor_string=scores.cursor_string)
 
 
+class TestTags(TestCase):
+    def test_deserialize(self):
+        api.tags()
+
+
 # ======================
 # api_full test cases
 # ======================
