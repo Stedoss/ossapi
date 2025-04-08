@@ -517,6 +517,7 @@ class BeatmapUserScores(Model):
 
 class BeatmapScores(Model):
     scores: List[Score]
+    score_count: int
     user_score: Field(name="userScore", type=Optional[BeatmapUserScore])
 
 
