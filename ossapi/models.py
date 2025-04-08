@@ -323,6 +323,7 @@ class BeatmapsetCompact(Model):
     artist: str
     artist_unicode: str
     covers: Covers
+    current_user_playcount: int
     creator: str
     favourite_count: int
     id: int
