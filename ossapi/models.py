@@ -382,6 +382,7 @@ class Beatmapset(BeatmapsetCompact):
     nominations_summary: Nominations
     ranked: RankStatus
     ranked_date: Optional[Datetime]
+    rating: float
     storyboard: bool
     submitted_date: Optional[Datetime]
     tags: str
