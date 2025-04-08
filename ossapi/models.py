@@ -275,6 +275,7 @@ class Beatmap(BeatmapCompact):
     accuracy: float
     ar: float
     bpm: Optional[float]
+    current_user_tag_ids: list[int]
     convert: bool
     count_circles: int
     count_sliders: int
@@ -286,6 +287,7 @@ class Beatmap(BeatmapCompact):
     is_scoreable: bool
     last_updated: Datetime
     mode_int: int
+    rating: float
     passcount: int
     playcount: int
     ranked: RankStatus
