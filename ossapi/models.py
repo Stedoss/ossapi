@@ -1076,6 +1076,9 @@ class BeatmapDifficultyAttributes(Model):
     slider_factor: Optional[float]
     speed_difficulty: Optional[float]
     speed_note_count: Optional[float]
+    aim_difficult_slider_count: Optional[float]
+    aim_difficult_strain_count: Optional[float]
+    speed_difficult_strain_count: Optional[float]
 
     # taiko attributes
     stamina_difficulty: Optional[float]
