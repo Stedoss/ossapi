@@ -515,8 +515,8 @@ class BeatmapTag(Model):
 
 
 class Failtimes(Model):
-    exit: Optional[List[int]]
-    fail: Optional[List[int]]
+    exit: Optional[list[int]]
+    fail: Optional[list[int]]
 
 
 class Ranking(Model):
@@ -583,7 +583,7 @@ class UserGroup(Model):
     short_name: str
     colour: Optional[str]
     description: Optional[GroupDescription]
-    playmodes: Optional[List[GameMode]]
+    playmodes: Optional[list[GameMode]]
     is_probationary: bool
     has_listing: bool
     has_playmodes: bool
@@ -674,12 +674,12 @@ class NominationsRequired(Model):
 class Nominations(Model):
     current: int
     required_meta: NominationsRequired
-    eligible_main_rulesets: Optional[List[GameMode]]
+    eligible_main_rulesets: Optional[list[GameMode]]
 
 
 class Nomination(Model):
     beatmapset_id: int
-    rulesets: List[GameMode]
+    rulesets: list[GameMode]
     reset: bool
     user_id: int
 
@@ -792,7 +792,7 @@ class RankHighest(Model):
 
 
 class BeatmapPackUserCompletionData(Model):
-    beatmapset_ids: List[int]
+    beatmapset_ids: list[int]
     completed: bool
 
 
@@ -868,7 +868,7 @@ class RankHistory(Model):
     # undocumented
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/RankHistoryTransformer.php
     mode: GameMode
-    data: List[int]
+    data: list[int]
 
 
 class Weight(Model):
@@ -879,7 +879,7 @@ class Weight(Model):
 class RoomPlaylistItemStats(Model):
     count_active: int
     count_total: int
-    ruleset_ids: List[int]
+    ruleset_ids: list[int]
 
 
 class RoomDifficultyRange(Model):

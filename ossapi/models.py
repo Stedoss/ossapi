@@ -2,7 +2,7 @@
 # https://docs.python.org/3.7/whatsnew/3.7.html#pep-563-postponed-evaluation-
 # of-annotations
 from __future__ import annotations
-from typing import Optional, TypeVar, Generic, Any, List, Union, Dict
+from typing import Optional, TypeVar, Generic, Any, Union
 from dataclasses import dataclass
 
 from ossapi.mod import Mod
@@ -159,38 +159,38 @@ class UserCompact(Model):
 
     # optional fields
     # ---------------
-    account_history: Optional[List[UserAccountHistory]]
+    account_history: Optional[list[UserAccountHistory]]
     active_tournament_banner: Optional[ProfileBanner]
-    active_tournament_banners: Optional[List[ProfileBanner]]
-    badges: Optional[List[UserBadge]]
+    active_tournament_banners: Optional[list[ProfileBanner]]
+    badges: Optional[list[UserBadge]]
     beatmap_playcounts_count: Optional[int]
     blocks: Optional[UserRelation]
     country: Optional[Country]
     cover: Optional[Cover]
     default_group: Optional[str]
     favourite_beatmapset_count: Optional[int]
-    follow_user_mapping: Optional[List[int]]
+    follow_user_mapping: Optional[list[int]]
     follower_count: Optional[int]
-    friends: Optional[List[UserRelation]]
+    friends: Optional[list[UserRelation]]
     graveyard_beatmapset_count: Optional[int]
-    groups: Optional[List[UserGroup]]
+    groups: Optional[list[UserGroup]]
     guest_beatmapset_count: Optional[int]
     is_restricted: Optional[bool]
     is_silenced: Optional[bool]
     loved_beatmapset_count: Optional[int]
     # undocumented
     mapping_follower_count: Optional[int]
-    monthly_playcounts: Optional[List[UserMonthlyPlaycount]]
+    monthly_playcounts: Optional[list[UserMonthlyPlaycount]]
     page: Optional[UserPage]
     pending_beatmapset_count: Optional[int]
-    previous_usernames: Optional[List[str]]
+    previous_usernames: Optional[list[str]]
     # deprecated, replaced by rank_history
     rankHistory: Optional[RankHistory]
     rank_history: Optional[RankHistory]
     # deprecated, replaced by ranked_beatmapset_count
     ranked_and_approved_beatmapset_count: Optional[int]
     ranked_beatmapset_count: Optional[int]
-    replays_watched_counts: Optional[List[UserReplaysWatchedCount]]
+    replays_watched_counts: Optional[list[UserReplaysWatchedCount]]
     scores_best_count: Optional[int]
     scores_first_count: Optional[int]
     scores_recent_count: Optional[int]
@@ -200,7 +200,7 @@ class UserCompact(Model):
     # deprecated, replaced by pending_beatmapset_count
     unranked_beatmapset_count: Optional[int]
     unread_pm_count: Optional[int]
-    user_achievements: Optional[List[UserAchievement]]
+    user_achievements: Optional[list[UserAchievement]]
     user_preferences: Optional[UserProfileCustomization]
     session_verified: Optional[bool]
     team: Optional[Team]
@@ -224,7 +224,7 @@ class User(UserCompact):
     playmode: str
     playstyle: Optional[PlayStyles]
     post_count: int
-    profile_order: List[ProfilePage]
+    profile_order: list[ProfilePage]
     profile_hue: Optional[int]
     daily_challenge_user_stats: DailyChallengeUserStats
     title: Optional[str]
@@ -300,7 +300,7 @@ class Beatmap(BeatmapCompact):
     owner: Field(name="user", type=Optional[UserCompact])
     # TODO does the new addition of this owners attribute deprecate the owner
     # attribute?
-    owners: Optional[List[BeatmapOwner]]
+    owners: Optional[list[BeatmapOwner]]
 
     # overridden fields
     # -----------------
@@ -344,9 +344,9 @@ class BeatmapsetCompact(Model):
 
     # optional fields
     # ---------------
-    beatmaps: Optional[List[Beatmap]]
+    beatmaps: Optional[list[Beatmap]]
     converts: Optional[Any]
-    current_nominations: Optional[List[Nomination]]
+    current_nominations: Optional[list[Nomination]]
     current_user_attributes: Optional[Any]
     description: Optional[Any]
     discussions: Optional[Any]
@@ -355,7 +355,7 @@ class BeatmapsetCompact(Model):
     has_favourited: Optional[bool]
     language: Optional[Any]
     nominations: Optional[Any]
-    pack_tags: Optional[List[str]]
+    pack_tags: Optional[list[str]]
     ratings: Optional[Any]
     recent_favourites: Optional[Any]
     related_users: Optional[Any]
@@ -449,7 +449,7 @@ class Score(Model):
     processed: bool
     replay: bool
     maximum_statistics: Statistics
-    mods: List[NonLegacyMod]
+    mods: list[NonLegacyMod]
     ruleset_id: int
     started_at: Optional[Datetime]
     ended_at: Datetime
@@ -512,11 +512,11 @@ class BeatmapUserScore(Model):
 
 
 class BeatmapUserScores(Model):
-    scores: List[Score]
+    scores: list[Score]
 
 
 class BeatmapScores(Model):
-    scores: List[Score]
+    scores: list[Score]
     score_count: int
     user_score: Field(name="userScore", type=Optional[BeatmapUserScore])
 
@@ -565,20 +565,20 @@ class Comment(Model):
 
 
 class CommentBundle(Model):
-    commentable_meta: List[CommentableMeta]
-    comments: List[Comment]
+    commentable_meta: list[CommentableMeta]
+    comments: list[Comment]
     cursor: CursorT
     has_more: bool
     has_more_id: Optional[int]
-    included_comments: List[Comment]
-    pinned_comments: Optional[List[Comment]]
+    included_comments: list[Comment]
+    pinned_comments: Optional[list[Comment]]
     # TODO this should be type CommentSort
     sort: str
     top_level_count: Optional[int]
     total: Optional[int]
     user_follow: bool
-    user_votes: List[int]
-    users: List[UserCompact]
+    user_votes: list[int]
+    users: list[UserCompact]
 
 
 class ForumPost(Model):
@@ -624,7 +624,7 @@ class ForumPollModel(Model):
     hide_incomplete_results: bool
     last_vote_at: Optional[Datetime]
     max_votes: int
-    options: List[ForumPollOption]
+    options: list[ForumPollOption]
     started_at: Datetime
     title: ForumPollTitle
     total_vote_count: int
@@ -639,7 +639,7 @@ class ForumPollOption(Model):
 class ForumTopicAndPosts(Model):
     cursor: CursorT
     search: ForumTopicSearch
-    posts: List[ForumPost]
+    posts: list[ForumPost]
     topic: ForumTopic
     cursor_string: CursorStringT
 
@@ -657,7 +657,7 @@ class ForumTopicSearch(Model):
 
 
 class SearchResult(Generic[T], Model):
-    data: List[T]
+    data: list[T]
     total: int
 
 
@@ -667,9 +667,9 @@ class WikiPage(Model):
     markdown: str
     path: str
     subtitle: Optional[str]
-    tags: List[str]
+    tags: list[str]
     title: str
-    available_locales: List[str]
+    available_locales: list[str]
 
 
 class Search(Model):
@@ -688,29 +688,29 @@ class Spotlight(Model):
 
 
 class Spotlights(Model):
-    spotlights: List[Spotlight]
+    spotlights: list[Spotlight]
 
 
 # return-value wrapper for https://osu.ppy.sh/docs/index.html#get-users.
 class Users(Model):
-    users: List[UserCompact]
+    users: list[UserCompact]
 
 
 # return-value wrapper for https://osu.ppy.sh/docs/index.html#get-beatmaps.
 class Beatmaps(Model):
-    beatmaps: List[Beatmap]
+    beatmaps: list[Beatmap]
 
 
 class BeatmapPacks(Model):
     cursor: CursorT
     cursor_string: CursorStringT
-    beatmap_packs: List[BeatmapPack]
+    beatmap_packs: list[BeatmapPack]
 
 
 class Rankings(Model):
-    beatmapsets: Optional[List[Beatmapset]]
+    beatmapsets: Optional[list[Beatmapset]]
     cursor: CursorT
-    ranking: Union[List[UserStatistics], List[CountryStatistics]]
+    ranking: Union[list[UserStatistics], list[CountryStatistics]]
     spotlight: Optional[Spotlight]
     total: Optional[int]
 
@@ -761,7 +761,7 @@ class BeatmapsetDiscussion(Model):
     last_post_at: Optional[Datetime]
     kudosu_denied: bool
     starting_post: Optional[BeatmapsetDiscussionPost]
-    posts: Optional[List[BeatmapsetDiscussionPost]]
+    posts: Optional[list[BeatmapsetDiscussionPost]]
     _beatmap: Field(name="beatmap", type=Optional[BeatmapCompact])
     _beatmapset: Field(name="beatmapset", type=Optional[BeatmapsetCompact])
 
@@ -920,7 +920,7 @@ class Build(Model):
     update_stream: Optional[UpdateStream]
     users: int
     version: Optional[str]
-    changelog_entries: Optional[List[ChangelogEntry]]
+    changelog_entries: Optional[list[ChangelogEntry]]
     versions: Optional[Versions]
     youtube_id: Optional[str]
 
@@ -956,15 +956,15 @@ class ChangelogEntry(Model):
 
 
 class ChangelogListing(Model):
-    builds: List[Build]
+    builds: list[Build]
     search: ChangelogSearch
-    streams: List[UpdateStream]
+    streams: list[UpdateStream]
 
 
 class MultiplayerScores(Model):
     cursor_string: CursorStringT
     params: Any
-    scores: List[MultiplayerScore]
+    scores: list[MultiplayerScore]
     total: Optional[int]
     user_score: Optional[MultiplayerScore]
 
@@ -978,7 +978,7 @@ class MultiplayerScore(Model):
     rank: Grade
     total_score: int
     max_combo: int
-    mods: List[Mod]
+    mods: list[Mod]
     statistics: Statistics
     passed: bool
     position: Optional[int]
@@ -1012,14 +1012,14 @@ class MultiplayerScore(Model):
 
 
 class MultiplayerScoresAround(Model):
-    higher: List[MultiplayerScore]
-    lower: List[MultiplayerScore]
+    higher: list[MultiplayerScore]
+    lower: list[MultiplayerScore]
 
 
 class NewsListing(Model):
     cursor: CursorT
     cursor_string: CursorStringT
-    news_posts: List[NewsPost]
+    news_posts: list[NewsPost]
     news_sidebar: NewsSidebar
     search: NewsSearch
 
@@ -1046,13 +1046,13 @@ class NewsNavigation(Model):
 
 class NewsSidebar(Model):
     current_year: int
-    news_posts: List[NewsPost]
-    years: List[int]
+    news_posts: list[NewsPost]
+    years: list[int]
 
 
 class SeasonalBackgrounds(Model):
     ends_at: Datetime
-    backgrounds: List[SeasonalBackground]
+    backgrounds: list[SeasonalBackground]
 
 
 class SeasonalBackground(Model):
@@ -1098,7 +1098,7 @@ class BeatmapDifficultyAttributes(Model):
 class Events(Model):
     cursor: CursorT
     cursor_string: CursorStringT
-    events: Field(type=List[_Event])
+    events: Field(type=list[_Event])
 
 
 class BeatmapPack(Model):
@@ -1112,14 +1112,14 @@ class BeatmapPack(Model):
     url: str
 
     # optional attributes
-    beatmapsets: Optional[List[Beatmapset]]
+    beatmapsets: Optional[list[Beatmapset]]
     user_completion_data: Optional[BeatmapPackUserCompletionData]
 
 
 class Scores(Model):
     cursor: CursorT
     cursor_string: CursorStringT
-    scores: List[Score]
+    scores: list[Score]
 
 
 # ================
@@ -1131,7 +1131,7 @@ class Scores(Model):
 
 @dataclass
 class ForumPoll:
-    options: List[str]
+    options: list[str]
     title: str
 
     # default values taken from https://osu.ppy.sh/docs/index.html#create-topic
@@ -1147,7 +1147,7 @@ class ForumPoll:
 
 
 class BeatmapsetSearchResult(Model):
-    beatmapsets: List[Beatmapset]
+    beatmapsets: list[Beatmapset]
     cursor: CursorT
     recommended_difficulty: Optional[float]
     error: Optional[str]
@@ -1157,14 +1157,14 @@ class BeatmapsetSearchResult(Model):
 
 
 class BeatmapsetDiscussions(Model):
-    beatmaps: List[Beatmap]
+    beatmaps: list[Beatmap]
     cursor: CursorT
-    discussions: List[BeatmapsetDiscussion]
-    included_discussions: List[BeatmapsetDiscussion]
+    discussions: list[BeatmapsetDiscussion]
+    included_discussions: list[BeatmapsetDiscussion]
     reviews_config: ReviewsConfig
-    users: List[UserCompact]
+    users: list[UserCompact]
     cursor_string: Optional[str]
-    beatmapsets: List[Beatmapset]
+    beatmapsets: list[Beatmapset]
 
 
 class BeatmapsetDiscussionReview(Model):
@@ -1174,19 +1174,19 @@ class BeatmapsetDiscussionReview(Model):
 
 
 class BeatmapsetDiscussionPosts(Model):
-    beatmapsets: List[BeatmapsetCompact]
-    discussions: List[BeatmapsetDiscussion]
+    beatmapsets: list[BeatmapsetCompact]
+    discussions: list[BeatmapsetDiscussion]
     cursor: CursorT
-    posts: List[BeatmapsetDiscussionPost]
-    users: List[UserCompact]
+    posts: list[BeatmapsetDiscussionPost]
+    users: list[UserCompact]
     cursor_string: Optional[str]
 
 
 class BeatmapsetDiscussionVotes(Model):
     cursor: CursorT
-    discussions: List[BeatmapsetDiscussion]
-    votes: List[BeatmapsetDiscussionVote]
-    users: List[UserCompact]
+    discussions: list[BeatmapsetDiscussion]
+    votes: list[BeatmapsetDiscussionVote]
+    users: list[UserCompact]
     cursor_string: Optional[str]
 
 
@@ -1216,7 +1216,7 @@ class BeatmapsetEventCommentLovedRemoval(BeatmapsetEventCommentNone):
 
 class BeatmapsetEventCommentKudosuChange(BeatmapsetEventCommentNoPost):
     new_vote: KudosuVote
-    votes: List[KudosuVote]
+    votes: list[KudosuVote]
 
 
 class BeatmapsetEventCommentKudosuRecalculate(BeatmapsetEventCommentNoPost):
@@ -1228,19 +1228,19 @@ class BeatmapsetEventCommentOwnerChange(BeatmapsetEventCommentNone):
     beatmap_version: str
     new_user_id: int
     new_user_username: str
-    new_users: List[int]
+    new_users: list[int]
 
 
 class BeatmapsetEventCommentNominate(Model):
     # for some reason this comment type doesn't have the normal
     # beatmap_discussion_id and beatmap_discussion_post_id attributes (they're
     # not even null, just missing).
-    modes: List[GameMode]
+    modes: list[GameMode]
 
 
 class BeatmapsetEventCommentWithNominators(BeatmapsetEventCommentNoPost):
-    beatmap_ids: Optional[List[int]]
-    nominator_ids: Optional[List[int]]
+    beatmap_ids: Optional[list[int]]
+    nominator_ids: Optional[list[int]]
 
 
 class BeatmapsetEventCommentWithSourceUser(BeatmapsetEventCommentNoPost):
@@ -1334,8 +1334,8 @@ class ChatChannel(Model):
     # ---------------
     last_message_id: Optional[int]
     last_read_id: Optional[int]
-    recent_messages: Optional[List[ChatMessage]]
-    users: Optional[List[int]]
+    recent_messages: Optional[list[ChatMessage]]
+    users: Optional[list[int]]
 
 
 class ChatMessage(Model):
@@ -1367,15 +1367,15 @@ class CreatePMResponse(Model):
     channel: ChatChannel
 
     # documented but not present in response
-    presence: Optional[List[ChatChannel]]
+    presence: Optional[list[ChatChannel]]
 
 
 class ModdingHistoryEventsBundle(Model):
     # https://github.com/ppy/osu-web/blob/master/app/Libraries/ModdingHistor
     # yEventsBundle.php#L84
-    events: List[BeatmapsetEvent]
+    events: list[BeatmapsetEvent]
     reviewsConfig: BeatmapsetDiscussionReview
-    users: List[UserCompact]
+    users: list[UserCompact]
 
 
 class UserRelation(Model):
@@ -1427,7 +1427,7 @@ class UserStatistics(Model):
     total_hits: int
     total_score: int
     user: Optional[UserCompact]
-    variants: Optional[List[StatisticsVariant]]
+    variants: Optional[list[StatisticsVariant]]
 
 
 class UserStatisticsRulesets(Model):
@@ -1442,7 +1442,7 @@ class UserStatisticsRulesets(Model):
 
 class RoomPlaylistItemMod(Model):
     acronym: str
-    settings: Dict[str, Any]
+    settings: dict[str, Any]
 
 
 class RoomPlaylistItem(Model):
@@ -1450,8 +1450,8 @@ class RoomPlaylistItem(Model):
     room_id: int
     beatmap_id: int
     ruleset_id: int
-    allowed_mods: List[RoomPlaylistItemMod]
-    required_mods: List[RoomPlaylistItemMod]
+    allowed_mods: list[RoomPlaylistItemMod]
+    required_mods: list[RoomPlaylistItemMod]
     expired: bool
     owner_id: int
     # null for playlist items which haven't finished yet, I think
@@ -1477,8 +1477,8 @@ class _Room1(Model):
     queue_mode: str
     auto_skip: bool
     host: UserCompact
-    playlist: List[RoomPlaylistItem]
-    recent_participants: List[UserCompact]
+    playlist: list[RoomPlaylistItem]
+    recent_participants: list[UserCompact]
 
 
 class Room(Model):
@@ -1497,13 +1497,13 @@ class Room(Model):
     queue_mode: str
     auto_skip: bool
     host: UserCompact
-    playlist: List[RoomPlaylistItem]
+    playlist: list[RoomPlaylistItem]
 
     # new from _Room1
     playlist_item_stats: RoomPlaylistItemStats
     current_playlist_item: Optional[RoomPlaylistItem]
     difficulty_range: RoomDifficultyRange
-    recent_participants: List[UserCompact]
+    recent_participants: list[UserCompact]
 
     @staticmethod
     def override_attributes(data, api):
@@ -1527,7 +1527,7 @@ class RoomLeaderboardUserScore(RoomLeaderboardScore):
 
 
 class RoomLeaderboard(Model):
-    leaderboard: List[RoomLeaderboardScore]
+    leaderboard: list[RoomLeaderboardScore]
     user_score: Optional[RoomLeaderboardUserScore]
 
 
@@ -1540,7 +1540,7 @@ class Match(Model):
 
 
 class Matches(Model):
-    matches: List[Match]
+    matches: list[Match]
     cursor: CursorT
     params: Any
     cursor_string: CursorStringT
@@ -1555,13 +1555,13 @@ class MatchGame(Model):
     mode_int: int
     scoring_type: ScoringType
     team_type: TeamType
-    mods: List[Mod]
+    mods: list[Mod]
     # null for deleted beatmaps,
     # e.g. https://osu.ppy.sh/community/matches/103721175.
     # TODO doesn't match docs
     beatmap: Optional[BeatmapCompact]
     beatmap_id: int
-    scores: List[Score]
+    scores: list[Score]
 
 
 class MatchEventDetail(Model):
@@ -1581,8 +1581,8 @@ class MatchEvent(Model):
 
 class MatchResponse(Model):
     match: Match
-    events: List[MatchEvent]
-    users: List[UserCompact]
+    events: list[MatchEvent]
+    users: list[UserCompact]
     first_event_id: int
     latest_event_id: int
     current_game_id: Optional[int]
@@ -1613,4 +1613,4 @@ class Tag(Model):
 
 
 class Tags(Model):
-    tags: List[Tag]
+    tags: list[Tag]

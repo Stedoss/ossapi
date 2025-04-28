@@ -213,7 +213,7 @@ GameModeT = Union[GameMode, str]
 ScoreTypeT = Union[ScoreType, str]
 # XXX this cannot be recursively typed without breaking our runtime type hint
 # inspection.
-ModT = Union[Mod, str, int, List[Union[Mod, str, int]]]
+ModT = Union[Mod, str, int, list[Union[Mod, str, int]]]
 RankingFilterT = Union[RankingFilter, str]
 RankingTypeT = Union[RankingType, str]
 UserBeatmapTypeT = Union[UserBeatmapType, str]
@@ -450,7 +450,7 @@ class OssapiAsync:
         authentication from this redirect uri, it must be a port on localhost,
         e.g. "http://localhost:3914/". You can change your client's redirect uri
         from its settings page.
-    scopes: List[str]
+    scopes: list[str]
         What scopes to request when authenticating.
     grant: Grant or str
         Which oauth grant (aka flow) to use when authenticating with the api.
@@ -517,7 +517,7 @@ class OssapiAsync:
         client_id: int,
         client_secret: str,
         redirect_uri: Optional[str] = None,
-        scopes: List[Union[str, Scope]] = [Scope.PUBLIC],
+        scopes: list[Union[str, Scope]] = [Scope.PUBLIC],
         *,
         grant: Optional[Union[Grant, str]] = None,
         strict: bool = False,
@@ -1351,7 +1351,7 @@ class OssapiAsync:
         *,
         mode: Optional[GameModeT] = None,
         legacy_only: Optional[bool] = None,
-    ) -> List[Score]:
+    ) -> list[Score]:
         """
         Get all of a user's scores on a beatmap. If you only want the top user
         score, see :meth:`beatmap_user_score`.
@@ -1463,7 +1463,7 @@ class OssapiAsync:
         return await self._get(Beatmap, "/beatmaps/lookup", params)
 
     @request(Scope.PUBLIC, category="beatmaps")
-    async def beatmaps(self, beatmap_ids: List[BeatmapIdT]) -> List[Beatmap]:
+    async def beatmaps(self, beatmap_ids: list[BeatmapIdT]) -> list[Beatmap]:
         """
         Batch get beatmaps by id. If you only want to retrieve a single beatmap,
         or want to retrieve beatmaps by something other than id (eg checksum),
@@ -1632,7 +1632,7 @@ class OssapiAsync:
         beatmap_id: Optional[BeatmapIdT] = None,
         beatmapset_status: Optional[BeatmapsetStatusT] = None,
         limit: Optional[int] = None,
-        message_types: Optional[List[MessageTypeT]] = None,
+        message_types: Optional[list[MessageTypeT]] = None,
         only_unresolved: Optional[bool] = None,
         page: Optional[int] = None,
         sort: Optional[BeatmapDiscussionPostSortT] = None,
@@ -1846,7 +1846,7 @@ class OssapiAsync:
         limit: Optional[int] = None,
         page: Optional[int] = None,
         user_id: Optional[UserIdT] = None,
-        types: Optional[List[BeatmapsetEventTypeT]] = None,
+        types: Optional[list[BeatmapsetEventTypeT]] = None,
         min_date: Optional[datetime] = None,
         max_date: Optional[datetime] = None,
         beatmapset_id: Optional[BeatmapsetIdT] = None,
@@ -1921,7 +1921,7 @@ class OssapiAsync:
         to: Optional[str] = None,
         max_id: Optional[int] = None,
         stream: Optional[str] = None,
-        message_formats: List[ChangelogMessageFormat] = [
+        message_formats: list[ChangelogMessageFormat] = [
             ChangelogMessageFormat.HTML,
             ChangelogMessageFormat.MARKDOWN,
         ],
@@ -1964,7 +1964,7 @@ class OssapiAsync:
         changelog: str,
         *,
         key: Optional[str] = None,
-        message_formats: List[ChangelogMessageFormat] = [
+        message_formats: list[ChangelogMessageFormat] = [
             ChangelogMessageFormat.HTML,
             ChangelogMessageFormat.MARKDOWN,
         ],
@@ -2027,7 +2027,7 @@ class OssapiAsync:
         message: str,
         # TODO need to add support to automatic conversion for lists of id types
         # instead of just bare types (: UserIdT)
-        target_ids: List[UserIdT],
+        target_ids: list[UserIdT],
     ) -> ChatChannel:
         """
         Send an announcement message. You must be in the announce usergroup to
@@ -2296,7 +2296,7 @@ class OssapiAsync:
     # --------
 
     @request(Scope.FRIENDS_READ, category="friends")
-    async def friends(self) -> List[UserCompact]:
+    async def friends(self) -> list[UserCompact]:
         """
         Get the friends of the authenticated user.
 
@@ -2305,7 +2305,7 @@ class OssapiAsync:
         Implements the `Get Friends
         <https://osu.ppy.sh/docs/index.html#friends>`__ endpoint.
         """
-        return await self._get(List[UserCompact], "/friends")
+        return await self._get(list[UserCompact], "/friends")
 
     # / ("home")
     # ----------
@@ -2618,7 +2618,7 @@ class OssapiAsync:
         sort: Optional[str] = None,
         # TODO enumify
         type_group: Optional[str] = None,
-    ) -> List[Room]:
+    ) -> list[Room]:
         """
         Get the list of current rooms.
 
@@ -2647,7 +2647,7 @@ class OssapiAsync:
             "sort": sort,
             "type_group": type_group,
         }
-        return await self._get(List[Room], "/rooms", params=params)
+        return await self._get(list[Room], "/rooms", params=params)
 
     # /scores
     # -------
@@ -2819,7 +2819,7 @@ class OssapiAsync:
     # -----------
 
     @request(Scope.PUBLIC, category="spotlights")
-    async def spotlights(self) -> List[Spotlight]:
+    async def spotlights(self) -> list[Spotlight]:
         """
         Get active spotlights.
 
@@ -2835,7 +2835,7 @@ class OssapiAsync:
     # -----
 
     @request(Scope.PUBLIC, category="tags")
-    async def tags(self) -> List[Tag]:
+    async def tags(self) -> list[Tag]:
         """
         Get beatmap tags.
 
@@ -2857,7 +2857,7 @@ class OssapiAsync:
         *,
         limit: Optional[int] = None,
         offset: Optional[int] = None,
-    ) -> List[KudosuHistory]:
+    ) -> list[KudosuHistory]:
         """
         Get user kudosu history.
 
@@ -2876,7 +2876,7 @@ class OssapiAsync:
         <https://osu.ppy.sh/docs/index.html#get-user-kudosu>`__ endpoint.
         """
         params = {"limit": limit, "offset": offset}
-        return await self._get(List[KudosuHistory], f"/users/{user_id}/kudosu", params)
+        return await self._get(list[KudosuHistory], f"/users/{user_id}/kudosu", params)
 
     @request(Scope.PUBLIC, category="users")
     async def user_scores(
@@ -2889,7 +2889,7 @@ class OssapiAsync:
         limit: Optional[int] = None,
         offset: Optional[int] = None,
         legacy_only: Optional[bool] = None,
-    ) -> List[Score]:
+    ) -> list[Score]:
         """
         Get scores of a user.
 
@@ -2922,7 +2922,7 @@ class OssapiAsync:
             "legacy_only": None if legacy_only is None else int(legacy_only),
         }
         return await self._get(
-            List[Score], f"/users/{user_id}/scores/{type.value}", params
+            list[Score], f"/users/{user_id}/scores/{type.value}", params
         )
 
     @request(Scope.PUBLIC, category="users")
@@ -2933,7 +2933,7 @@ class OssapiAsync:
         *,
         limit: Optional[int] = None,
         offset: Optional[int] = None,
-    ) -> Union[List[Beatmapset], List[BeatmapPlaycount]]:
+    ) -> Union[list[Beatmapset], list[BeatmapPlaycount]]:
         """
         Get beatmaps of a user.
 
@@ -2960,9 +2960,9 @@ class OssapiAsync:
         """
         params = {"limit": limit, "offset": offset}
 
-        return_type = List[Beatmapset]
+        return_type = list[Beatmapset]
         if type is UserBeatmapType.MOST_PLAYED:
-            return_type = List[BeatmapPlaycount]
+            return_type = list[BeatmapPlaycount]
 
         return await self._get(
             return_type, f"/users/{user_id}/beatmapsets/{type.value}", params
@@ -2975,7 +2975,7 @@ class OssapiAsync:
         *,
         limit: Optional[int] = None,
         offset: Optional[int] = None,
-    ) -> List[Event]:
+    ) -> list[Event]:
         """
         Get recent activity of a user.
 
@@ -2996,7 +2996,7 @@ class OssapiAsync:
         """
         params = {"limit": limit, "offset": offset}
         return await self._get(
-            List[_Event], f"/users/{user_id}/recent_activity/", params
+            list[_Event], f"/users/{user_id}/recent_activity/", params
         )
 
     @request(Scope.PUBLIC, category="users")
@@ -3030,7 +3030,7 @@ class OssapiAsync:
         )
 
     @request(Scope.PUBLIC, category="users")
-    async def users_lookup(self, users: List[Union[UserIdT, str]]):
+    async def users_lookup(self, users: list[Union[UserIdT, str]]):
         """
         Batch get users by id or username. If you only want to retrieve a single
         user, or want to retrieve users by username instead of id, see :meth:`user`.
@@ -3048,7 +3048,7 @@ class OssapiAsync:
         return users.users
 
     @request(Scope.PUBLIC, category="users")
-    async def users(self, user_ids: List[int]) -> List[UserCompact]:
+    async def users(self, user_ids: list[int]) -> list[UserCompact]:
         """
         Batch get users by id. If you only want to retrieve a single user, or
         want to retrieve users by username instead of id, see :meth:`user`.
