@@ -80,6 +80,7 @@ from ossapi.models import (
     BeatmapPack,
     BeatmapPacks,
     Scores,
+    UserRelation,
 )
 from ossapi.enums import (
     GameMode,
@@ -2200,7 +2201,7 @@ class Ossapi:
     # --------
 
     @request(Scope.FRIENDS_READ, category="friends")
-    def friends(self) -> list[UserCompact]:
+    def friends(self) -> list[UserRelation]:
         """
         Get the friends of the authenticated user.
 
@@ -2209,7 +2210,10 @@ class Ossapi:
         Implements the `Get Friends
         <https://osu.ppy.sh/docs/index.html#friends>`__ endpoint.
         """
-        return self._get(list[UserCompact], "/friends")
+        return self._get(
+            list[UserRelation] if self.api_version >= 20241022 else list[UserCompact],
+            "/friends",
+        )
 
     # / ("home")
     # ----------
