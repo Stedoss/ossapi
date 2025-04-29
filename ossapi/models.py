@@ -1032,7 +1032,7 @@ class MultiplayerScore(Model):
     current_user_attributes: Any
     has_replay: bool
     legacy_perfect: bool
-    legacy_score_id: int
+    legacy_score_id: Optional[int]
     legacy_total_score: int
 
     def beatmap(self):
