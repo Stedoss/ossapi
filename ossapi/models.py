@@ -276,6 +276,9 @@ class Beatmap(BeatmapCompact):
     ar: float
     bpm: Optional[float]
     current_user_tag_ids: list[int]
+    # this might be non-optional? should test with client credentials grant.
+    current_user_playcount: Optional[int]
+    top_tag_ids: list[int]
     convert: bool
     count_circles: int
     count_sliders: int
