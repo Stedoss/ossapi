@@ -989,6 +989,7 @@ class ChangelogListing(Model):
 
 
 class MultiplayerScores(Model):
+    cursor: CursorT
     cursor_string: CursorStringT
     params: Any
     scores: list[MultiplayerScore]
