@@ -713,6 +713,7 @@ class BeatmapPacks(Model):
 class Rankings(Model):
     beatmapsets: Optional[list[Beatmapset]]
     cursor: CursorT
+    cursor_string: Optional[str]
     ranking: Union[list[UserStatistics], list[CountryStatistics]]
     spotlight: Optional[Spotlight]
     total: Optional[int]
