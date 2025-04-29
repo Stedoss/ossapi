@@ -234,6 +234,7 @@ class User(UserCompact):
     scores_pinned_count: int
     nominated_beatmapset_count: int
     rank_highest: Optional[RankHighest]
+    current_season_stats: Optional[SeasonStatistics]
 
     def expand(self) -> User:
         # we're already expanded, no need to waste an api call
@@ -692,6 +693,28 @@ class Spotlight(Model):
 
 class Spotlights(Model):
     spotlights: list[Spotlight]
+
+
+class SeasonDivision(Model):
+    colour_tier: str
+    id: int
+    image_url: str
+    name: str
+    threshold: float
+
+
+class Season(Model):
+    start_date: Datetime
+    end_date: Optional[Datetime]
+    name: str
+    room_count: int
+
+
+class SeasonStatistics(Model):
+    division: SeasonDivision
+    season: Season
+    rank: int
+    total_score: int
 
 
 # return-value wrapper for https://osu.ppy.sh/docs/index.html#get-users.
