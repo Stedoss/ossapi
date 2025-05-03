@@ -35,7 +35,7 @@ def is_base_model_type(type_):
 
 
 class Field:
-    def __init__(self, *, name=None, type=None):
+    def __init__(self, *, name=None, type):
         self.name = name
 
         # We use annotations for two distinct purposes: deserialization, and
