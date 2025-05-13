@@ -2689,7 +2689,7 @@ class OssapiAsync:
         Notes
         -----
         Implements the `Get Scores
-        <https://osu.ppy.sh/docs/index.html#get-scores94>`__ endpoint.
+        <https://osu.ppy.sh/docs/index.html#get-scores97>`__ endpoint.
         """
         params = {"ruleset": ruleset, "cursor_string": cursor_string}
         return await self._get(Scores, "/scores", params)
