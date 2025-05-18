@@ -2589,15 +2589,15 @@ class Ossapi:
 
     @request(Scope.PUBLIC, category="scores")
     def scores(
-        self, ruleset: Optional[GameModeT] = None, *, cursor_string: Optional[str] = None
+        self, mode: Optional[GameModeT] = None, *, cursor_string: Optional[str] = None
     ) -> Scores:
         """
         Returns most recent 1000 passed scores across all users.
 
         Parameters
         ----------
-        ruleset
-            The ruleset (gamemode) to get scores for.
+        mode
+            The mode to get scores for.
         cursor_string
             Cursor for pagination.
 
@@ -2606,7 +2606,7 @@ class Ossapi:
         Implements the `Get Scores
         <https://osu.ppy.sh/docs/index.html#get-scores97>`__ endpoint.
         """
-        params = {"ruleset": ruleset, "cursor_string": cursor_string}
+        params = {"ruleset": mode, "cursor_string": cursor_string}
         return self._get(Scores, "/scores", params)
 
     @request(Scope.PUBLIC, category="scores")
