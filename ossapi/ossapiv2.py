@@ -2498,7 +2498,7 @@ class Ossapi:
 
     @request(Scope.PUBLIC, category="rooms")
     def room_leaderboard(
-        self, room_id: RoomIdT, limit: Optional[int] = None, page: Optional[int] = None
+        self, room_id: RoomIdT,  limit: Optional[int] = None, page: Optional[int] = None
     ) -> RoomLeaderboard:
         """
         Get the leaderboard of a room.
@@ -2509,13 +2509,13 @@ class Ossapi:
             The room to get the leaderboard of.
         limit
             Maximum number of room scores to return.
-        offset
-            Offset for pagination.
+        page
+            Pagination for results.
 
         Notes
         -----
         Implements the `Get Room Leaderboard
-        <https://osu.ppy.sh/docs/index.html#roomsroomleaderboard>`__ endpoint.
+        <https://osu.ppy.sh/docs/index.html#get-apiv2roomsroomleaderboard>`__ endpoint.
         """
         params = {"limit": limit, "page": page}
         return self._get(
