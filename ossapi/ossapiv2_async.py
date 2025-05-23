@@ -2591,7 +2591,9 @@ class OssapiAsync:
         return await self._get(Room, f"/rooms/{room_id}")
 
     @request(Scope.PUBLIC, category="rooms")
-    async def room_leaderboard(self, room_id: RoomIdT) -> RoomLeaderboard:
+    async def room_leaderboard(
+        self, room_id: RoomIdT, limit: Optional[int] = None, page: Optional[int] = None
+    ) -> RoomLeaderboard:
         """
         Get the leaderboard of a room.
 
@@ -2599,13 +2601,20 @@ class OssapiAsync:
         ----------
         room_id
             The room to get the leaderboard of.
+        limit
+            Maximum number of room scores to return.
+        page
+            Pagination for results.
 
         Notes
         -----
         Implements the `Get Room Leaderboard
-        <https://osu.ppy.sh/docs/index.html#roomsroomleaderboard>`__ endpoint.
+        <https://osu.ppy.sh/docs/index.html#get-apiv2roomsroomleaderboard>`__ endpoint.
         """
-        return await self._get(RoomLeaderboard, f"/rooms/{room_id}/leaderboard")
+        params = {"limit": limit, "page": page}
+        return await self._get(
+            RoomLeaderboard, f"/rooms/{room_id}/leaderboard", params=params
+        )
 
     @request(Scope.PUBLIC, requires_user=True, category="rooms")
     async def rooms(
