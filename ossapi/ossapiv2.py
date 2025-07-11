@@ -2906,7 +2906,7 @@ class Ossapi:
             self,
             user_id: UserIdT,
             *,
-            beatmapset_ids: Optional[list[int]] = None,
+            beatmapset_ids: Optional[list[BeatmapsetIdT]] = None,
             exclude_converts: Optional[bool] = None,
             is_legacy: Optional[bool] = None,
             no_diff_reduction: Optional[bool] = None,
