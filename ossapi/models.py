@@ -1643,3 +1643,7 @@ class Tag(Model):
 
 class Tags(Model):
     tags: list[Tag]
+
+
+class BeatmapsPassed(Model):
+    beatmaps_passed: list[BeatmapCompact]

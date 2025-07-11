@@ -93,6 +93,7 @@ from ossapi.models import (
     BeatmapPack,
     BeatmapPacks,
     Scores,
+    BeatmapsPassed,
 )
 from ossapi.enums import (
     GameMode,
@@ -3007,6 +3008,50 @@ class OssapiAsync:
         return await self._get(
             list[_Event], f"/users/{user_id}/recent_activity/", params
         )
+
+    @request(Scope.PUBLIC, category="users")
+    async def search_beatmaps_passed(
+            self,
+            user_id: UserIdT,
+            *,
+            beatmapset_ids: Optional[list[int]] = None,
+            exclude_converts: Optional[bool] = None,
+            is_legacy: Optional[bool] = None,
+            no_diff_reduction: Optional[bool] = None,
+            ruleset_id: Optional[int] = None,
+    ) -> list[BeatmapCompact]:
+        """
+        Searches for the Beatmaps a User has passed by Beatmapset.
+
+        Parameters
+        ----------
+        user_id
+            The id of the user.
+        beatmapset_ids
+            The list of Beatmapsets.
+        exclude_converts
+            Whether to exclude converts.
+        is_legacy
+            Whether to consider legacy scores. `None` will return all scores.
+        no_diff_reduction
+            Whether to exclude diff reduction mods. Defaults to `True`.
+        ruleset_id
+            The Ruleset ID. `None` will search all rulesets.
+
+        Notes
+        -----
+        Implements the `Search Beatmaps Passed
+        <https://osu.ppy.sh/docs/index.html#search-beatmaps-passed>`__
+        endpoint.
+        """
+        params = {
+            "beatmapset_ids": beatmapset_ids,
+            "exclude_converts": exclude_converts if exclude_converts is None else int(exclude_converts),
+            "is_legacy": None if is_legacy is None else int(is_legacy),
+            "no_diff_reduction": None if no_diff_reduction is None else int(no_diff_reduction),
+            "ruleset_id": ruleset_id,
+        }
+        return (await self._get(BeatmapsPassed, f"/users/{user_id}/beatmaps-passed", params)).beatmaps_passed
 
     @request(Scope.PUBLIC, category="users")
     async def user(
