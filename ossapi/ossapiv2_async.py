@@ -3015,9 +3015,9 @@ class OssapiAsync:
             user_id: UserIdT,
             *,
             beatmapset_ids: Optional[list[BeatmapsetIdT]] = None,
-            exclude_converts: Optional[bool] = None,
+            exclude_converts: bool = False,
             is_legacy: Optional[bool] = None,
-            no_diff_reduction: Optional[bool] = None,
+            no_diff_reduction: bool = True,
             ruleset_id: Optional[int] = None,
     ) -> list[BeatmapCompact]:
         """
@@ -3046,9 +3046,9 @@ class OssapiAsync:
         """
         params = {
             "beatmapset_ids": beatmapset_ids,
-            "exclude_converts": exclude_converts if exclude_converts is None else int(exclude_converts),
+            "exclude_converts": exclude_converts,
             "is_legacy": None if is_legacy is None else int(is_legacy),
-            "no_diff_reduction": None if no_diff_reduction is None else int(no_diff_reduction),
+            "no_diff_reduction": no_diff_reduction,
             "ruleset_id": ruleset_id,
         }
         return (await self._get(BeatmapsPassed, f"/users/{user_id}/beatmaps-passed", params)).beatmaps_passed
