@@ -93,6 +93,7 @@ from ossapi.models import (
     BeatmapPack,
     BeatmapPacks,
     Scores,
+    BeatmapsPassed,
 )
 from ossapi.enums import (
     GameMode,
@@ -3007,6 +3008,53 @@ class OssapiAsync:
         return await self._get(
             list[_Event], f"/users/{user_id}/recent_activity/", params
         )
+
+    @request(Scope.PUBLIC, category="users")
+    async def search_beatmaps_passed(
+        self,
+        user_id: UserIdT,
+        beatmapset_ids: list[BeatmapsetIdT],
+        *,
+        exclude_converts: bool = False,
+        is_legacy: Optional[bool] = None,
+        no_diff_reduction: bool = True,
+        ruleset_id: Optional[int] = None,
+    ) -> list[BeatmapCompact]:
+        """
+        Searches for the beatmaps a user has passed, by beatmapset.
+
+        Parameters
+        ----------
+        user_id
+            The id of the user.
+        beatmapset_ids
+            The list of beatmapsets to search.
+        exclude_converts
+            Whether to exclude converts.
+        is_legacy
+            Whether to consider legacy scores. Defaults to returning all scores.
+        no_diff_reduction
+            Whether to exclude diff reduction mods. Defaults to ``True``.
+        ruleset_id
+            The ruleset to seach. Defaults to searching all rulesets.
+
+        Notes
+        -----
+        Implements the `Search Beatmaps Passed
+        <https://osu.ppy.sh/docs/index.html#search-beatmaps-passed>`__
+        endpoint.
+        """
+
+        params = {
+            "beatmapset_ids": beatmapset_ids,
+            "exclude_converts": None if exclude_converts is None else int(exclude_converts),
+            "is_legacy": None if is_legacy is None else int(is_legacy),
+            "no_diff_reduction": int(no_diff_reduction),
+            "ruleset_id": ruleset_id,
+        }
+        return (
+            await self._get(BeatmapsPassed, f"/users/{user_id}/beatmaps-passed", params)
+        ).beatmaps_passed
 
     @request(Scope.PUBLIC, category="users")
     async def user(
