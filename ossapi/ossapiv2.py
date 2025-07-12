@@ -2499,7 +2499,7 @@ class Ossapi:
 
     @request(Scope.PUBLIC, category="rooms")
     def room_leaderboard(
-        self, room_id: RoomIdT,  limit: Optional[int] = None, page: Optional[int] = None
+        self, room_id: RoomIdT, limit: Optional[int] = None, page: Optional[int] = None
     ) -> RoomLeaderboard:
         """
         Get the leaderboard of a room.
@@ -2903,32 +2903,32 @@ class Ossapi:
 
     @request(Scope.PUBLIC, category="users")
     def search_beatmaps_passed(
-            self,
-            user_id: UserIdT,
-            *,
-            beatmapset_ids: list[BeatmapsetIdT] = [],
-            exclude_converts: bool = False,
-            is_legacy: Optional[bool] = None,
-            no_diff_reduction: bool = True,
-            ruleset_id: Optional[int] = None,
+        self,
+        user_id: UserIdT,
+        beatmapset_ids: list[BeatmapsetIdT],
+        *,
+        exclude_converts: bool = False,
+        is_legacy: Optional[bool] = None,
+        no_diff_reduction: bool = True,
+        ruleset_id: Optional[int] = None,
     ) -> list[BeatmapCompact]:
         """
-        Searches for the Beatmaps a User has passed by Beatmapset.
+        Searches for the beatmaps a user has passed, by beatmapset.
 
         Parameters
         ----------
         user_id
             The id of the user.
         beatmapset_ids
-            The list of Beatmapsets.
+            The list of beatmapsets to search.
         exclude_converts
             Whether to exclude converts.
         is_legacy
-            Whether to consider legacy scores. `None` will return all scores.
+            Whether to consider legacy scores. Defaults to returning all scores.
         no_diff_reduction
-            Whether to exclude diff reduction mods. Defaults to `True`.
+            Whether to exclude diff reduction mods. Defaults to ``True``.
         ruleset_id
-            The Ruleset ID. `None` will search all rulesets.
+            The ruleset to seach. Defaults to searching all rulesets.
 
         Notes
         -----
@@ -2936,14 +2936,17 @@ class Ossapi:
         <https://osu.ppy.sh/docs/index.html#search-beatmaps-passed>`__
         endpoint.
         """
+
         params = {
             "beatmapset_ids": beatmapset_ids,
-            "exclude_converts": exclude_converts,
+            "exclude_converts": None if exclude_converts is None else int(exclude_converts),
             "is_legacy": None if is_legacy is None else int(is_legacy),
-            "no_diff_reduction": no_diff_reduction,
+            "no_diff_reduction": int(no_diff_reduction),
             "ruleset_id": ruleset_id,
         }
-        return self._get(BeatmapsPassed, f"/users/{user_id}/beatmaps-passed", params).beatmaps_passed
+        return self._get(
+            BeatmapsPassed, f"/users/{user_id}/beatmaps-passed", params
+        ).beatmaps_passed
 
     @request(Scope.PUBLIC, category="users")
     def user(

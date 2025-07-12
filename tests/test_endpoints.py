@@ -335,9 +335,11 @@ class TestTags(TestCase):
     def test_deserialize(self):
         api.tags()
 
+
 class TestUserBeatmapsPassed(TestCase):
     def test_deserialize(self):
         api.search_beatmaps_passed(12092800, beatmapset_ids=[765778])
+
 
 # ======================
 # api_full test cases
