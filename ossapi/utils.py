@@ -1,9 +1,8 @@
-from enum import Enum, IntFlag
 from datetime import datetime, timezone
+from enum import Enum, IntFlag
 from typing import Any, Union
-from dataclasses import dataclass
 
-from typing_utils import issubtype, get_origin, get_args
+from typing_utils import get_args, get_origin, issubtype
 
 
 def is_high_model_type(type_):

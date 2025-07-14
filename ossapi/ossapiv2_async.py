@@ -8,135 +8,135 @@
 # will be to hardcode the insertion points of all the particular changes I've
 # made.
 
-from typing import Union, TypeVar, Optional, List, _GenericAlias
-import logging
-import webbrowser
-import socket
-import pickle
-from pathlib import Path
-from datetime import datetime
-from enum import Enum
-from urllib.parse import unquote
+import functools
+import hashlib
 import inspect
 import json
-import hashlib
-import functools
+import logging
+import pickle
+import socket
 import sys
+import webbrowser
+from datetime import datetime
+from enum import Enum
+from pathlib import Path
+from typing import Optional, TypeVar, Union, _GenericAlias
+from urllib.parse import unquote
 
-from requests_oauthlib import OAuth2Session
-from requests_oauthlib.oauth2_session import TokenUpdated
+import osrparse
 from oauthlib.oauth2 import (
-    BackendApplicationClient,
-    TokenExpiredError,
     AccessDeniedError,
+    BackendApplicationClient,
     InsecureTransportError,
-    is_secure_transport,
     OAuth2Error,
+    TokenExpiredError,
+    is_secure_transport,
 )
 from oauthlib.oauth2.rfc6749.errors import InsufficientScopeError
 from oauthlib.oauth2.rfc6749.tokens import OAuth2Token
-import osrparse
-from typing_utils import issubtype, get_type_hints, get_origin, get_args
+from requests_oauthlib import OAuth2Session
+from requests_oauthlib.oauth2_session import TokenUpdated
+from typing_utils import get_args, get_origin, get_type_hints, issubtype
 
 import ossapi
-from ossapi.models import (
-    Beatmap,
-    BeatmapCompact,
-    BeatmapUserScore,
-    ForumTopicAndPosts,
-    Search,
-    CommentBundle,
-    Cursor,
-    Score,
-    BeatmapsetSearchResult,
-    ModdingHistoryEventsBundle,
-    Tag,
-    Tags,
-    User,
-    Rankings,
-    BeatmapScores,
-    KudosuHistory,
-    Beatmapset,
-    BeatmapPlaycount,
-    Spotlight,
-    Spotlights,
-    WikiPage,
-    _Event,
-    Event,
-    BeatmapsetDiscussionPosts,
-    Build,
-    ChangelogListing,
-    MultiplayerScores,
-    BeatmapsetDiscussionVotes,
-    CreatePMResponse,
-    BeatmapsetDiscussions,
-    UserCompact,
-    NewsListing,
-    NewsPost,
-    SeasonalBackgrounds,
-    BeatmapsetCompact,
-    BeatmapUserScores,
-    DifficultyAttributes,
-    Users,
-    Beatmaps,
-    CreateForumTopicResponse,
-    ForumPoll,
-    ForumPost,
-    ForumTopic,
-    Room,
-    RoomLeaderboard,
-    Matches,
-    Match,
-    MatchResponse,
-    ChatChannel,
-    Events,
-    BeatmapPack,
-    BeatmapPacks,
-    Scores,
-    BeatmapsPassed,
-)
 from ossapi.enums import (
-    GameMode,
-    ScoreType,
-    RankingFilter,
-    RankingType,
-    UserBeatmapType,
     BeatmapDiscussionPostSort,
-    UserLookupKey,
-    BeatmapsetEventType,
-    CommentableType,
-    CommentSort,
-    ForumTopicSort,
-    SearchMode,
-    MultiplayerScoresSort,
+    BeatmapPackType,
     BeatmapsetDiscussionVote,
     BeatmapsetDiscussionVoteSort,
-    BeatmapsetStatus,
-    MessageType,
+    BeatmapsetEventType,
     BeatmapsetSearchCategory,
-    BeatmapsetSearchMode,
     BeatmapsetSearchExplicitContent,
     BeatmapsetSearchGenre,
     BeatmapsetSearchLanguage,
-    NewsPostKey,
+    BeatmapsetSearchMode,
     BeatmapsetSearchSort,
-    RoomSearchMode,
+    BeatmapsetStatus,
     ChangelogMessageFormat,
+    CommentableType,
+    CommentSort,
     EventsSort,
-    BeatmapPackType,
-)
-from ossapi.utils import (
-    is_primitive_type,
-    is_optional,
-    is_base_model_type,
-    is_model_type,
-    is_high_model_type,
-    Field,
-    convert_primitive_type,
-    _Model,
+    ForumTopicSort,
+    GameMode,
+    MessageType,
+    MultiplayerScoresSort,
+    NewsPostKey,
+    RankingFilter,
+    RankingType,
+    RoomSearchMode,
+    ScoreType,
+    SearchMode,
+    UserBeatmapType,
+    UserLookupKey,
 )
 from ossapi.mod import Mod
+from ossapi.models import (
+    Beatmap,
+    BeatmapCompact,
+    BeatmapPack,
+    BeatmapPacks,
+    BeatmapPlaycount,
+    Beatmaps,
+    BeatmapScores,
+    Beatmapset,
+    BeatmapsetCompact,
+    BeatmapsetDiscussionPosts,
+    BeatmapsetDiscussions,
+    BeatmapsetDiscussionVotes,
+    BeatmapsetSearchResult,
+    BeatmapsPassed,
+    BeatmapUserScore,
+    BeatmapUserScores,
+    Build,
+    ChangelogListing,
+    ChatChannel,
+    CommentBundle,
+    CreateForumTopicResponse,
+    CreatePMResponse,
+    Cursor,
+    DifficultyAttributes,
+    Event,
+    Events,
+    ForumPoll,
+    ForumPost,
+    ForumTopic,
+    ForumTopicAndPosts,
+    KudosuHistory,
+    Match,
+    Matches,
+    MatchResponse,
+    ModdingHistoryEventsBundle,
+    MultiplayerScores,
+    NewsListing,
+    NewsPost,
+    Rankings,
+    Room,
+    RoomLeaderboard,
+    Score,
+    Scores,
+    Search,
+    SeasonalBackgrounds,
+    Spotlight,
+    Spotlights,
+    Tag,
+    Tags,
+    User,
+    UserCompact,
+    Users,
+    WikiPage,
+    _Event,
+)
 from ossapi.replay import Replay
+from ossapi.utils import (
+    Field,
+    _Model,
+    convert_primitive_type,
+    is_base_model_type,
+    is_high_model_type,
+    is_model_type,
+    is_optional,
+    is_primitive_type,
+)
 
 
 class Oauth2SessionAsync(OAuth2Session):
@@ -3047,7 +3047,9 @@ class OssapiAsync:
 
         params = {
             "beatmapset_ids": beatmapset_ids,
-            "exclude_converts": None if exclude_converts is None else int(exclude_converts),
+            "exclude_converts": (
+                None if exclude_converts is None else int(exclude_converts)
+            ),
             "is_legacy": None if is_legacy is None else int(is_legacy),
             "no_diff_reduction": int(no_diff_reduction),
             "ruleset_id": ruleset_id,

@@ -1,6 +1,6 @@
-from typing import Optional, List, Any
+from typing import Any, Optional
 
-from ossapi.utils import EnumModel, Datetime, Model, Field, IntFlagModel
+from ossapi.utils import Datetime, EnumModel, Field, IntFlagModel, Model
 
 # ================
 # Documented Enums

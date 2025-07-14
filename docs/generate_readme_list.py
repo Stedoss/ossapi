@@ -1,7 +1,8 @@
-import ossapi
 import inspect
-from collections import defaultdict
 import string
+from collections import defaultdict
+
+import ossapi
 
 endpoints = defaultdict(list)
 for name, value in inspect.getmembers(ossapi.Ossapi):

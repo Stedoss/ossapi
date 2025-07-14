@@ -2,24 +2,23 @@ from datetime import datetime
 from unittest import TestCase
 
 from ossapi import (
-    RankingType,
     BeatmapsetEventType,
+    EventsSort,
+    ForumPoll,
+    GameMode,
     InsufficientScopeError,
     Mod,
-    GameMode,
-    ForumPoll,
+    RankingType,
     RoomSearchMode,
-    EventsSort,
 )
-
 from tests import (
+    UNIT_TEST_MESSAGE,
     TestCaseAuthorizationCode,
     TestCaseDevServer,
-    UNIT_TEST_MESSAGE,
     api_v2 as api,
+    api_v2_dev as api_dev,
     api_v2_full as api_full,
     api_v2_old as api_old,
-    api_v2_dev as api_dev,
 )
 
 
