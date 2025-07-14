@@ -51,6 +51,11 @@ class TestBeatmapScores(TestCase):
     def test_deserialize(self):
         api.beatmap_scores(beatmap_id=1981090)
 
+    def test_nm(self):
+        for score in api.beatmap_scores(221777, mods=Mod.NM):
+            # TODO: or CL/PF/SD
+            assert score.mods == Mod.NM
+
 
 class TestBeatmap(TestCase):
     def test_deserialize(self):

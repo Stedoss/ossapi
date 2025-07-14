@@ -811,7 +811,9 @@ class Ossapi:
                     params[f"cursor[{k}]"] = v
                 del params[key]
             elif isinstance(value, Mod):
-                params[f"{key}[]"] = value.decompose()
+                # Mod.NM decomposes into [], not ["NM"]. special case this.
+                mods = [Mod.NM] if value == Mod.NM else value.decompose(clean=True)
+                params[f"{key}[]"] = [mod.short_name() for mod in mods]
                 del params[key]
             else:
                 params[key] = self._format_value(value)
