@@ -144,7 +144,7 @@ from ossapi.ossapiv2 import Domain, Grant, Ossapi, Scope
 from ossapi.ossapiv2_async import OssapiAsync
 from ossapi.replay import Replay
 
-__version__ = "5.2.1"
+__version__ = "5.3.0"
 
 __all__ = [
     # OssapiV1
