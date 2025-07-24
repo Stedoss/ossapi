@@ -715,7 +715,7 @@ class SeasonStatistics(Model):
     division: SeasonDivision
     season: Season
     rank: int
-    total_score: int
+    total_score: float
 
 
 # return-value wrapper for https://osu.ppy.sh/docs/index.html#get-users.
