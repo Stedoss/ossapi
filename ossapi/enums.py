@@ -454,6 +454,11 @@ class BeatmapsetSearchSort(EnumModel):
     DIFFICULTY_DESCENDING = "difficulty_desc"
     DIFFICULTY_ASCENDING = "difficulty_asc"
 
+    # only present on https://osu.ppy.sh/beatmapsets for the "any" category,
+    # for some reason
+    UPDATED_DESCENDING = "updated_desc"
+    UPDATED_ASCENDING = "updated_asc"
+
     RANKED_DESCENDING = "ranked_desc"
     RANKED_ASCENDING = "ranked_asc"
 
