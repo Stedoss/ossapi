@@ -2756,7 +2756,7 @@ class OssapiAsync:
         replay = osrparse.Replay.from_string(content)
         return Replay(replay, self)
 
-    @request(Scope.PUBLIC, requires_user=True, category="scores")
+    @request(Scope.PUBLIC, category="scores")
     async def download_score(self, score_id: int, *, raw: bool = False) -> Replay:
         """
         Download the replay data of a score.
@@ -2781,7 +2781,7 @@ class OssapiAsync:
         url = f"{self.base_url}/scores/{score_id}/download"
         return await self._download_score(url=url, raw=raw)
 
-    @request(Scope.PUBLIC, requires_user=True, category="scores")
+    @request(Scope.PUBLIC, category="scores")
     async def download_score_mode(
         self, mode: GameModeT, score_id: int, *, raw: bool = False
     ) -> Replay:
