@@ -308,7 +308,7 @@ def request(scope, *, requires_user=False, category):
                     "currently authorized with the client credentials grant."
                     "\n\n"
                     "For more details, see "
-                    "https://tybug.github.io/ossapi/grants.html."
+                    "https://liam-devoe.github.io/ossapi/grants.html."
                 )
 
             # we may need to edit this later so convert from tuple

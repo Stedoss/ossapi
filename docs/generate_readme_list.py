@@ -31,5 +31,5 @@ for category, names in endpoints.items():
     category_url = category.replace(" ", "%20")
     for name in names:
         print(
-            f"  * [`api.{name}`](https://tybug.github.io/ossapi/{category_url}.html#ossapi.ossapiv2.Ossapi.{name})"
+            f"  * [`api.{name}`](https://liam-devoe.github.io/ossapi/{category_url}.html#ossapi.ossapiv2.Ossapi.{name})"
         )
