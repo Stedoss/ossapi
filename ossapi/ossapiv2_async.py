@@ -125,6 +125,9 @@ from ossapi.models import (
     Users,
     WikiPage,
     _Event,
+    Forum,
+    Forums,
+    ForumTopics,
 )
 from ossapi.replay import Replay
 from ossapi.utils import (
@@ -2292,6 +2295,35 @@ class OssapiAsync:
             "end": end,
         }
         return await self._get(ForumTopicAndPosts, f"/forums/topics/{topic_id}", params)
+
+    @request(Scope.PUBLIC, category="forums")
+    async def forum_listing(self) -> list[Forum]:
+        """
+        Get top-level forums and their subforums (max 2 deep).
+
+        Notes
+        -----
+        Implements the `Get Forum Listing
+        <https://osu.ppy.sh/docs/#get-forum-listing>`__ endpoint.
+        """
+        return (await self._get(Forums, "/forums")).forums
+
+    @request(Scope.PUBLIC, category="forums")
+    async def forum_topics(self, forum_id: int) -> ForumTopics:
+        """
+        Get a forum by id, its pinned topics, recent topics, and its subforums.
+
+        Parameters
+        ----------
+        forum_id
+            The forum to get.
+
+        Notes
+        -----
+        Implements the `Get Forum and Topics
+        <https://osu.ppy.sh/docs/#get-forum-and-topics>`__ endpoint.
+        """
+        return await self._get(ForumTopics, f"/forums/{forum_id}")
 
     # /friends
     # --------

@@ -195,6 +195,16 @@ class TestForumTopic(TestCase):
         api.forum_topic(1781998)
 
 
+class TestForumListing(TestCase):
+    def test_deserialize(self):
+        api.forum_listing()
+
+
+class TestForumTopics(TestCase):
+    def test_deserialize(self):
+        api.forum_topics(2)
+
+
 class TestBeatmapsetDiscussionVotes(TestCase):
     def test_deserialize(self):
         api.beatmapset_discussion_votes().votes[0].score

@@ -586,6 +586,23 @@ class CommentBundle(Model):
     users: list[UserCompact]
 
 
+class Forum(Model):
+    id: int
+    name: str
+    description: str
+    subforums: Optional[list[Forum]]
+
+
+class Forums(Model):
+    forums: list[Forum]
+
+
+class ForumTopics(Model):
+    forum: Forum
+    topics: list[ForumTopic]
+    pinned_topics: list[ForumTopic]
+
+
 class ForumPost(Model):
     created_at: Datetime
     deleted_at: Optional[Datetime]
@@ -617,6 +634,7 @@ class ForumTopic(Model):
     type: ForumTopicType
     updated_at: Datetime
     user_id: int
+    views: int
     poll: Optional[ForumPollModel]
 
     def user(self) -> User:
