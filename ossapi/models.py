@@ -590,7 +590,7 @@ class Forum(Model):
     id: int
     name: str
     description: str
-    subforums: Optional[list[Forum]]
+    subforums: list[Forum] | None
 
 
 class Forums(Model):

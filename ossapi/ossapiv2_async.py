@@ -97,10 +97,13 @@ from ossapi.models import (
     DifficultyAttributes,
     Event,
     Events,
+    Forum,
     ForumPoll,
     ForumPost,
+    Forums,
     ForumTopic,
     ForumTopicAndPosts,
+    ForumTopics,
     KudosuHistory,
     Match,
     Matches,
@@ -125,9 +128,6 @@ from ossapi.models import (
     Users,
     WikiPage,
     _Event,
-    Forum,
-    Forums,
-    ForumTopics,
 )
 from ossapi.replay import Replay
 from ossapi.utils import (
