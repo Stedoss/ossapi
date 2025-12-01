@@ -325,6 +325,7 @@ class BeatmapsetCompact(Model):
 
     # required fields
     # ---------------
+    anime_cover: bool
     artist: str
     artist_unicode: str
     covers: Covers
