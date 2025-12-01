@@ -11,6 +11,7 @@ from ossapi import (
     RankingType,
     RoomSearchMode,
 )
+
 from tests import (
     UNIT_TEST_MESSAGE,
     TestCaseAuthorizationCode,

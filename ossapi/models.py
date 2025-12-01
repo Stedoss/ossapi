@@ -153,58 +153,58 @@ class UserCompact(Model):
     is_deleted: bool
     is_online: bool
     is_supporter: bool
-    last_visit: Optional[Datetime]
+    last_visit: Datetime | None
     pm_friends_only: bool
-    profile_colour: Optional[str]
+    profile_colour: str | None
     username: str
 
     # optional fields
     # ---------------
-    account_history: Optional[list[UserAccountHistory]]
-    active_tournament_banner: Optional[ProfileBanner]
-    active_tournament_banners: Optional[list[ProfileBanner]]
-    badges: Optional[list[UserBadge]]
-    beatmap_playcounts_count: Optional[int]
-    blocks: Optional[UserRelation]
-    country: Optional[Country]
-    cover: Optional[Cover]
-    default_group: Optional[str]
-    favourite_beatmapset_count: Optional[int]
-    follow_user_mapping: Optional[list[int]]
-    follower_count: Optional[int]
-    friends: Optional[list[UserRelation]]
-    graveyard_beatmapset_count: Optional[int]
-    groups: Optional[list[UserGroup]]
-    guest_beatmapset_count: Optional[int]
-    is_restricted: Optional[bool]
-    is_silenced: Optional[bool]
-    loved_beatmapset_count: Optional[int]
+    account_history: list[UserAccountHistory] | None
+    active_tournament_banner: ProfileBanner | None
+    active_tournament_banners: list[ProfileBanner] | None
+    badges: list[UserBadge] | None
+    beatmap_playcounts_count: int | None
+    blocks: UserRelation | None
+    country: Country | None
+    cover: Cover | None
+    default_group: str | None
+    favourite_beatmapset_count: int | None
+    follow_user_mapping: list[int] | None
+    follower_count: int | None
+    friends: list[UserRelation] | None
+    graveyard_beatmapset_count: int | None
+    groups: list[UserGroup] | None
+    guest_beatmapset_count: int | None
+    is_restricted: bool | None
+    is_silenced: bool | None
+    loved_beatmapset_count: int | None
     # undocumented
-    mapping_follower_count: Optional[int]
-    monthly_playcounts: Optional[list[UserMonthlyPlaycount]]
-    page: Optional[UserPage]
-    pending_beatmapset_count: Optional[int]
-    previous_usernames: Optional[list[str]]
+    mapping_follower_count: int | None
+    monthly_playcounts: list[UserMonthlyPlaycount] | None
+    page: UserPage | None
+    pending_beatmapset_count: int | None
+    previous_usernames: list[str] | None
     # deprecated, replaced by rank_history
-    rankHistory: Optional[RankHistory]
-    rank_history: Optional[RankHistory]
+    rankHistory: RankHistory | None
+    rank_history: RankHistory | None
     # deprecated, replaced by ranked_beatmapset_count
-    ranked_and_approved_beatmapset_count: Optional[int]
-    ranked_beatmapset_count: Optional[int]
-    replays_watched_counts: Optional[list[UserReplaysWatchedCount]]
-    scores_best_count: Optional[int]
-    scores_first_count: Optional[int]
-    scores_recent_count: Optional[int]
-    statistics: Optional[UserStatistics]
-    statistics_rulesets: Optional[UserStatisticsRulesets]
-    support_level: Optional[int]
+    ranked_and_approved_beatmapset_count: int | None
+    ranked_beatmapset_count: int | None
+    replays_watched_counts: list[UserReplaysWatchedCount] | None
+    scores_best_count: int | None
+    scores_first_count: int | None
+    scores_recent_count: int | None
+    statistics: UserStatistics | None
+    statistics_rulesets: UserStatisticsRulesets | None
+    support_level: int | None
     # deprecated, replaced by pending_beatmapset_count
-    unranked_beatmapset_count: Optional[int]
-    unread_pm_count: Optional[int]
-    user_achievements: Optional[list[UserAchievement]]
-    user_preferences: Optional[UserProfileCustomization]
-    session_verified: Optional[bool]
-    team: Optional[Team]
+    unranked_beatmapset_count: int | None
+    unread_pm_count: int | None
+    user_achievements: list[UserAchievement] | None
+    user_preferences: UserProfileCustomization | None
+    session_verified: bool | None
+    team: Team | None
 
     def expand(self) -> User:
         return self._fk_user(self.id)
@@ -213,29 +213,29 @@ class UserCompact(Model):
 class User(UserCompact):
     comments_count: int
     cover_url: str
-    discord: Optional[str]
+    discord: str | None
     has_supported: bool
-    interests: Optional[str]
+    interests: str | None
     join_date: Datetime
     kudosu: Kudosu
-    location: Optional[str]
+    location: str | None
     max_blocks: int
     max_friends: int
-    occupation: Optional[str]
+    occupation: str | None
     playmode: str
-    playstyle: Optional[PlayStyles]
+    playstyle: PlayStyles | None
     post_count: int
     profile_order: list[ProfilePage]
-    profile_hue: Optional[int]
+    profile_hue: int | None
     daily_challenge_user_stats: DailyChallengeUserStats
-    title: Optional[str]
-    title_url: Optional[str]
-    twitter: Optional[str]
-    website: Optional[str]
+    title: str | None
+    title_url: str | None
+    twitter: str | None
+    website: str | None
     scores_pinned_count: int
     nominated_beatmapset_count: int
-    rank_highest: Optional[RankHighest]
-    current_season_stats: Optional[SeasonStatistics]
+    rank_highest: RankHighest | None
+    current_season_stats: SeasonStatistics | None
 
     def expand(self) -> User:
         # we're already expanded, no need to waste an api call
@@ -256,10 +256,10 @@ class BeatmapCompact(Model):
 
     # optional fields
     # ---------------
-    _beatmapset: Field(name="beatmapset", type=Optional[BeatmapsetCompact])
-    checksum: Optional[str]
-    failtimes: Optional[Failtimes]
-    max_combo: Optional[int]
+    _beatmapset: Field(name="beatmapset", type=BeatmapsetCompact | None)
+    checksum: str | None
+    failtimes: Failtimes | None
+    max_combo: int | None
 
     def expand(self) -> Beatmap:
         return self._fk_beatmap(self.id)
@@ -267,7 +267,7 @@ class BeatmapCompact(Model):
     def user(self) -> User:
         return self._fk_user(self.user_id)
 
-    def beatmapset(self) -> Union[Beatmapset, BeatmapsetCompact]:
+    def beatmapset(self) -> Beatmapset | BeatmapsetCompact:
         return self._fk_beatmapset(self.beatmapset_id, existing=self._beatmapset)
 
 
@@ -276,17 +276,17 @@ class Beatmap(BeatmapCompact):
     version: str
     accuracy: float
     ar: float
-    bpm: Optional[float]
+    bpm: float | None
     current_user_tag_ids: list[int]
     # this might be non-optional? should test with client credentials grant.
-    current_user_playcount: Optional[int]
+    current_user_playcount: int | None
     top_tag_ids: list[int]
     convert: bool
     count_circles: int
     count_sliders: int
     count_spinners: int
     cs: float
-    deleted_at: Optional[Datetime]
+    deleted_at: Datetime | None
     drain: float
     hit_length: int
     is_scoreable: bool
@@ -302,14 +302,14 @@ class Beatmap(BeatmapCompact):
     # beatmapset owner.
     # This is optional as a workaround until
     # https://github.com/ppy/osu-web/issues/9784 is resolved.
-    owner: Field(name="user", type=Optional[UserCompact])
+    owner: Field(name="user", type=UserCompact | None)
     # TODO does the new addition of this owners attribute deprecate the owner
     # attribute?
-    owners: Optional[list[BeatmapOwner]]
+    owners: list[BeatmapOwner] | None
 
     # overridden fields
     # -----------------
-    _beatmapset: Field(name="beatmapset", type=Optional[Beatmapset])
+    _beatmapset: Field(name="beatmapset", type=Beatmapset | None)
 
     def expand(self) -> Beatmap:
         return self
@@ -345,32 +345,32 @@ class BeatmapsetCompact(Model):
     video: bool
     # documented as being in `Beatmapset` only, but returned by
     # `api.beatmapset_events` which uses a `BeatmapsetCompact`.
-    hype: Optional[Hype]
+    hype: Hype | None
 
     # optional fields
     # ---------------
-    beatmaps: Optional[list[Beatmap]]
-    converts: Optional[Any]
-    current_nominations: Optional[list[Nomination]]
-    current_user_attributes: Optional[Any]
-    description: Optional[Any]
-    discussions: Optional[Any]
-    events: Optional[Any]
-    genre: Optional[Any]
-    has_favourited: Optional[bool]
-    language: Optional[Any]
-    nominations: Optional[Any]
-    pack_tags: Optional[list[str]]
-    ratings: Optional[Any]
-    recent_favourites: Optional[Any]
-    related_users: Optional[Any]
-    track_id: Optional[int]
-    _user: Field(name="user", type=Optional[UserCompact])
+    beatmaps: list[Beatmap] | None
+    converts: Any | None
+    current_nominations: list[Nomination] | None
+    current_user_attributes: Any | None
+    description: Any | None
+    discussions: Any | None
+    events: Any | None
+    genre: Any | None
+    has_favourited: bool | None
+    language: Any | None
+    nominations: Any | None
+    pack_tags: list[str] | None
+    ratings: Any | None
+    recent_favourites: Any | None
+    related_users: Any | None
+    track_id: int | None
+    _user: Field(name="user", type=UserCompact | None)
 
     def expand(self) -> Beatmapset:
         return self._fk_beatmapset(self.id)
 
-    def user(self) -> Union[UserCompact, User]:
+    def user(self) -> UserCompact | User:
         return self._fk_user(self.user_id, existing=self._user)
 
 
@@ -378,18 +378,18 @@ class Beatmapset(BeatmapsetCompact):
     availability: Availability
     bpm: float
     can_be_hyped: bool
-    deleted_at: Optional[Datetime]
+    deleted_at: Datetime | None
     discussion_enabled: bool
     discussion_locked: bool
     is_scoreable: bool
     last_updated: Datetime
-    legacy_thread_url: Optional[str]
+    legacy_thread_url: str | None
     nominations_summary: Nominations
     ranked: RankStatus
-    ranked_date: Optional[Datetime]
+    ranked_date: Datetime | None
     rating: float
     storyboard: bool
-    submitted_date: Optional[Datetime]
+    submitted_date: Datetime | None
     tags: str
     related_tags: list[BeatmapTag]
 
@@ -407,8 +407,8 @@ class ScoreMatchInfo(Model):
 class _LegacyScore(Model):
     # can be null for match scores, eg the scores
     # in https://osu.ppy.sh/community/matches/97947404
-    id: Optional[int]
-    best_id: Optional[int]
+    id: int | None
+    best_id: int | None
     user_id: int
     accuracy: float
     mods: Mod
@@ -416,7 +416,7 @@ class _LegacyScore(Model):
     max_combo: int
     perfect: bool
     statistics: Statistics
-    pp: Optional[float]
+    pp: float | None
     rank: Grade
     created_at: Datetime
     mode: GameMode
@@ -424,13 +424,13 @@ class _LegacyScore(Model):
     replay: bool
     passed: bool
     current_user_attributes: Any
-    beatmap: Optional[Beatmap]
-    beatmapset: Optional[BeatmapsetCompact]
-    rank_country: Optional[int]
-    rank_global: Optional[int]
-    weight: Optional[Weight]
-    _user: Field(name="user", type=Optional[UserCompact])
-    match: Optional[ScoreMatchInfo]
+    beatmap: Beatmap | None
+    beatmapset: BeatmapsetCompact | None
+    rank_country: int | None
+    rank_global: int | None
+    weight: Weight | None
+    _user: Field(name="user", type=UserCompact | None)
+    match: ScoreMatchInfo | None
     type: str
 
 
@@ -439,13 +439,13 @@ class Score(Model):
     https://osu.ppy.sh/docs/index.html#score with x-api-version >= 20220705
     """
 
-    id: Optional[int]
-    best_id: Optional[int]
+    id: int | None
+    best_id: int | None
     user_id: int
     accuracy: float
     max_combo: int
     statistics: Statistics
-    pp: Optional[float]
+    pp: float | None
     rank: Grade
 
     passed: bool
@@ -456,28 +456,28 @@ class Score(Model):
     maximum_statistics: Statistics
     mods: list[NonLegacyMod]
     ruleset_id: int
-    started_at: Optional[Datetime]
+    started_at: Datetime | None
     ended_at: Datetime
     ranked: bool
     preserve: bool
     beatmap_id: int
-    build_id: Optional[int]
+    build_id: int | None
     has_replay: bool
     is_perfect_combo: bool
     total_score: int
-    total_score_without_mods: Optional[int]
+    total_score_without_mods: int | None
 
     legacy_perfect: bool
-    legacy_score_id: Optional[int]
+    legacy_score_id: int | None
     legacy_total_score: int
 
-    beatmap: Optional[Beatmap]
-    beatmapset: Optional[BeatmapsetCompact]
-    rank_country: Optional[int]
-    rank_global: Optional[int]
-    weight: Optional[Weight]
-    _user: Field(name="user", type=Optional[UserCompact])
-    match: Optional[ScoreMatchInfo]
+    beatmap: Beatmap | None
+    beatmapset: BeatmapsetCompact | None
+    rank_country: int | None
+    rank_global: int | None
+    weight: Weight | None
+    _user: Field(name="user", type=UserCompact | None)
+    match: ScoreMatchInfo | None
     type: str
 
     @staticmethod
@@ -500,7 +500,7 @@ class Score(Model):
             data["perfect"] = bool(data["perfect"])
         return data
 
-    def user(self) -> Union[UserCompact, User]:
+    def user(self) -> UserCompact | User:
         return self._fk_user(self.user_id, existing=self._user)
 
     def download(self):
@@ -523,49 +523,49 @@ class BeatmapUserScores(Model):
 class BeatmapScores(Model):
     scores: list[Score]
     score_count: int
-    user_score: Field(name="userScore", type=Optional[BeatmapUserScore])
+    user_score: Field(name="userScore", type=BeatmapUserScore | None)
 
 
 class CommentableMeta(Model):
     # title is the only attribute returned for deleted commentables.
-    id: Optional[int]
+    id: int | None
     title: str
-    type: Optional[str]
-    url: Optional[str]
-    owner_id: Optional[int]
-    owner_title: Optional[str]
-    current_user_attributes: Optional[CommentableMetaCurrentUserAttributes]
+    type: str | None
+    url: str | None
+    owner_id: int | None
+    owner_title: str | None
+    current_user_attributes: CommentableMetaCurrentUserAttributes | None
 
 
 class CommentableMetaCurrentUserAttributes(Model):
-    can_new_comment_reason: Optional[str]
+    can_new_comment_reason: str | None
 
 
 class Comment(Model):
     # null for deleted commentables, eg on /comments/3.
-    commentable_id: Optional[int]
+    commentable_id: int | None
     # null for deleted commentables, eg on /comments/3.
-    commentable_type: Optional[str]
+    commentable_type: str | None
     created_at: Datetime
-    deleted_at: Optional[Datetime]
-    edited_at: Optional[Datetime]
-    edited_by_id: Optional[int]
+    deleted_at: Datetime | None
+    edited_at: Datetime | None
+    edited_by_id: int | None
     id: int
-    legacy_name: Optional[str]
-    message: Optional[str]
-    message_html: Optional[str]
-    parent_id: Optional[int]
+    legacy_name: str | None
+    message: str | None
+    message_html: str | None
+    parent_id: int | None
     pinned: bool
     replies_count: int
     updated_at: Datetime
     # null for some commentables, eg on /comments/3.
-    user_id: Optional[int]
+    user_id: int | None
     votes_count: int
 
     def user(self) -> User:
         return self._fk_user(self.user_id)
 
-    def edited_by(self) -> Optional[User]:
+    def edited_by(self) -> User | None:
         return self._fk_user(self.edited_by_id)
 
 
@@ -574,13 +574,13 @@ class CommentBundle(Model):
     comments: list[Comment]
     cursor: CursorT
     has_more: bool
-    has_more_id: Optional[int]
+    has_more_id: int | None
     included_comments: list[Comment]
-    pinned_comments: Optional[list[Comment]]
+    pinned_comments: list[Comment] | None
     # TODO this should be type CommentSort
     sort: str
-    top_level_count: Optional[int]
-    total: Optional[int]
+    top_level_count: int | None
+    total: int | None
     user_follow: bool
     user_votes: list[int]
     users: list[UserCompact]
@@ -605,9 +605,9 @@ class ForumTopics(Model):
 
 class ForumPost(Model):
     created_at: Datetime
-    deleted_at: Optional[Datetime]
-    edited_at: Optional[Datetime]
-    edited_by_id: Optional[int]
+    deleted_at: Datetime | None
+    edited_at: Datetime | None
+    edited_by_id: int | None
     forum_id: int
     id: int
     topic_id: int
@@ -617,13 +617,13 @@ class ForumPost(Model):
     def user(self) -> User:
         return self._fk_user(self.user_id)
 
-    def edited_by(self) -> Optional[User]:
+    def edited_by(self) -> User | None:
         return self._fk_user(self.edited_by_id)
 
 
 class ForumTopic(Model):
     created_at: Datetime
-    deleted_at: Optional[Datetime]
+    deleted_at: Datetime | None
     first_post_id: int
     forum_id: int
     id: int
@@ -635,7 +635,7 @@ class ForumTopic(Model):
     updated_at: Datetime
     user_id: int
     views: int
-    poll: Optional[ForumPollModel]
+    poll: ForumPollModel | None
 
     def user(self) -> User:
         return self._fk_user(self.user_id)
@@ -643,9 +643,9 @@ class ForumTopic(Model):
 
 class ForumPollModel(Model):
     allow_vote_change: bool
-    ended_at: Optional[Datetime]
+    ended_at: Datetime | None
     hide_incomplete_results: bool
-    last_vote_at: Optional[Datetime]
+    last_vote_at: Datetime | None
     max_votes: int
     options: list[ForumPollOption]
     started_at: Datetime
@@ -656,7 +656,7 @@ class ForumPollModel(Model):
 class ForumPollOption(Model):
     id: int
     text: ForumPollText
-    vote_count: Optional[int]
+    vote_count: int | None
 
 
 class ForumTopicAndPosts(Model):
@@ -673,10 +673,10 @@ class CreateForumTopicResponse(Model):
 
 
 class ForumTopicSearch(Model):
-    sort: Optional[ForumTopicSort]
-    limit: Optional[int]
-    start: Optional[int]
-    end: Optional[int]
+    sort: ForumTopicSort | None
+    limit: int | None
+    start: int | None
+    end: int | None
 
 
 class SearchResult(Generic[T], Model):
@@ -689,22 +689,22 @@ class WikiPage(Model):
     locale: str
     markdown: str
     path: str
-    subtitle: Optional[str]
+    subtitle: str | None
     tags: list[str]
     title: str
     available_locales: list[str]
 
 
 class Search(Model):
-    users: Field(name="user", type=Optional[SearchResult[UserCompact]])
-    wiki_pages: Field(name="wiki_page", type=Optional[SearchResult[WikiPage]])
+    users: Field(name="user", type=SearchResult[UserCompact] | None)
+    wiki_pages: Field(name="wiki_page", type=SearchResult[WikiPage] | None)
 
 
 class Spotlight(Model):
     end_date: Datetime
     id: int
     mode_specific: bool
-    participant_count: Optional[int]
+    participant_count: int | None
     name: str
     start_date: Datetime
     type: str
@@ -724,7 +724,7 @@ class SeasonDivision(Model):
 
 class Season(Model):
     start_date: Datetime
-    end_date: Optional[Datetime]
+    end_date: Datetime | None
     name: str
     room_count: int
 
@@ -753,74 +753,74 @@ class BeatmapPacks(Model):
 
 
 class Rankings(Model):
-    beatmapsets: Optional[list[Beatmapset]]
+    beatmapsets: list[Beatmapset] | None
     cursor: CursorT
-    cursor_string: Optional[str]
-    ranking: Union[list[UserStatistics], list[CountryStatistics]]
-    spotlight: Optional[Spotlight]
-    total: Optional[int]
+    cursor_string: str | None
+    ranking: list[UserStatistics] | list[CountryStatistics]
+    spotlight: Spotlight | None
+    total: int | None
 
 
 class BeatmapsetDiscussionPost(Model):
     id: int
     beatmapset_discussion_id: int
     user_id: int
-    last_editor_id: Optional[int]
-    deleted_by_id: Optional[int]
+    last_editor_id: int | None
+    deleted_by_id: int | None
     system: bool
     message: str
     created_at: Datetime
     updated_at: Datetime
-    deleted_at: Optional[Datetime]
+    deleted_at: Datetime | None
 
     def user(self) -> User:
         return self._fk_user(self.user_id)
 
-    def last_editor(self) -> Optional[User]:
+    def last_editor(self) -> User | None:
         return self._fk_user(self.last_editor_id)
 
-    def deleted_by(self) -> Optional[User]:
+    def deleted_by(self) -> User | None:
         return self._fk_user(self.deleted_by_id)
 
 
 class BeatmapsetDiscussion(Model):
     id: int
     beatmapset_id: int
-    beatmap_id: Optional[int]
+    beatmap_id: int | None
     user_id: int
-    deleted_by_id: Optional[int]
+    deleted_by_id: int | None
     message_type: MessageType
-    parent_id: Optional[int]
+    parent_id: int | None
     # a point of time which is ``timestamp`` milliseconds into the map
-    timestamp: Optional[int]
+    timestamp: int | None
     resolved: bool
     can_be_resolved: bool
     can_grant_kudosu: bool
     created_at: Datetime
     current_user_attributes: Any
     updated_at: Datetime
-    deleted_at: Optional[Datetime]
+    deleted_at: Datetime | None
     # marked as required in the docs, but null in
     #   api.beatmapset_events(beatmapset_id=1112418)
     # due to this post
     # https://osu.ppy.sh/beatmapsets/1112418/discussion/-/generalAll#/1633002
-    last_post_at: Optional[Datetime]
+    last_post_at: Datetime | None
     kudosu_denied: bool
-    starting_post: Optional[BeatmapsetDiscussionPost]
-    posts: Optional[list[BeatmapsetDiscussionPost]]
-    _beatmap: Field(name="beatmap", type=Optional[BeatmapCompact])
-    _beatmapset: Field(name="beatmapset", type=Optional[BeatmapsetCompact])
+    starting_post: BeatmapsetDiscussionPost | None
+    posts: list[BeatmapsetDiscussionPost] | None
+    _beatmap: Field(name="beatmap", type=BeatmapCompact | None)
+    _beatmapset: Field(name="beatmapset", type=BeatmapsetCompact | None)
 
     def user(self) -> User:
         return self._fk_user(self.user_id)
 
-    def deleted_by(self) -> Optional[User]:
+    def deleted_by(self) -> User | None:
         return self._fk_user(self.deleted_by_id)
 
-    def beatmapset(self) -> Union[Beatmapset, BeatmapsetCompact]:
+    def beatmapset(self) -> Beatmapset | BeatmapsetCompact:
         return self._fk_beatmapset(self.beatmapset_id, existing=self._beatmapset)
 
-    def beatmap(self) -> Union[Optional[Beatmap], BeatmapCompact]:
+    def beatmap(self) -> Beatmap | None | BeatmapCompact:
         return self._fk_beatmap(self.beatmap_id, existing=self._beatmap)
 
 
@@ -847,7 +847,7 @@ class KudosuHistory(Model):
     # on (forum_post, etc)." in https://osu.ppy.sh/docs/index.html#kudosuhistory
     model: str
     created_at: Datetime
-    giver: Optional[KudosuGiver]
+    giver: KudosuGiver | None
     post: KudosuPost
     # see https://github.com/ppy/osu-web/issues/7549
     details: Any
@@ -855,11 +855,11 @@ class KudosuHistory(Model):
 
 class BeatmapPlaycount(Model):
     beatmap_id: int
-    _beatmap: Field(name="beatmap", type=Optional[BeatmapCompact])
-    beatmapset: Optional[BeatmapsetCompact]
+    _beatmap: Field(name="beatmap", type=BeatmapCompact | None)
+    beatmapset: BeatmapsetCompact | None
     count: int
 
-    def beatmap(self) -> Union[Beatmap, BeatmapCompact]:
+    def beatmap(self) -> Beatmap | BeatmapCompact:
         return self._fk_beatmap(self.beatmap_id, existing=self._beatmap)
 
 
@@ -963,41 +963,41 @@ class Build(Model):
     created_at: Datetime
     display_version: str
     id: int
-    update_stream: Optional[UpdateStream]
+    update_stream: UpdateStream | None
     users: int
-    version: Optional[str]
-    changelog_entries: Optional[list[ChangelogEntry]]
-    versions: Optional[Versions]
-    youtube_id: Optional[str]
+    version: str | None
+    changelog_entries: list[ChangelogEntry] | None
+    versions: Versions | None
+    youtube_id: str | None
 
 
 class Versions(Model):
-    next: Optional[Build]
-    previous: Optional[Build]
+    next: Build | None
+    previous: Build | None
 
 
 class UpdateStream(Model):
-    display_name: Optional[str]
+    display_name: str | None
     id: int
     is_featured: bool
     name: str
-    latest_build: Optional[Build]
-    user_count: Optional[int]
+    latest_build: Build | None
+    user_count: int | None
 
 
 class ChangelogEntry(Model):
     category: str
-    created_at: Optional[Datetime]
-    github_pull_request_id: Optional[int]
-    github_url: Optional[str]
-    id: Optional[int]
+    created_at: Datetime | None
+    github_pull_request_id: int | None
+    github_url: str | None
+    id: int | None
     major: bool
-    message: Optional[str]
-    message_html: Optional[str]
-    repository: Optional[str]
-    title: Optional[str]
+    message: str | None
+    message_html: str | None
+    repository: str | None
+    title: str | None
     type: str
-    url: Optional[str]
+    url: str | None
     github_user: GithubUser
 
 
@@ -1012,8 +1012,8 @@ class MultiplayerScores(Model):
     cursor_string: CursorStringT
     params: Any
     scores: list[MultiplayerScore]
-    total: Optional[int]
-    user_score: Optional[MultiplayerScore]
+    total: int | None
+    user_score: MultiplayerScore | None
 
 
 class MultiplayerScore(Model):
@@ -1028,8 +1028,8 @@ class MultiplayerScore(Model):
     mods: list[Mod]
     statistics: Statistics
     passed: bool
-    position: Optional[int]
-    scores_around: Optional[MultiplayerScoresAround]
+    position: int | None
+    scores_around: MultiplayerScoresAround | None
     user: User
     solo_score_id: int
     classic_total_score: int
@@ -1038,7 +1038,7 @@ class MultiplayerScore(Model):
     ranked: bool
     maximum_statistics: Statistics
     total_score_without_mods: int
-    best_id: Optional[int]
+    best_id: int | None
     type: str
     accuracy: float
     build_id: int
@@ -1051,7 +1051,7 @@ class MultiplayerScore(Model):
     current_user_attributes: Any
     has_replay: bool
     legacy_perfect: bool
-    legacy_score_id: Optional[int]
+    legacy_score_id: int | None
     legacy_total_score: int
 
     def beatmap(self):
@@ -1074,21 +1074,21 @@ class NewsListing(Model):
 class NewsPost(Model):
     author: str
     edit_url: str
-    first_image: Optional[str]
-    first_image_2x: Field(name="first_image@2x", type=Optional[str])
+    first_image: str | None
+    first_image_2x: Field(name="first_image@2x", type=str | None)
     id: int
     published_at: Datetime
     slug: str
     title: str
     updated_at: Datetime
-    content: Optional[str]
-    navigation: Optional[NewsNavigation]
-    preview: Optional[str]
+    content: str | None
+    navigation: NewsNavigation | None
+    preview: str | None
 
 
 class NewsNavigation(Model):
-    newer: Optional[NewsPost]
-    older: Optional[NewsPost]
+    newer: NewsPost | None
+    older: NewsPost | None
 
 
 class NewsSidebar(Model):
@@ -1116,30 +1116,30 @@ class BeatmapDifficultyAttributes(Model):
     star_rating: float
 
     # osu attributes
-    aim_difficulty: Optional[float]
-    approach_rate: Optional[float]
-    flashlight_difficulty: Optional[float]
-    overall_difficulty: Optional[float]
-    slider_factor: Optional[float]
-    speed_difficulty: Optional[float]
-    speed_note_count: Optional[float]
-    aim_difficult_slider_count: Optional[float]
-    aim_difficult_strain_count: Optional[float]
-    speed_difficult_strain_count: Optional[float]
+    aim_difficulty: float | None
+    approach_rate: float | None
+    flashlight_difficulty: float | None
+    overall_difficulty: float | None
+    slider_factor: float | None
+    speed_difficulty: float | None
+    speed_note_count: float | None
+    aim_difficult_slider_count: float | None
+    aim_difficult_strain_count: float | None
+    speed_difficult_strain_count: float | None
 
     # taiko attributes
-    stamina_difficulty: Optional[float]
-    rhythm_difficulty: Optional[float]
-    colour_difficulty: Optional[float]
-    approach_rate: Optional[float]
-    great_hit_window: Optional[float]
+    stamina_difficulty: float | None
+    rhythm_difficulty: float | None
+    colour_difficulty: float | None
+    approach_rate: float | None
+    great_hit_window: float | None
 
     # ctb attributes
-    approach_rate: Optional[float]
+    approach_rate: float | None
 
     # mania attributes
-    great_hit_window: Optional[float]
-    score_multiplier: Optional[float]
+    great_hit_window: float | None
+    score_multiplier: float | None
 
 
 class Events(Model):
@@ -1154,13 +1154,13 @@ class BeatmapPack(Model):
     name: str
     no_diff_reduction: bool
     # marked as nonnull on docs
-    ruleset_id: Optional[int]
+    ruleset_id: int | None
     tag: str
     url: str
 
     # optional attributes
-    beatmapsets: Optional[list[Beatmapset]]
-    user_completion_data: Optional[BeatmapPackUserCompletionData]
+    beatmapsets: list[Beatmapset] | None
+    user_completion_data: BeatmapPackUserCompletionData | None
 
 
 class Scores(Model):
@@ -1196,11 +1196,11 @@ class ForumPoll:
 class BeatmapsetSearchResult(Model):
     beatmapsets: list[Beatmapset]
     cursor: CursorT
-    recommended_difficulty: Optional[float]
-    error: Optional[str]
+    recommended_difficulty: float | None
+    error: str | None
     total: int
     search: Any
-    cursor_string: Optional[str]
+    cursor_string: str | None
 
 
 class BeatmapsetDiscussions(Model):
@@ -1210,7 +1210,7 @@ class BeatmapsetDiscussions(Model):
     included_discussions: list[BeatmapsetDiscussion]
     reviews_config: ReviewsConfig
     users: list[UserCompact]
-    cursor_string: Optional[str]
+    cursor_string: str | None
     beatmapsets: list[Beatmapset]
 
 
@@ -1226,7 +1226,7 @@ class BeatmapsetDiscussionPosts(Model):
     cursor: CursorT
     posts: list[BeatmapsetDiscussionPost]
     users: list[UserCompact]
-    cursor_string: Optional[str]
+    cursor_string: str | None
 
 
 class BeatmapsetDiscussionVotes(Model):
@@ -1234,7 +1234,7 @@ class BeatmapsetDiscussionVotes(Model):
     discussions: list[BeatmapsetDiscussion]
     votes: list[BeatmapsetDiscussionVote]
     users: list[UserCompact]
-    cursor_string: Optional[str]
+    cursor_string: str | None
 
 
 class BeatmapsetEventComment(Model):
@@ -1244,12 +1244,12 @@ class BeatmapsetEventComment(Model):
 
 class BeatmapsetEventCommentNoPost(Model):
     beatmap_discussion_id: int
-    beatmap_discussion_post_id: Optional[int]
+    beatmap_discussion_post_id: int | None
 
 
 class BeatmapsetEventCommentNone(Model):
-    beatmap_discussion_id: Optional[int]
-    beatmap_discussion_post_id: Optional[int]
+    beatmap_discussion_id: int | None
+    beatmap_discussion_post_id: int | None
 
 
 class BeatmapsetEventCommentChange(Generic[S], BeatmapsetEventCommentNone):
@@ -1267,7 +1267,7 @@ class BeatmapsetEventCommentKudosuChange(BeatmapsetEventCommentNoPost):
 
 
 class BeatmapsetEventCommentKudosuRecalculate(BeatmapsetEventCommentNoPost):
-    new_vote: Optional[KudosuVote]
+    new_vote: KudosuVote | None
 
 
 class BeatmapsetEventCommentOwnerChange(BeatmapsetEventCommentNone):
@@ -1286,8 +1286,8 @@ class BeatmapsetEventCommentNominate(Model):
 
 
 class BeatmapsetEventCommentWithNominators(BeatmapsetEventCommentNoPost):
-    beatmap_ids: Optional[list[int]]
-    nominator_ids: Optional[list[int]]
+    beatmap_ids: list[int] | None
+    nominator_ids: list[int] | None
 
 
 class BeatmapsetEventCommentWithSourceUser(BeatmapsetEventCommentNoPost):
@@ -1306,9 +1306,9 @@ class BeatmapsetEvent(Model):
     comment: Any
     created_at: Datetime
 
-    user_id: Optional[int]
-    beatmapset: Optional[BeatmapsetCompact]
-    discussion: Optional[BeatmapsetDiscussion]
+    user_id: int | None
+    beatmapset: BeatmapsetCompact | None
+    discussion: BeatmapsetDiscussion | None
 
     @staticmethod
     def override_attributes(data, api):
@@ -1363,26 +1363,26 @@ class BeatmapsetEvent(Model):
         # I am marking all comments as optional.
         return {"comment": Optional[mapping[type_]]}
 
-    def user(self) -> Optional[User]:
+    def user(self) -> User | None:
         return self._fk_user(self.user_id)
 
 
 class ChatChannel(Model):
     channel_id: int
-    description: Optional[str]
-    icon: Optional[str]
-    moderated: Optional[bool]
+    description: str | None
+    icon: str | None
+    moderated: bool | None
     name: str
     type: ChannelType
-    uuid: Optional[str]
+    uuid: str | None
     message_length_limit: int
 
     # optional fields
     # ---------------
-    last_message_id: Optional[int]
-    last_read_id: Optional[int]
-    recent_messages: Optional[list[ChatMessage]]
-    users: Optional[list[int]]
+    last_message_id: int | None
+    last_read_id: int | None
+    recent_messages: list[ChatMessage] | None
+    users: list[int] | None
 
 
 class ChatMessage(Model):
@@ -1414,7 +1414,7 @@ class CreatePMResponse(Model):
     channel: ChatChannel
 
     # documented but not present in response
-    presence: Optional[list[ChatChannel]]
+    presence: list[ChatChannel] | None
 
 
 class ModdingHistoryEventsBundle(Model):
@@ -1435,17 +1435,17 @@ class UserRelation(Model):
 
     # optional fields
     # ---------------
-    target: Optional[UserCompact]
+    target: UserCompact | None
 
-    def target(self) -> Union[User, UserCompact]:
+    def target(self) -> User | UserCompact:
         return self._fk_user(self.target_id, existing=self.target)
 
 
 class StatisticsVariant(Model):
     mode: GameMode
     variant: Variant
-    country_rank: Optional[int]
-    global_rank: Optional[int]
+    country_rank: int | None
+    global_rank: int | None
     pp: float
 
 
@@ -1454,37 +1454,37 @@ class UserStatistics(Model):
     count_300: int
     count_50: int
     count_miss: int
-    country_rank: Optional[int]
+    country_rank: int | None
     grade_counts: UserGradeCounts
     hit_accuracy: float
     is_ranked: bool
     level: UserLevel
     maximum_combo: int
     play_count: int
-    play_time: Optional[int]
-    pp: Optional[float]
+    play_time: int | None
+    pp: float | None
     pp_exp: float
-    global_rank: Optional[int]
-    global_rank_exp: Optional[float]
+    global_rank: int | None
+    global_rank_exp: float | None
     # deprecated, replaced by global_rank and country_rank
-    rank: Optional[Any]
+    rank: Any | None
     ranked_score: int
-    rank_change_since_30_days: Optional[int]
+    rank_change_since_30_days: int | None
     replays_watched_by_others: int
     total_hits: int
     total_score: int
-    user: Optional[UserCompact]
-    variants: Optional[list[StatisticsVariant]]
+    user: UserCompact | None
+    variants: list[StatisticsVariant] | None
 
 
 class UserStatisticsRulesets(Model):
     # undocumented
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserStatisti
     # csRulesetsTransformer.php
-    osu: Optional[UserStatistics]
-    taiko: Optional[UserStatistics]
-    fruits: Optional[UserStatistics]
-    mania: Optional[UserStatistics]
+    osu: UserStatistics | None
+    taiko: UserStatistics | None
+    fruits: UserStatistics | None
+    mania: UserStatistics | None
 
 
 class RoomPlaylistItemMod(Model):
@@ -1502,9 +1502,9 @@ class RoomPlaylistItem(Model):
     expired: bool
     owner_id: int
     # null for playlist items which haven't finished yet, I think
-    playlist_order: Optional[int]
+    playlist_order: int | None
     # null for playlist items which haven't finished yet, I think
-    played_at: Optional[Datetime]
+    played_at: Datetime | None
     beatmap: BeatmapCompact
 
 
@@ -1515,8 +1515,8 @@ class _Room1(Model):
     type: RoomType
     user_id: int
     starts_at: Datetime
-    ends_at: Optional[Datetime]
-    max_attempts: Optional[int]
+    ends_at: Datetime | None
+    max_attempts: int | None
     participant_count: int
     channel_id: int
     active: bool
@@ -1535,8 +1535,8 @@ class Room(Model):
     type: RoomType
     user_id: int
     starts_at: Datetime
-    ends_at: Optional[Datetime]
-    max_attempts: Optional[int]
+    ends_at: Datetime | None
+    max_attempts: int | None
     participant_count: int
     channel_id: int
     active: bool
@@ -1548,7 +1548,7 @@ class Room(Model):
 
     # new from _Room1
     playlist_item_stats: RoomPlaylistItemStats
-    current_playlist_item: Optional[RoomPlaylistItem]
+    current_playlist_item: RoomPlaylistItem | None
     difficulty_range: RoomDifficultyRange
     recent_participants: list[UserCompact]
 
@@ -1575,14 +1575,14 @@ class RoomLeaderboardUserScore(RoomLeaderboardScore):
 
 class RoomLeaderboard(Model):
     leaderboard: list[RoomLeaderboardScore]
-    user_score: Optional[RoomLeaderboardUserScore]
+    user_score: RoomLeaderboardUserScore | None
 
 
 class Match(Model):
     id: int
     start_time: Datetime
     # null for matches which haven't finished yet, I think
-    end_time: Optional[Datetime]
+    end_time: Datetime | None
     name: str
 
 
@@ -1597,7 +1597,7 @@ class MatchGame(Model):
     id: int
     start_time: Datetime
     # null for in-progress matches.
-    end_time: Optional[Datetime]
+    end_time: Datetime | None
     mode: GameMode
     mode_int: int
     scoring_type: ScoringType
@@ -1606,7 +1606,7 @@ class MatchGame(Model):
     # null for deleted beatmaps,
     # e.g. https://osu.ppy.sh/community/matches/103721175.
     # TODO doesn't match docs
-    beatmap: Optional[BeatmapCompact]
+    beatmap: BeatmapCompact | None
     beatmap_id: int
     scores: list[Score]
 
@@ -1614,7 +1614,7 @@ class MatchGame(Model):
 class MatchEventDetail(Model):
     type: MatchEventType
     # seems to only be used for MatchEventType.OTHER
-    text: Optional[str]
+    text: str | None
 
 
 class MatchEvent(Model):
@@ -1622,8 +1622,8 @@ class MatchEvent(Model):
     detail: MatchEventDetail
     timestamp: Datetime
     # can be none for MatchEventType.OTHER
-    user_id: Optional[int]
-    game: Optional[MatchGame]
+    user_id: int | None
+    game: MatchGame | None
 
 
 class MatchResponse(Model):
@@ -1632,7 +1632,7 @@ class MatchResponse(Model):
     users: list[UserCompact]
     first_event_id: int
     latest_event_id: int
-    current_game_id: Optional[int]
+    current_game_id: int | None
 
 
 class DailyChallengeUserStats(Model):
@@ -1657,7 +1657,7 @@ class Tag(Model):
     id: int
     name: str
     description: str
-    ruleset_id: Optional[int]
+    ruleset_id: int | None
 
 
 class Tags(Model):
