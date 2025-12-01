@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from enum import Enum, IntFlag
+from types import UnionType
 from typing import Any, Union
 
 from typing_utils import get_args, get_origin, issubtype
@@ -274,7 +275,7 @@ def is_optional(type_):
 
     # optimization for common case of simple optional - Optional[int] ie
     # Union[int, NoneType].
-    if get_origin(type_) is Union:
+    if get_origin(type_) in {Union, UnionType}:
         if get_args(type_)[1] is type(None):
             return True
 
