@@ -184,8 +184,6 @@ class BaseModel(_Model):
     instantiating it, hence it's defined as a base type.
     """
 
-    pass
-
 
 class EnumModel(BaseModel, Enum):
     pass

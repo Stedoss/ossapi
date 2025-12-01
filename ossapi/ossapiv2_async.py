@@ -392,8 +392,6 @@ class ReauthenticationRequired(Exception):
     reauthentication.
     """
 
-    pass
-
 
 class Grant(Enum):
     """

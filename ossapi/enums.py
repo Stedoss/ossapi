@@ -483,8 +483,6 @@ class BeatmapsetSearchSort(EnumModel):
     CREATOR_ASCENDING = "creator_asc"
 
 
-
-
 class NewsPostKey(EnumModel):
     SLUG = "slug"
     ID = "id"
