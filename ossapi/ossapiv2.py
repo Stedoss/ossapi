@@ -2280,11 +2280,17 @@ class Ossapi:
         ----------
         match_id
             The match to get.
+        before_id
+            Filter for match events before the specified match event id.
+        after_id
+            Filter for match events after the specified match event id.
+        limit
+            Maximum number of match events to return.
 
         Notes
         -----
         Implements the `Get Match
-        <https://osu.ppy.sh/docs/index.html#matchesmatch>`__ endpoint.
+        <https://osu.ppy.sh/docs/#get-match>`__ endpoint.
         """
         params = {"after": after_id, "before": before_id, "limit": limit}
         return self._get(MatchResponse, f"/matches/{match_id}", params=params)
