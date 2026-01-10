@@ -61,6 +61,7 @@ from ossapi.enums import (
     UserAccountHistory,
     UserAchievement,
     UserBadge,
+    UserGlobalRank,
     UserGradeCounts,
     UserGroup,
     UserLevel,
@@ -180,6 +181,7 @@ class UserCompact(Model):
     is_silenced: bool | None
     loved_beatmapset_count: int | None
     # undocumented
+    global_rank: UserGlobalRank | None
     mapping_follower_count: int | None
     monthly_playcounts: list[UserMonthlyPlaycount] | None
     page: UserPage | None

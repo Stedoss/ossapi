@@ -3017,7 +3017,13 @@ class Ossapi:
         return self._get(User, f"/users/{user}/{mode.value if mode else ''}", params)
 
     @request(Scope.PUBLIC, category="users")
-    def users_lookup(self, users: list[Union[UserIdT, str]]):
+    def users_lookup(
+            self,
+            users: list[Union[UserIdT, str]],
+            *,
+            exclude_bots: Optional[bool] = None,
+            ruleset_id: Optional[int] = None,
+    ) -> list[UserCompact]:
         """
         Batch get users by id or username. If you only want to retrieve a single
         user, or want to retrieve users by username instead of id, see :meth:`user`.
@@ -3029,8 +3035,17 @@ class Ossapi:
         ---------
         users
             The user ids or usernames to get.
+        exclude_bots
+            Whether to exclude bots from the returned users. Defaults to False.
+        ruleset_id
+            The id of the ruleset used to populate the `global_rank` field. If None is passed,
+            the `global_rank` field will be None. Defaults to None.
         """
-        params = {"ids": users}
+        params = {
+            "ids": users,
+            "exclude_bots": None if exclude_bots is None else int(exclude_bots),
+            "ruleset_id": None if ruleset_id is None else ruleset_id,
+        }
         return self._get(Users, "/users/lookup", params).users
 
     @request(Scope.PUBLIC, category="users")
