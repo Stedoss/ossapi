@@ -906,3 +906,8 @@ class RoomDifficultyRange(Model):
 class BeatmapOwner(Model):
     id: int
     username: str
+
+
+class UserGlobalRank(Model):
+    rank: int | None
+    ruleset_id: int
