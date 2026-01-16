@@ -6,6 +6,7 @@ import logging
 import pickle
 import socket
 import sys
+import types
 import webbrowser
 from datetime import datetime
 from enum import Enum
@@ -978,7 +979,7 @@ class Ossapi:
                 new_value.append(entry)
             return new_value
 
-        if origin is Union:
+        if origin is types.UnionType:
             # try each type in the union sequentially, taking the first which
             # successfully deserializes the json.
             new_value = None
